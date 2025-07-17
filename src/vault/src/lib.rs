@@ -26,7 +26,7 @@ use crate::repository::config_repo::{self, Conf};
 use crate::strategies::strategy_service;
 use crate::types::types::*;
 use crate::strategies::stats::strategy_stats_service;
-use crate::utils::provider_impls::get_environment_provider_impls;
+use crate::utils::service_resolver::get_service_resolver;
 
 const STRATEGY_STATS_FETCHING_INTERVAL: u64 = 3600; // 1 hour
 
@@ -64,7 +64,9 @@ fn heartbeat() {
 #[update]
 async fn test_icpswap_withdraw(token_out: CanisterId, amount: Nat, token_fee: Nat) -> Nat {
     let canister_id = Principal::from_text("5fq4w-lyaaa-aaaag-qjqta-cai").unwrap();
-    let provider_impls = get_environment_provider_impls();
+
+    let service_resolver = get_service_resolver();
+    let provider_impls = service_resolver.provider_impls();
     let icpswap_provider = provider_impls.icpswap.clone();
 
     let icpswap_quote_result = icpswap_provider.withdraw(

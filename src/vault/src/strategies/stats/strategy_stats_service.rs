@@ -12,7 +12,7 @@ use utils::util::current_timestamp;
 
 use crate::repository::strategies_repo;
 use crate::strategies::strategy::IStrategy;
-use crate::utils::provider_impls::get_environment_provider_impls;
+use crate::utils::service_resolver::get_service_resolver;
 
 thread_local! {
     static STRATEGY_STATS_TIMER_ID: RefCell<Option<TimerId>> = RefCell::new(None);
@@ -90,8 +90,11 @@ pub async fn get_strategy_current_liquidity(strategy: &dyn IStrategy) -> Result<
 
     let pool = current_pool.unwrap();
 
+    let service_resolver = get_service_resolver();
+
     let liquidity_client = liquidity_router::get_liquidity_client(
-        get_environment_provider_impls(),
+        service_resolver.provider_impls(),
+        service_resolver.icrc_ledger_client(),
         pool.token0,
         pool.token1,
         pool.provider
@@ -112,7 +115,8 @@ pub async fn get_strategy_current_liquidity(strategy: &dyn IStrategy) -> Result<
     let position_response = liquidity_client.get_position_by_id(position_id).await?;
 
     let quote_response = swap_service::quote_swap_icrc2(
-        get_environment_provider_impls(),
+        service_resolver.provider_impls(),
+        service_resolver.icrc_ledger_client(),
         pool.token1,
         pool.token0,
         position_response.token_1_amount,

@@ -1,1 +1,1 @@
-pub mod provider_impls;
+pub mod service_resolver;

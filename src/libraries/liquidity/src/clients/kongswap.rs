@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use types::CanisterId;
-use providers::providers_factory::ProviderImpls;
+use service_resolver::ProviderImpls;
 use providers::kongswap::KongSwapProvider;
 use providers::icpswap::ICPSwapProvider;
 use kongswap_canister::user_balances::UserBalancesReply;
@@ -14,7 +14,7 @@ use swap::swap_service;
 use types::liquidity::{AddLiquidityResponse, WithdrawLiquidityResponse, GetPositionByIdResponse, GetPoolDataResponse};
 use errors::internal_error::error::InternalError;
 use errors::internal_error::error::build_error_code;
-use icrc_ledger_client;
+use icrc_ledger_client::ICRCLedgerClient;
 use utils::constants::CKUSDT_TOKEN_CANISTER_ID;
 
 use crate::liquidity_client::LiquidityClient;
@@ -22,6 +22,7 @@ use crate::liquidity_calculator::LiquidityCalculator;
 
 pub struct KongSwapLiquidityClient {
     provider_impls: ProviderImpls,
+    icrc_ledger_client: Arc<dyn ICRCLedgerClient>,
     canister_id: CanisterId,
     // TODO: change to Pool
     token0: CanisterId,
@@ -31,12 +32,14 @@ pub struct KongSwapLiquidityClient {
 impl KongSwapLiquidityClient {
     pub fn new(
         provider_impls: ProviderImpls,
+        icrc_ledger_client: Arc<dyn ICRCLedgerClient>,
         canister_id: CanisterId,
         token0: CanisterId,
         token1: CanisterId,
     ) -> KongSwapLiquidityClient {
         KongSwapLiquidityClient {
             provider_impls,
+            icrc_ledger_client,
             canister_id,
             token0,
             token1,
@@ -101,6 +104,7 @@ impl LiquidityClient for KongSwapLiquidityClient {
         // Swap token0 for token1 with the best exchange provider
         let swap_response = swap_service::swap_icrc2(
             self.provider_impls.clone(),
+            self.icrc_ledger_client.clone(),
             self.token0.clone(),
             self.token1.clone(),
             Nat::from(token_0_for_swap_amount as u128),
@@ -207,9 +211,9 @@ impl LiquidityClient for KongSwapLiquidityClient {
                 ]))
             ))?;
 
-        let token0_decimals = icrc_ledger_client::icrc1_decimals(self.token0.clone()).await?;
-        let token1_decimals = icrc_ledger_client::icrc1_decimals(self.token1.clone()).await?;
-        let usdt_decimals = icrc_ledger_client::icrc1_decimals(*CKUSDT_TOKEN_CANISTER_ID).await?;
+        let token0_decimals = self.icrc_ledger_client.icrc1_decimals(self.token0.clone()).await?;
+        let token1_decimals = self.icrc_ledger_client.icrc1_decimals(self.token1.clone()).await?;
+        let usdt_decimals = self.icrc_ledger_client.icrc1_decimals(*CKUSDT_TOKEN_CANISTER_ID).await?;
 
         let token0_position_balance = Nat::from(
             (user_balance.amount_0 * 10f64.powi(token0_decimals as i32)).round() as u128
@@ -256,9 +260,9 @@ impl LiquidityClient for KongSwapLiquidityClient {
         let token0_balance = pool_data.balance_0.clone() + pool_data.lp_fee_0.clone();
         let token1_balance = pool_data.balance_1.clone() + pool_data.lp_fee_1.clone();
 
-        let decimals_token0 = icrc_ledger_client::icrc1_decimals(self.token0.clone()).await?;
-        let decimals_token1 = icrc_ledger_client::icrc1_decimals(self.token1.clone()).await?;
-        let decimals_usdt = icrc_ledger_client::icrc1_decimals(*CKUSDT_TOKEN_CANISTER_ID).await?;
+        let decimals_token0 = self.icrc_ledger_client.icrc1_decimals(self.token0.clone()).await?;
+        let decimals_token1 = self.icrc_ledger_client.icrc1_decimals(self.token1.clone()).await?;
+        let decimals_usdt = self.icrc_ledger_client.icrc1_decimals(*CKUSDT_TOKEN_CANISTER_ID).await?;
 
         let token0_base_unit = Nat::from(10u32.pow(decimals_token0 as u32)); // 10^decimals_token0
         let token1_base_unit = Nat::from(10u32.pow(decimals_token1 as u32)); // 10^decimals_token1

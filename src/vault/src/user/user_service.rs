@@ -1,16 +1,15 @@
 use std::cell::RefCell;
 use candid::{Nat, Principal};
-use std::collections::HashMap;
 use ic_cdk::api::time;
-use ic_cdk::{caller, id, trap};
+use ic_cdk::caller;
 
 use types::CanisterId;
 use types::context::Context;
 use errors::internal_error::error::InternalError;
-use icrc_ledger_client;
 use ::utils::util::nat_to_u64;
 
 use crate::types::types::StrategyId;
+use crate::utils::service_resolver::get_service_resolver;
 
 thread_local! {
     pub static USER_ACCOUNTS: RefCell<Vec<UserAccount>> = RefCell::new(Default::default());
@@ -36,7 +35,11 @@ pub async fn accept_deposit(
     ledger: Principal,
     strategy_id: StrategyId
 ) -> Result<(), InternalError> {
-    let block_index = icrc_ledger_client::icrc2_transfer_from(
+
+    let service_resolver = get_service_resolver();
+    let icrc_ledger_client = service_resolver.icrc_ledger_client();
+
+    let block_index = icrc_ledger_client.icrc2_transfer_from(
         context.user.unwrap(),
         ledger,
         amount.clone()

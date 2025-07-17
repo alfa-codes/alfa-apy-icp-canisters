@@ -14,7 +14,7 @@ use crate::pool_snapshots::pool_snapshot::PoolSnapshot;
 use crate::pool_snapshots::position_data::position_data::PositionData;
 use crate::pool_snapshots::pool_data::pool_data::PoolData;
 use crate::repository::pools_repo;
-use crate::utils::provider_impls::get_environment_provider_impls;
+use crate::utils::service_resolver::get_service_resolver;
 
 thread_local! {
     static POOL_SNAPSHOT_TIMER_ID: RefCell<Option<TimerId>> = RefCell::new(None);
@@ -112,8 +112,11 @@ async fn get_pool_data(context: Context, pool: &Pool) -> Result<Option<PoolData>
 }
 
 async fn get_liquidity_client(pool: &Pool) -> Box<dyn LiquidityClient> {
+    let service_resolver = get_service_resolver();
+
     liquidity_router::get_liquidity_client(
-        get_environment_provider_impls(),
+        service_resolver.provider_impls(),
+        service_resolver.icrc_ledger_client(),
         pool.token0.clone(),
         pool.token1.clone(),
         pool.provider.clone()

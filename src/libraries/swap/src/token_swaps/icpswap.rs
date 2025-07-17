@@ -12,13 +12,15 @@ use types::liquidity::TokensFee;
 use utils::util::nat_to_u128;
 use errors::internal_error::error::InternalError;
 use errors::internal_error::error::build_error_code;
+use icrc_ledger_client::ICRCLedgerClient;
 
 use crate::token_swaps::swap_client::{SwapClient, SwapSuccess, QuoteSuccess};
 
-pub const SLIPPAGE_TOLERANCE: u128 = 50; // 50 slippage tolerance points == 5%
+pub const SLIPPAGE_TOLERANCE_POINTS: u128 = 50; // 50 slippage tolerance points == 5%
 
 pub struct ICPSwapSwapClient {
     provider_impl: Arc<dyn ICPSwapProvider + Send + Sync>,
+    icrc_ledger_client: Arc<dyn ICRCLedgerClient>,
     canister_id: Option<CanisterId>,
     token0: CanisterId,
     token1: CanisterId,
@@ -31,9 +33,15 @@ pub struct DepositFromSuccess {
 }
 
 impl ICPSwapSwapClient {
-    pub fn new(provider_impl: Arc<dyn ICPSwapProvider + Send + Sync>, token0: CanisterId, token1: CanisterId) -> Self {
+    pub fn new(
+        provider_impl: Arc<dyn ICPSwapProvider + Send + Sync>,
+        icrc_ledger_client: Arc<dyn ICRCLedgerClient>,
+        token0: CanisterId,
+        token1: CanisterId,
+    ) -> Self {
         Self {
             provider_impl,
+            icrc_ledger_client,
             canister_id: None,
             token0, // token0 may be token1 in the pool and vice versa
             token1, // token1 may be token0 in the pool and vice versa
@@ -173,8 +181,8 @@ impl SwapClient for ICPSwapSwapClient {
         // 5. Withdraw from ICPSwap to token1
 
         // 1. Get token fees
-        let token0_fee = icrc_ledger_client::icrc1_fee(self.token0.clone()).await?;
-        let token1_fee = icrc_ledger_client::icrc1_fee(self.token1.clone()).await?;
+        let token0_fee = self.icrc_ledger_client.icrc1_fee(self.token0.clone()).await?;
+        let token1_fee = self.icrc_ledger_client.icrc1_fee(self.token1.clone()).await?;
 
         // 2. Deposit
         let deposited_amount = self.deposit_from(
@@ -188,7 +196,9 @@ impl SwapClient for ICPSwapSwapClient {
         // 4. Swap
         let expected_out_u128 = nat_to_u128(&expected_out);
         // Сonsider slippage tolerance
-        let amount_out_minimum = Nat::from(expected_out_u128 * (1000 - SLIPPAGE_TOLERANCE) / 1000u128);
+        let amount_out_minimum = Nat::from(
+            expected_out_u128 * (1000 - SLIPPAGE_TOLERANCE_POINTS) / 1000u128
+        );
 
         let amount_out = self.swap_internal(
             deposited_amount.clone(),

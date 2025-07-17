@@ -9,7 +9,7 @@ pub enum Environment {
 }
 
 impl Environment {
-    pub fn should_use_mock_providers(&self) -> bool {
+    pub fn should_use_mock_services(&self) -> bool {
         matches!(self, Environment::Test)
     }
 
@@ -41,9 +41,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_environment_mock_providers() {
-        assert!(Environment::Test.should_use_mock_providers());
-        assert!(!Environment::Production.should_use_mock_providers());
+    fn test_environment_mock_services() {
+        assert!(Environment::Test.should_use_mock_services());
+        assert!(!Environment::Production.should_use_mock_services());
     }
 
     #[test]

@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use utils::util::{nat_to_u64, int_to_nat};
 use types::CanisterId;
-use providers::providers_factory::ProviderImpls;
+use service_resolver::ProviderImpls;
 use providers::icpswap::ICPSwapProvider;
 use icpswap_swap_pool_canister::getTokenMeta::TokenMetadataValue;
 use icpswap_swap_pool_canister::metadata::Metadata;
@@ -20,10 +20,10 @@ use icpswap_swap_factory_canister::ICPSwapPool;
 use icpswap_swap_calculator_canister::getTokenAmountByLiquidity::GetTokenAmountByLiquidityResponse;
 use icpswap_node_index_canister::getAllTokens::TokenData;
 use icpswap_tvl_storage_canister::getPoolChartTvl::PoolChartTvl;
-use swap::token_swaps::icpswap::SLIPPAGE_TOLERANCE;
+use swap::token_swaps::icpswap::SLIPPAGE_TOLERANCE_POINTS;
 use errors::internal_error::error::{InternalError, build_error_code};
 use utils::constants::CKUSDT_TOKEN_CANISTER_ID;
-use icrc_ledger_client;
+use icrc_ledger_client::ICRCLedgerClient;
 use types::liquidity::{
     AddLiquidityResponse,
     WithdrawLiquidityResponse,
@@ -40,6 +40,7 @@ const TICK_UPPER: i32 = 887220;
 
 pub struct ICPSwapLiquidityClient {
     provider_impls: ProviderImpls,
+    icrc_ledger_client: Arc<dyn ICRCLedgerClient>,
     canister_id: Option<CanisterId>,
     token0: CanisterId, // token0 may be token1 in the pool and vice versa
     token1: CanisterId, // token1 may be token0 in the pool and vice versa
@@ -49,11 +50,13 @@ pub struct ICPSwapLiquidityClient {
 impl ICPSwapLiquidityClient {
     pub fn new(
         provider_impls: ProviderImpls,
+        icrc_ledger_client: Arc<dyn ICRCLedgerClient>,
         token0: CanisterId,
         token1: CanisterId,
     ) -> ICPSwapLiquidityClient {
         ICPSwapLiquidityClient {
             provider_impls,
+            icrc_ledger_client,
             canister_id: None,
             token0,
             token1,
@@ -423,13 +426,13 @@ impl LiquidityClient for ICPSwapLiquidityClient {
         let user_position_ids = self.get_user_position_ids_by_principal().await?;
 
         // 2. Get token fees
-        let token0_fee = icrc_ledger_client::icrc1_fee(self.token0.clone()).await?;
+        let token0_fee = self.icrc_ledger_client.icrc1_fee(self.token0.clone()).await?;
 
         // 3. Get metadata
         let metadata = self.metadata().await?;
         
         // 4. Approve before deposit
-        icrc_ledger_client::icrc2_approve(
+        self.icrc_ledger_client.icrc2_approve(
             self.canister_id(),
             self.token0.clone(),
             amount.clone()
@@ -457,7 +460,8 @@ impl LiquidityClient for ICPSwapLiquidityClient {
         ).await?;
 
         // Considering slippage tolerance
-        let amount1_min_after_swap = quote_amount.clone().div(1000u128) * (1000u128 - SLIPPAGE_TOLERANCE);
+        let amount1_min_after_swap = quote_amount.clone()
+            .div(1000u128) * (1000u128 - SLIPPAGE_TOLERANCE_POINTS);
 
         // 7. Swap half of the token0 amount for the pool
         // ICPSWAP provider is more convenient for swap for adding liquidity to ICPSwap pool
@@ -659,9 +663,9 @@ impl LiquidityClient for ICPSwapLiquidityClient {
             }
         }
 
-        let token0_decimals = icrc_ledger_client::icrc1_decimals(self.token0.clone()).await?;
-        let token1_decimals = icrc_ledger_client::icrc1_decimals(self.token1.clone()).await?;
-        let usdt_decimals = icrc_ledger_client::icrc1_decimals(*CKUSDT_TOKEN_CANISTER_ID).await?;
+        let token0_decimals = self.icrc_ledger_client.icrc1_decimals(self.token0.clone()).await?;
+        let token1_decimals = self.icrc_ledger_client.icrc1_decimals(self.token1.clone()).await?;
+        let usdt_decimals = self.icrc_ledger_client.icrc1_decimals(*CKUSDT_TOKEN_CANISTER_ID).await?;
 
         let token0_usd_amount = Nat::from(
             (nat_to_u64(&token0_amount) as f64

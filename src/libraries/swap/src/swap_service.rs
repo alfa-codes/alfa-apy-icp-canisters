@@ -7,10 +7,10 @@ use types::exchange_id::ExchangeId;
 use utils::constants::KONGSWAP_CANISTER_ID;
 use types::CanisterId;
 use errors::internal_error::error::{InternalError, build_error_code};
-use icrc_ledger_client;
+use icrc_ledger_client::ICRCLedgerClient;
 use providers::kongswap::KongSwapProvider;
 use providers::icpswap::ICPSwapProvider;
-use providers::providers_factory::ProviderImpls;
+use service_resolver::ProviderImpls;
 
 use crate::token_swaps::kongswap::KongSwapSwapClient;
 use crate::token_swaps::icpswap::ICPSwapSwapClient;
@@ -18,6 +18,7 @@ use crate::token_swaps::swap_client::SwapClient;
 
 pub async fn swap_icrc2_optimal(
     provider_impls: ProviderImpls,
+    icrc_ledger_client: Arc<dyn ICRCLedgerClient>,
     input_token: CanisterId,
     output_token: CanisterId,
     amount: Nat,
@@ -31,6 +32,7 @@ pub async fn swap_icrc2_optimal(
 
     swap_icrc2(
         provider_impls,
+        icrc_ledger_client,
         input_token,
         output_token,
         amount,
@@ -40,6 +42,7 @@ pub async fn swap_icrc2_optimal(
 
 pub async fn swap_icrc2(
     provider_impls: ProviderImpls,
+    icrc_ledger_client: Arc<dyn ICRCLedgerClient>,
     input_token: CanisterId,
     output_token: CanisterId,
     amount: Nat,
@@ -48,10 +51,22 @@ pub async fn swap_icrc2(
 {
     match provider {
         ExchangeId::KongSwap => {
-            swap_icrc2_kongswap(provider_impls.kongswap, input_token, output_token, amount).await
+            swap_icrc2_kongswap(
+                provider_impls.kongswap,
+                icrc_ledger_client,
+                input_token,
+                output_token,
+                amount
+            ).await
         }
         ExchangeId::ICPSwap => {
-            swap_icrc2_icpswap(provider_impls.icpswap, input_token, output_token, amount).await
+            swap_icrc2_icpswap(
+                provider_impls.icpswap,
+                icrc_ledger_client,
+                input_token,
+                output_token,
+                amount
+            ).await
         }
         _ => Err(InternalError::business_logic(
             build_error_code(2000, 3, 1),
@@ -100,6 +115,7 @@ pub async fn quote_swap_icrc2_optimal(
 
 pub async fn quote_swap_icrc2(
     provider_impls: ProviderImpls,
+    icrc_ledger_client: Arc<dyn ICRCLedgerClient>,
     input_token: CanisterId,
     output_token: CanisterId,
     amount: Nat,
@@ -108,10 +124,21 @@ pub async fn quote_swap_icrc2(
 {
     match provider {
         ExchangeId::KongSwap => {
-            quote_swap_kongswap(provider_impls.kongswap, input_token, output_token, amount).await
+            quote_swap_kongswap(
+                provider_impls.kongswap,
+                input_token,
+                output_token,
+                amount
+            ).await
         }
         ExchangeId::ICPSwap => {
-            quote_swap_icpswap(provider_impls.icpswap, input_token, output_token, amount).await
+            quote_swap_icpswap(
+                provider_impls.icpswap,
+                icrc_ledger_client,
+                input_token,
+                output_token,
+                amount
+            ).await
         }
         _ => Err(InternalError::business_logic(
             build_error_code(2000, 3, 2),
@@ -130,6 +157,7 @@ pub async fn quote_swap_icrc2(
 // TODO: make private
 pub async fn swap_icrc2_kongswap(
     provider_impl: Arc<dyn KongSwapProvider + Send + Sync>,
+    icrc_ledger_client: Arc<dyn ICRCLedgerClient>,
     input_token: CanisterId,
     output_token: CanisterId,
     amount: Nat,
@@ -144,7 +172,7 @@ pub async fn swap_icrc2_kongswap(
         )
     );
 
-    icrc_ledger_client::icrc2_approve(
+    icrc_ledger_client.icrc2_approve(
         swap_client.canister_id(),
         input_token.clone(),
         amount.clone()
@@ -161,6 +189,7 @@ pub async fn swap_icrc2_kongswap(
 // TODO: make private
 pub async fn swap_icrc2_icpswap(
     provider_impl: Arc<dyn ICPSwapProvider + Send + Sync>,
+    icrc_ledger_client: Arc<dyn ICRCLedgerClient>,
     input_token: CanisterId,
     output_token: CanisterId,
     amount: Nat,
@@ -169,12 +198,13 @@ pub async fn swap_icrc2_icpswap(
     let swap_client = Box::new(
         ICPSwapSwapClient::new(
             provider_impl,
+            icrc_ledger_client.clone(),
             input_token.clone(),
             output_token
         ).with_pool().await?
     );
 
-    icrc_ledger_client::icrc2_approve(
+    icrc_ledger_client.icrc2_approve(
         swap_client.canister_id(),
         input_token.clone(),
         amount.clone()
@@ -216,6 +246,7 @@ pub async fn quote_swap_kongswap(
 // TODO: make private
 pub async fn quote_swap_icpswap(
     provider_impl: Arc<dyn ICPSwapProvider + Send + Sync>,
+    icrc_ledger_client: Arc<dyn ICRCLedgerClient>,
     input_token: CanisterId,
     output_token: CanisterId,
     amount: Nat,
@@ -224,6 +255,7 @@ pub async fn quote_swap_icpswap(
     let swap_client = Box::new(
         ICPSwapSwapClient::new(
             provider_impl,
+            icrc_ledger_client,
             input_token.clone(),
             output_token.clone()
         ).with_pool().await?

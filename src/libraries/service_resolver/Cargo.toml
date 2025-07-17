@@ -1,0 +1,17 @@
+[package]
+name = "service_resolver"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+candid = { workspace = true }
+types = { path = "../types" } 
+ic-cdk = { workspace = true }
+async-trait = "0.1.74"
+serde = { version = "1.0", features = ["derive"] }
+ic-response-codes = { workspace = true }
+icrc-ledger-types = { workspace = true }
+utils = { path = "../utils" }
+errors = { path = "../errors" }
+icrc_ledger_client = { path = "../icrc_ledger_client" }
+providers = { path = "../providers" }

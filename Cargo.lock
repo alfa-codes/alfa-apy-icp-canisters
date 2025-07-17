@@ -677,6 +677,7 @@ dependencies = [
 name = "icrc_ledger_client"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "candid",
  "errors",
  "ic-cdk 0.17.2",
@@ -767,6 +768,7 @@ dependencies = [
  "kongswap_canister",
  "num-traits",
  "providers",
+ "service_resolver",
  "swap",
  "types",
  "utils",
@@ -893,6 +895,7 @@ dependencies = [
  "serde",
  "serde_bytes",
  "serde_json",
+ "service_resolver",
  "types",
  "utils",
  "validation",
@@ -1040,6 +1043,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "service_resolver"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "candid",
+ "errors",
+ "ic-cdk 0.17.2",
+ "ic-response-codes",
+ "icrc-ledger-types",
+ "icrc_ledger_client",
+ "providers",
+ "serde",
+ "types",
+ "utils",
+]
+
+[[package]]
 name = "sha2"
 version = "0.10.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1126,6 +1146,7 @@ dependencies = [
  "num-traits",
  "providers",
  "serde",
+ "service_resolver",
  "types",
  "utils",
 ]
@@ -1346,6 +1367,7 @@ dependencies = [
  "serde",
  "serde_bytes",
  "serde_json",
+ "service_resolver",
  "swap",
  "types",
  "utils",

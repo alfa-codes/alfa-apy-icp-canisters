@@ -11,7 +11,7 @@ use crate::pools::pool::Pool;
 use crate::pool_stats::pool_stats_service;
 use crate::event_records::event_record_service;
 use crate::event_records::event_record::Event;
-use crate::utils::provider_impls::get_environment_provider_impls;
+use crate::utils::service_resolver::get_service_resolver;
 
 pub async fn get_pools_data(pools: Vec<Pool>) -> Vec<PoolData> {
     let pool_ids: Vec<String> = pools.iter().map(|pool| pool.id.clone()).collect();
@@ -45,8 +45,11 @@ pub async fn add_liquidity_to_pool(
         Some(user),
     );
 
+    let service_resolver = get_service_resolver();
+
     let liquidity_client = get_liquidity_client(
-        get_environment_provider_impls(),
+        service_resolver.provider_impls(),
+        service_resolver.icrc_ledger_client(),
         pool.token0,
         pool.token1,
         pool.provider
@@ -102,8 +105,11 @@ pub async fn withdraw_liquidity_from_pool(
         Some(user),
     );
 
+    let service_resolver = get_service_resolver();
+
     let liquidity_client = get_liquidity_client(
-        get_environment_provider_impls(),
+        service_resolver.provider_impls(),
+        service_resolver.icrc_ledger_client(),
         pool.token0,
         pool.token1,
         pool.provider
@@ -171,10 +177,12 @@ pub async fn withdraw_liquidity_from_pool_and_swap(
         Some(user),
     );
 
+    let service_resolver = get_service_resolver();
 
     // Swap withdrawn token_1 to token_0 (base token)
     let swap_response = swap_service::swap_icrc2_optimal(
-        get_environment_provider_impls(),
+        service_resolver.provider_impls(),
+        service_resolver.icrc_ledger_client(),
         pool.token1,
         pool.token0,
         withdraw_response.token_1_amount.clone(),

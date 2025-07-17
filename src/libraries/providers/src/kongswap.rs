@@ -3,6 +3,7 @@ use types::CanisterId;
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use candid::CandidType;
+use std::sync::Arc;
 
 use kongswap_canister::add_liquidity::{Args as AddLiquidityArgs, AddLiquidityReply};
 use kongswap_canister::remove_liquidity::{Args as RemoveLiquidityArgs, RemoveLiquidityReply};
@@ -13,7 +14,7 @@ use kongswap_canister::swap_amounts::SwapAmountsReply;
 use kongswap_canister::user_balances::UserBalancesReply;
 use kongswap_canister::swap::SwapReply;
 use kongswap_canister::swap::Args as SwapArgs;
-use icrc_ledger_client;
+use icrc_ledger_client::{DefaultICRCLedgerClient, ICRCLedgerClient};
 use errors::internal_error::error::InternalError;
 use errors::internal_error::error::build_error_code;
 use utils::constants::KONGSWAP_CANISTER_ID;
@@ -36,6 +37,10 @@ pub struct DefaultKongSwapProvider;
 impl DefaultKongSwapProvider {
     fn token_kongswap_format(token: &CanisterId) -> String {
         format!("IC.{}", token.to_text())
+    }
+
+    fn icrc_ledger_client(&self) -> Arc<dyn ICRCLedgerClient> {
+        Arc::new(DefaultICRCLedgerClient)
     }
 }
 
@@ -195,13 +200,13 @@ impl KongSwapProvider for DefaultKongSwapProvider {
         ledger0: Principal,
         ledger1: Principal
     ) -> Result<AddLiquidityReply, InternalError> {
-        icrc_ledger_client::icrc2_approve(
+        self.icrc_ledger_client().icrc2_approve(
             KONGSWAP_CANISTER_ID.clone().into(),
             ledger0,
             amount_0.clone()
         ).await?;
 
-        icrc_ledger_client::icrc2_approve(
+        self.icrc_ledger_client().icrc2_approve(
             KONGSWAP_CANISTER_ID.clone().into(),
             ledger1,
             amount_1.clone()

@@ -9,7 +9,6 @@ use types::CanisterId;
 use types::pool::PoolTrait;
 use errors::internal_error::error::InternalError;
 use errors::internal_error::error::build_error_code;
-use icrc_ledger_client;
 
 use crate::pool_snapshots::pool_snapshot_service;
 use crate::pool_snapshots::pool_snapshot::PoolSnapshot;
@@ -20,6 +19,7 @@ use crate::repository::pools_repo;
 use crate::liquidity::liquidity_service;
 use crate::repository::event_records_repo;
 use crate::event_records::event_record::EventRecord;
+use crate::utils::service_resolver::get_service_resolver;
 
 // ========================== Pools management ==========================
 
@@ -119,7 +119,14 @@ pub async fn add_liquidity_to_pool(
         return Err(error);
     }
 
-    icrc_ledger_client::icrc2_transfer_from(caller(), ledger, amount.clone()).await?;
+    let service_resolver = get_service_resolver();
+    let icrc_ledger_client = service_resolver.icrc_ledger_client();
+
+    icrc_ledger_client.icrc2_transfer_from(
+        caller(),
+        ledger,
+        amount.clone()
+    ).await?;
 
     let response = liquidity_service::add_liquidity_to_pool(
         context.clone(),
