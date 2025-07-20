@@ -9,7 +9,10 @@ use errors::internal_error::error::InternalError;
 use errors::internal_error::error::build_error_code;
 use types::CanisterId;
 
+use crate::environment::Environment;
+
 pub async fn icrc1_transfer_to_user(
+    environment: &Environment,
     user: Principal,
     canister_id: CanisterId,
     amount: Nat,
@@ -22,6 +25,10 @@ pub async fn icrc1_transfer_to_user(
         memo: None,
         amount: amount.clone(),
     };
+
+    if environment.should_use_mock_services() {
+        return Ok(amount);
+    }
 
     canister_client::make_c2c_call(
         canister_id,

@@ -12,6 +12,7 @@ use errors::internal_error::error::InternalError;
 use errors::internal_error::error::build_error_code;
 use utils::token_transfer::icrc1_transfer_to_user;
 
+use crate::repository::runtime_config_repo;
 use crate::event_records::event_record::Event;
 use crate::event_records::event_record_service;
 use crate::repository::strategies_repo;
@@ -255,8 +256,11 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
             current_pool.clone(),
         ).await?;
 
+        let environment = runtime_config_repo::get_current_env();
+
         // Transfer amount of token_0 (base token) to user
         icrc1_transfer_to_user(
+            &environment,
             investor,
             current_pool.token0,
             amount_0_to_withdraw.clone(),

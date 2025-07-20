@@ -8,7 +8,7 @@ use icrc_ledger_client::{ICRCLedgerClient, DefaultICRCLedgerClient};
 use icrc_ledger_client::mock::MockICRCLedgerClient;
 
 pub struct ServiceResolver {
-    env: Environment,
+    environment: Environment,
 }
 
 #[derive(Clone)]
@@ -18,12 +18,12 @@ pub struct ProviderImpls {
 }
 
 impl ServiceResolver {
-    pub fn new(env: Environment) -> Self {
-        Self { env }
+    pub fn new(environment: Environment) -> Self {
+        Self { environment }
     }
 
     pub fn icrc_ledger_client(&self) -> Arc<dyn ICRCLedgerClient> {
-        if self.env.should_use_mock_services() {
+        if self.environment.should_use_mock_services() {
             Arc::new(MockICRCLedgerClient::new())
         } else {
             Arc::new(DefaultICRCLedgerClient)
@@ -39,7 +39,7 @@ impl ServiceResolver {
     }
 
     pub fn kongswap_provider_impl(&self) -> Arc<dyn KongSwapProvider> {
-        if self.env.should_use_mock_services() {
+        if self.environment.should_use_mock_services() {
             Arc::new(MockKongSwapProvider::new())
         } else {
             Arc::new(DefaultKongSwapProvider)
@@ -47,7 +47,7 @@ impl ServiceResolver {
     }
 
     pub fn icpswap_provider_impl(&self) -> Arc<dyn ICPSwapProvider> {
-        if self.env.should_use_mock_services() {
+        if self.environment.should_use_mock_services() {
             Arc::new(MockICPSwapProvider::new())
         } else {
             Arc::new(DefaultICPSwapProvider)
