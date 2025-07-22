@@ -71,7 +71,7 @@ impl ICRCLedgerClient for MockICRCLedgerClient {
     async fn icrc1_decimals(&self, canister_id: CanisterId) -> Result<u8, InternalError> {
         self.decimals_responses.get(&canister_id).cloned().unwrap_or_else(|| {
             Err(InternalError::not_found(
-                build_error_code(0000, 0, 0),
+                build_error_code(2400, 1, 1), // 2400 01 01
                 "MockICRCLedgerClient::icrc1_decimals".to_string(),
                 "Mock response not set for decimals".to_string(),
                 Some(HashMap::from([("canister_id".to_string(), canister_id.to_text())]))
@@ -84,7 +84,7 @@ impl ICRCLedgerClient for MockICRCLedgerClient {
             .get(&(spender.to_text(), canister_id.to_text(), amount.to_string()))
             .map_or_else(
                 || Err(InternalError::not_found(
-                    build_error_code(0000, 0, 0),
+                    build_error_code(2400, 1, 2), // 2400 01 02
                     "MockICRCLedgerClient::icrc2_approve".to_string(),
                     "Mock response not set for approve".to_string(),
                     Some(HashMap::from([
@@ -101,7 +101,7 @@ impl ICRCLedgerClient for MockICRCLedgerClient {
             .get(&(from.to_text(), canister_id.to_text(), amount.to_string()))
             .map_or_else(
                 || Err(InternalError::not_found(
-                    build_error_code(0000, 0, 0),
+                    build_error_code(2400, 1, 3), // 2400 01 03
                     "MockICRCLedgerClient::icrc2_transfer_from".to_string(),
                     "Mock response not set for transfer_from".to_string(),
                     Some(HashMap::from([
@@ -116,7 +116,7 @@ impl ICRCLedgerClient for MockICRCLedgerClient {
     async fn icrc1_fee(&self, canister_id: CanisterId) -> Result<Nat, InternalError> {
         self.fee_responses.get(&canister_id).cloned().unwrap_or_else(|| {
             Err(InternalError::not_found(
-                build_error_code(0000, 0, 0),
+                build_error_code(2400, 1, 4), // 2400 01 04
                 "MockICRCLedgerClient::icrc1_fee".to_string(),
                 "Mock response not set for fee".to_string(),
                 Some(HashMap::from([("canister_id".to_string(), canister_id.to_text())]))

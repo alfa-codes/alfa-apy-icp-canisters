@@ -15,24 +15,25 @@ Where:
 
 ### Module (MMMM)
 
-| Code | Module                         |
-|------|--------------------------------|
-| 1001 | External Service (KongSwap)    |
-| 1002 | External Service (ICPSwap)     |
-| 1100 | External Service (ICRC Ledger) |
-| 1200 | External Service (Canister)    |
-| 2000 | Swap (Service)                 |
-| 2001 | Swap (KongSwap)                |
-| 2002 | Swap (ICPSwap)                 |
-| 2101 | Liquidity (KongSwap)           |
-| 2102 | Liquidity (ICPSwap)            |
-| 2200 | Validation                     |
-| 2301 | Mock Provider (KongSwap)       |
-| 2302 | Mock Provider (ICPSwap)       |
-| 3000 | Service (Vault)                |
-| 3100 | Strategies (Vault)             |
-| 4000 | Service (PoolStats)            |
-| 4100 | PoolMetrics (PoolStats)        |
+| Code | Module                              |
+|------|-------------------------------------|
+| 1001 | External Service (KongSwap)         |
+| 1002 | External Service (ICPSwap)          |
+| 1100 | External Service (ICRC Ledger)      |
+| 1200 | External Service (Canister)         |
+| 2000 | Swap (Service)                      |
+| 2001 | Swap (KongSwap)                     |
+| 2002 | Swap (ICPSwap)                      |
+| 2101 | Liquidity (KongSwap)                |
+| 2102 | Liquidity (ICPSwap)                 |
+| 2200 | Validation                          |
+| 2301 | Mock Provider (KongSwap)            |
+| 2302 | Mock Provider (ICPSwap)             |
+| 2400 | Mock External Service (ICRC Ledger) |
+| 3000 | Service (Vault)                     |
+| 3100 | Strategies (Vault)                  |
+| 4000 | Service (PoolStats)                 |
+| 4100 | PoolMetrics (PoolStats)             |
 
 ### Error Kind (KK)
 | Code | Kind            |
@@ -256,6 +257,8 @@ Where:
 
 **2301 01 07** - Mock response not set for remove_liquidity in MockKongSwapProvider::remove_liquidity (NotFound)  
 
+**2301 01 08** - Mock response not set for pools in MockKongSwapProvider::pools (NotFound)
+
 
 ## 2302 - Mock Provider (ICPSwap)
 
@@ -298,6 +301,18 @@ Where:
 **2302 01 19** - Mock response not set for get_token_amount_by_liquidity in MockICPSwapProvider::get_token_amount_by_liquidity (NotFound)  
 
 **2302 01 20** - Mock response not set for get_pool_chart_tvl in MockICPSwapProvider::get_pool_chart_tvl (NotFound)
+
+
+## 2400 - Mock External Service (ICRC Ledger)
+
+**2400 01 01** - Mock response not set for decimals in MockICRCLedgerClient::icrc1_decimals (NotFound)
+
+**2400 01 02** - Mock response not set for approve in MockICRCLedgerClient::icrc2_approve (NotFound)
+
+**2400 01 03** - Mock response not set for transfer_from in MockICRCLedgerClient::icrc2_transfer_from (NotFound)
+
+**2400 01 04** - Mock response not set for fee in MockICRCLedgerClient::icrc1_fee (NotFound)
+
 
 ## 3000 - Service (Vault)
 

@@ -41,7 +41,7 @@ impl Default for MockKongSwapProvider {
     fn default() -> Self {
         Self {
             pools_response: Err(InternalError::not_found(
-                build_error_code(0000, 0, 0),
+                build_error_code(2301, 1, 8), // 2301 01 08
                 "mock_error".to_string(),
                 "Mock response not set for pools".to_string(),
                 None
