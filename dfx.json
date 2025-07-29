@@ -45,7 +45,7 @@
       ],
       "type": "persistent"
     },
-    "stage": {
+    "staging": {
       "providers": [
         "https://icp0.io"
       ],

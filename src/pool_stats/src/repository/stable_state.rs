@@ -14,7 +14,7 @@ use crate::repository::runtime_config_repo::{self, RuntimeConfig};
 
 #[derive(Serialize, Deserialize, CandidType)]
 pub struct StableState {
-    pub runtime_config: RuntimeConfig,
+    pub runtime_config: Option<RuntimeConfig>,
     pub pools: HashMap<String, Pool>,
     pub pool_snapshots: HashMap<String, Vec<PoolSnapshot>>,
     pub event_records: Vec<EventRecord>,
@@ -35,7 +35,12 @@ pub fn stable_save() {
         records.borrow().clone()
     });
 
-    let state = StableState { runtime_config, pools, pool_snapshots, event_records };
+    let state = StableState {
+        runtime_config: Some(runtime_config),
+        pools,
+        pool_snapshots,
+        event_records
+    };
 
     storage::stable_save((state,)).expect("failed to save stable state");
 }
@@ -43,7 +48,7 @@ pub fn stable_save() {
 pub fn stable_restore() {
     let (state,): (StableState,) = storage::stable_restore().expect("failed to restore stable state");
 
-    runtime_config_repo::set_runtime_config(state.runtime_config.clone());
+    runtime_config_repo::set_runtime_config(state.runtime_config.clone().unwrap_or_default());
 
     POOLS.with(|pools| {
         pools.borrow_mut();

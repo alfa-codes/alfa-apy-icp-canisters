@@ -1,0 +1,5 @@
+export const ICP_CANISTER_ID = "ryjl3-tyaaa-aaaaa-aaaba-cai"
+export const NFIDW_CANISTER_ID = "mih44-vaaaa-aaaaq-aaekq-cai"
+export const CKBTC_CANISTER_ID = "mxzaz-hqaaa-aaaar-qaada-cai"
+export const PANDA_CANISTER_ID = "druyg-tyaaa-aaaaq-aactq-cai"
+export const ICS_CANISTER_ID = "ca6gz-lqaaa-aaaaq-aacwa-cai"

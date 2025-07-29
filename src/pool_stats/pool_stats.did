@@ -177,7 +177,10 @@ type WithdrawLiquidityResult = variant {
   Err : ResponseError;
 };
 
-service : () -> {
+type Environment = variant { Production; Test };
+type RuntimeConfig = record { environment : Environment };
+
+service : (opt RuntimeConfig) -> {
   add_liquidity_to_pool : (principal, text, nat) -> (AddLiquidityResult);
   add_pool : (principal, principal, ExchangeId) -> (AddPoolResult);
   delete_pool : (text) -> (DeletePoolResult);
@@ -186,6 +189,7 @@ service : () -> {
   get_pool_metrics : (vec text) -> (vec record { text; PoolMetrics });
   get_pools : () -> (GetPoolsResult);
   get_pools_snapshots : (vec text) -> (vec record { text; vec PoolSnapshot });
+  get_runtime_config : () -> (RuntimeConfig) query;
   set_operator : (principal) -> ();
   test_add_pool_snapshot : (PoolSnapshotArgs) -> ();
   test_create_pool_snapshot : (text) -> (TestCreatePoolSnapshotResult);

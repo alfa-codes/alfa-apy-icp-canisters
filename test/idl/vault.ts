@@ -18,6 +18,8 @@ export interface AddLiquidityToPoolStarted {
   'pool_id' : string,
 }
 export interface Conf { 'controllers' : [] | [Array<Principal>] }
+export type Environment = { 'Production' : null } |
+  { 'Test' : null };
 export type Event = {
     'StrategyWithdrawCompleted' : StrategyWithdrawCompleted
   } |
@@ -47,10 +49,16 @@ export interface EventRecord {
   'timestamp' : bigint,
   'correlation_id' : string,
 }
+export interface EventRecordsPaginationResponse {
+  'page_size' : bigint,
+  'total' : bigint,
+  'page' : bigint,
+  'items' : Array<EventRecord>,
+}
 export type ExchangeId = { 'Sonic' : null } |
   { 'KongSwap' : null } |
   { 'ICPSwap' : null };
-export type GetEventRecordsResult = { 'Ok' : Array<EventRecord> } |
+export type GetEventRecordsResult = { 'Ok' : EventRecordsPaginationResponse } |
   { 'Err' : ResponseError };
 export interface Icrc28TrustedOriginsResponse {
   'trusted_origins' : Array<string>,
@@ -69,6 +77,12 @@ export type InternalErrorKind = { 'AccessDenied' : null } |
   { 'BusinessLogic' : null } |
   { 'ExternalService' : null } |
   { 'Validation' : null };
+export interface ListItemsPaginationRequest {
+  'page_size' : bigint,
+  'page' : bigint,
+  'sort_order' : SortOrder,
+  'search' : [] | [string],
+}
 export interface Pool {
   'id' : string,
   'provider' : ExchangeId,
@@ -81,6 +95,9 @@ export interface ResponseError {
   'message' : string,
   'details' : [] | [Array<[string, string]>],
 }
+export interface RuntimeConfig { 'environment' : Environment }
+export type SortOrder = { 'Asc' : null } |
+  { 'Desc' : null };
 export interface StrategyDepositArgs {
   'strategy_id' : number,
   'ledger' : Principal,
@@ -121,20 +138,30 @@ export interface StrategyRebalanceFailed {
   'strategy_id' : string,
   'previous_pool_id' : [] | [string],
 }
+export interface StrategyRebalanceResponse {
+  'previous_pool' : Pool,
+  'current_pool' : Pool,
+  'is_rebalanced' : boolean,
+}
+export type StrategyRebalanceResult = { 'Ok' : StrategyRebalanceResponse } |
+  { 'Err' : ResponseError };
 export interface StrategyRebalanceStarted {
   'strategy_id' : string,
   'previous_pool_id' : [] | [string],
 }
 export interface StrategyResponse {
   'id' : number,
+  'current_liquidity_updated_at' : [] | [bigint],
   'name' : string,
   'description' : string,
   'total_shares' : bigint,
   'initial_deposit' : Array<[Principal, bigint]>,
   'user_shares' : Array<[Principal, bigint]>,
+  'current_liquidity' : [] | [bigint],
   'current_pool' : [] | [Pool],
   'total_balance' : bigint,
   'pools' : Array<Pool>,
+  'users_count' : number,
 }
 export interface StrategyWithdrawArgs {
   'strategy_id' : number,
@@ -215,10 +242,15 @@ export interface WithdrawLiquidityFromPoolStarted {
 export interface _SERVICE {
   'deposit' : ActorMethod<[StrategyDepositArgs], StrategyDepositResult>,
   'get_config' : ActorMethod<[], Conf>,
-  'get_event_records' : ActorMethod<[bigint, bigint], GetEventRecordsResult>,
+  'get_event_records' : ActorMethod<
+    [ListItemsPaginationRequest],
+    GetEventRecordsResult
+  >,
+  'get_runtime_config' : ActorMethod<[], RuntimeConfig>,
   'get_strategies' : ActorMethod<[], Array<StrategyResponse>>,
   'icrc10_supported_standards' : ActorMethod<[], Array<SupportedStandard>>,
   'icrc28_trusted_origins' : ActorMethod<[], Icrc28TrustedOriginsResponse>,
+  'rebalance_strategy' : ActorMethod<[number], StrategyRebalanceResult>,
   'test_icpswap_withdraw' : ActorMethod<[Principal, bigint, bigint], bigint>,
   'test_reset_strategy' : ActorMethod<[number], undefined>,
   'test_update_strategy_stats' : ActorMethod<[], undefined>,

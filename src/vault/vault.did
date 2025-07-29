@@ -284,10 +284,14 @@ type StrategyRebalanceResult = variant {
   Err : ResponseError;
 };
 
-service : (opt Conf) -> {
+type Environment = variant { Production; Test };
+type RuntimeConfig = record { environment : Environment };
+
+service : (opt Conf, opt RuntimeConfig) -> {
   deposit : (StrategyDepositArgs) -> (StrategyDepositResult);
   get_config : () -> (Conf) query;
   get_event_records : (ListItemsPaginationRequest) -> (GetEventRecordsResult);
+  get_runtime_config : () -> (RuntimeConfig) query;
   get_strategies : () -> (vec StrategyResponse) query;
   icrc10_supported_standards : () -> (vec SupportedStandard) query;
   icrc28_trusted_origins : () -> (Icrc28TrustedOriginsResponse);

@@ -29,6 +29,8 @@ export type AddPoolResult = { 'Ok' : string } |
 export interface ApyValue { 'tokens_apy' : number, 'usd_apy' : number }
 export type DeletePoolResult = { 'Ok' : null } |
   { 'Err' : ResponseError };
+export type Environment = { 'Production' : null } |
+  { 'Test' : null };
 export type Event = { 'AddLiquidityToPoolFailed' : AddLiquidityToPoolFailed } |
   { 'AddLiquidityToPoolCompleted' : AddLiquidityToPoolCompleted } |
   { 'WithdrawLiquidityFromPoolStarted' : WithdrawLiquidityFromPoolStarted } |
@@ -102,6 +104,7 @@ export interface ResponseError {
   'message' : string,
   'details' : [] | [Array<[string, string]>],
 }
+export interface RuntimeConfig { 'environment' : Environment }
 export type TestCreatePoolSnapshotResult = { 'Ok' : PoolSnapshot } |
   { 'Err' : ResponseError };
 export interface WithdrawLiquidityFromPoolCompleted {
@@ -146,6 +149,7 @@ export interface _SERVICE {
     [Array<string>],
     Array<[string, Array<PoolSnapshot>]>
   >,
+  'get_runtime_config' : ActorMethod<[], RuntimeConfig>,
   'set_operator' : ActorMethod<[Principal], undefined>,
   'test_add_pool_snapshot' : ActorMethod<[PoolSnapshotArgs], undefined>,
   'test_create_pool_snapshot' : ActorMethod<

@@ -10,14 +10,12 @@ import {AccountIdentifier} from '@dfinity/ledger-icp';
 import {expect} from 'chai';
 import canisterIds from '../../canister_ids.json';
 
-export const isLocalENV = true;
+export const USE_LOCAL_ENV = true;
 
-describe("Pool Stats Test DEV", () => {
+describe("Pool Stats DEV Integration Tests", () => {
     const canisterId = canisterIds.pool_stats.dev;
     const identity = "87654321876543218765432187654399";
-
     const pandaCanisterId = "druyg-tyaaa-aaaaq-aactq-cai";
-
     const ledgerCanisterId = pandaCanisterId;
 
     let principalId: Principal;
@@ -27,15 +25,26 @@ describe("Pool Stats Test DEV", () => {
 
     beforeEach(async () => {
         memberIdentity = getIdentity(identity);
-        principalId = memberIdentity.getPrincipal(); // 2ammq-nltzb-zsfkk-35abp-eprrz-eawlg-f36u7-arsde-gdhv5-flu25-iqe
-
-        let userAddress = await principalToAddress(principalId); // 0d445feb87a73ff4dd16e744c70aede3ab806a4d6cf9a224d439d9d82489302a
+        // 2ammq-nltzb-zsfkk-35abp-eprrz-eawlg-f36u7-arsde-gdhv5-flu25-iqe
+        principalId = memberIdentity.getPrincipal();
+        // 0d445feb87a73ff4dd16e744c70aede3ab806a4d6cf9a224d439d9d82489302a
+        let userAddress = await principalToAddress(principalId);
 
         console.log("Member principal:", principalId.toText());
         console.log("Member address:", userAddress);
 
-        ledgerActor = await getTypedActor<ledgerService>(ledgerCanisterId, memberIdentity, ledger_idl);
-        actorPoolStats = await getTypedActor<PoolStatsType>(canisterId, memberIdentity, idlFactory);
+        ledgerActor = await getTypedActor<ledgerService>({
+            canisterId: ledgerCanisterId,
+            identity: memberIdentity,
+            idl: ledger_idl,
+            useLocalEnv: USE_LOCAL_ENV
+        });
+        actorPoolStats = await getTypedActor<PoolStatsType>({
+            canisterId: canisterId,
+            identity: memberIdentity,
+            idl: idlFactory,
+            useLocalEnv: USE_LOCAL_ENV
+        });
     });
 
     describe(".create_pool_snapshot", () => {

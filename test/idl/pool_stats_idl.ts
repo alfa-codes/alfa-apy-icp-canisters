@@ -1,4 +1,9 @@
 export const idlFactory = ({ IDL }) => {
+  const Environment = IDL.Variant({
+    'Production' : IDL.Null,
+    'Test' : IDL.Null,
+  });
+  const RuntimeConfig = IDL.Record({ 'environment' : Environment });
   const AddLiquidityResponse = IDL.Record({
     'token_0_amount' : IDL.Nat,
     'token_1_amount' : IDL.Nat,
@@ -171,6 +176,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(PoolSnapshot)))],
         [],
       ),
+    'get_runtime_config' : IDL.Func([], [RuntimeConfig], ['query']),
     'set_operator' : IDL.Func([IDL.Principal], [], []),
     'test_add_pool_snapshot' : IDL.Func([PoolSnapshotArgs], [], []),
     'test_create_pool_snapshot' : IDL.Func(

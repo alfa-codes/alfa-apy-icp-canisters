@@ -12,15 +12,15 @@ use crate::event_records::event_record::EventRecord;
 
 #[derive(Clone, Debug, CandidType, Serialize, Deserialize)]
 pub struct StableState {
+    pub runtime_config: Option<RuntimeConfig>,
     pub strategies: Vec<StrategyCandid>,
     pub event_records: Vec<EventRecord>,
     pub config: Conf,
-    pub runtime_config: RuntimeConfig,
 }
 
 pub fn stable_save() {
-    let conf = config_repo::get_config();
     let runtime_config = runtime_config_repo::get_runtime_config();
+    let conf = config_repo::get_config();
 
     let strategies: Vec<StrategyCandid> = STRATEGIES.with(|strategies| {
         strategies.borrow().iter().map(|strategy| strategy.to_candid()).collect()
@@ -31,10 +31,10 @@ pub fn stable_save() {
     });
 
     let state = StableState {
+        runtime_config: Some(runtime_config),
+        config: conf,
         strategies,
         event_records,
-        config: conf,
-        runtime_config,
     };
 
     storage::stable_save((state, )).unwrap();
@@ -43,11 +43,11 @@ pub fn stable_save() {
 pub fn stable_restore() {
     let (state, ): (StableState, ) = storage::stable_restore().unwrap();
 
+    // Runtime Config
+    runtime_config_repo::set_runtime_config(state.runtime_config.clone().unwrap_or_default());
+
     // Conf
     config_repo::set_config(state.config.clone());
-
-    // Runtime Config
-    runtime_config_repo::set_runtime_config(state.runtime_config.clone());
 
     // Strategies
     let strategies: Vec<Box<dyn IStrategy>> = state.strategies.clone()
