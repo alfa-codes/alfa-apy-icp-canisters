@@ -3,11 +3,14 @@
     "ic": "a4gq6-oaaaa-aaaab-qaa4q-cai"
   },
   "vault": {
-    "staging": "ownab-uaaaa-aaaap-qp2na-cai",
-    "dev": "wsic7-jiaaa-aaaad-qhocq-cai"
+    "dev": "wsic7-jiaaa-aaaad-qhocq-cai",
+    "staging": "ownab-uaaaa-aaaap-qp2na-cai"
   },
   "pool_stats": {
-    "staging": "oxawg-7aaaa-aaaag-aub6q-cai",
-    "dev": "tvneh-raaaa-aaaao-a4opq-cai"
+    "dev": "tvneh-raaaa-aaaao-a4opq-cai",
+    "staging": "oxawg-7aaaa-aaaag-aub6q-cai"
+  },
+  "strategy_history": {
+    "dev": "wcqxd-aaaaa-aaaah-qqe3a-cai"
   }
 }

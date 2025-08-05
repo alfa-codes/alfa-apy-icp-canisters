@@ -1,0 +1,82 @@
+type ExchangeId = variant {
+  Sonic;
+  KongSwap;
+  ICPSwap;
+};
+
+type FetchAndSaveStrategiesResponse = record {
+  errors : vec text;
+  success_count : nat64;
+};
+
+type FetchAndSaveStrategiesResult = variant {
+  Ok : FetchAndSaveStrategiesResponse;
+  Err : ResponseError;
+};
+
+type GetStrategiesHistoryRequest = record {
+  from_timestamp : opt nat64;
+  to_timestamp : opt nat64;
+  strategy_ids : opt vec nat16;
+};
+
+type GetStrategiesHistoryResult = variant {
+  Ok : vec StrategyHistory;
+  Err : ResponseError;
+};
+
+type Pool = record {
+  id : text;
+  provider : ExchangeId;
+  token0 : principal;
+  token1 : principal;
+};
+
+type ResponseError = record {
+  code : nat32;
+  kind : ResponseErrorKind;
+  message : text;
+  details : opt vec record { text; text };
+};
+
+type ResponseErrorKind = variant {
+  AccessDenied;
+  NotFound;
+  Timeout;
+  Unknown;
+  BusinessLogic;
+  ExternalService;
+  Validation;
+};
+
+type SaveStrategySnapshotResult = variant {
+  Ok;
+  Err : ResponseError;
+};
+
+type StrategyHistory = record {
+  snapshots : vec StrategySnapshot;
+  strategy_id : nat16;
+};
+
+type StrategySnapshot = record {
+  id : text;
+  apy : float64;
+  current_liquidity_updated_at : opt nat64;
+  total_shares : nat;
+  strategy_id : nat16;
+  current_liquidity : opt nat;
+  timestamp : nat64;
+  current_pool : opt Pool;
+  total_balance : nat;
+  users_count : nat32;
+  position_id : opt nat64;
+};
+
+service : () -> {
+  fetch_and_save_strategies : () -> (FetchAndSaveStrategiesResult);
+  get_strategies_history : (GetStrategiesHistoryRequest) -> (GetStrategiesHistoryResult) query;
+  get_strategy_snapshots_count : (nat16) -> (nat64) query;
+  save_strategy_snapshot : (StrategySnapshot) -> (SaveStrategySnapshotResult);
+  test_delete_all_snapshots : () -> ();
+};

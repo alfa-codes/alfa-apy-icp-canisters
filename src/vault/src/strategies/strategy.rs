@@ -641,6 +641,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
             users_count: self.get_user_shares().len() as u32,
             current_liquidity: self.get_current_liquidity(),
             current_liquidity_updated_at: self.get_current_liquidity_updated_at(),
+            position_id: self.get_position_id(),
         }
     }
 

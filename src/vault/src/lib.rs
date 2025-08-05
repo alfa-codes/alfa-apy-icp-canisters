@@ -9,7 +9,6 @@ mod pool_stats;
 mod service;
 mod utils;
 
-
 use std::cell::RefCell;
 use candid::{candid_method, export_service, Nat, Principal};
 use ic_cdk::caller;

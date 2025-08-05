@@ -27,6 +27,17 @@
           "name": "candid:service"
         }
       ]
+    },
+    "strategy_history": {
+      "type": "custom",
+      "candid": "src/strategy_history/strategy_history.did",
+      "wasm": "strategy_history.wasm",
+      "build": "src/strategy_history/build.sh",
+      "metadata": [
+        {
+          "name": "candid:service"
+        }
+      ]
     }
   },
   "defaults": {

@@ -16,7 +16,7 @@ impl LessThan {
 impl ValidationRule for LessThan {
     fn check_condition(&self, value: &FieldValue) -> bool {
         match value {
-            FieldValue::Nat(val) => val < &self.max_value,
+            FieldValue::Nat(val) => *val < self.max_value,
             _ => false,
         }
     }

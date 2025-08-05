@@ -13,7 +13,7 @@ impl NotZero {
 impl ValidationRule for NotZero {
     fn check_condition(&self, value: &FieldValue) -> bool {
         match value {
-            FieldValue::Nat(val) => val != &Nat::from(0u64),
+            FieldValue::Nat(val) => *val != Nat::from(0u64),
             _ => false,
         }
     }

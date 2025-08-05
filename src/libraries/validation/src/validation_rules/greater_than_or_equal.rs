@@ -16,7 +16,7 @@ impl GreaterThanOrEqual {
 impl ValidationRule for GreaterThanOrEqual {
     fn check_condition(&self, value: &FieldValue) -> bool {
         match value {
-            FieldValue::Nat(val) => val >= &self.min,
+            FieldValue::Nat(val) => *val >= self.min,
             _ => false,
         }
     }

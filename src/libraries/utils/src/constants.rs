@@ -6,7 +6,12 @@ use crate::util::principal_to_canister_id;
 // ================= PRINCIPALS =================
 
 // POOL STATS PRINCIPAL
-pub const POOL_STATS_PRINCIPAL: &str = "oxawg-7aaaa-aaaag-aub6q-cai";
+pub const POOL_STATS_PRINCIPAL_STAGING: &str = "oxawg-7aaaa-aaaag-aub6q-cai";
+pub const POOL_STATS_PRINCIPAL_DEV: &str = "tvneh-raaaa-aaaao-a4opq-cai";
+
+// VAULT PRINCIPAL
+pub const VAULT_PRINCIPAL_STAGING: &str = "ownab-uaaaa-aaaap-qp2na-cai";
+pub const VAULT_PRINCIPAL_DEV: &str = "wsic7-jiaaa-aaaad-qhocq-cai";
 
 // TOKEN PRINCIPALS
 pub const ICP_TOKEN_PRINCIPAL: &str = "ryjl3-tyaaa-aaaaa-aaaba-cai";
@@ -28,8 +33,16 @@ pub const KONGSWAP_CANISTER_PRINCIPAL: &str = "2ipq2-uqaaa-aaaar-qailq-cai";
 // ================= CANISTER IDS =================
 
 // POOL STATS CANISTER ID
-pub static POOL_STATS_CANISTER_ID: Lazy<CanisterId> =
-    Lazy::new(|| principal_to_canister_id(POOL_STATS_PRINCIPAL));
+pub static POOL_STATS_CANISTER_ID_STAGING: Lazy<CanisterId> =
+    Lazy::new(|| principal_to_canister_id(POOL_STATS_PRINCIPAL_STAGING));
+pub static POOL_STATS_CANISTER_ID_DEV: Lazy<CanisterId> =
+    Lazy::new(|| principal_to_canister_id(POOL_STATS_PRINCIPAL_DEV));
+
+// VAULT CANISTER ID
+pub static VAULT_CANISTER_ID_STAGING: Lazy<CanisterId> =
+    Lazy::new(|| principal_to_canister_id(VAULT_PRINCIPAL_STAGING));
+pub static VAULT_CANISTER_ID_DEV: Lazy<CanisterId> =
+    Lazy::new(|| principal_to_canister_id(VAULT_PRINCIPAL_DEV));
 
 // TOKEN CANISTER IDS
 pub static ICP_TOKEN_CANISTER_ID: Lazy<CanisterId> =

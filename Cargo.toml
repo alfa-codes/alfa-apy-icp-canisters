@@ -20,6 +20,7 @@ members = [
     "src/external_canisters/icpswap_tvl_storage/c2c_client",
     "src/vault",
     "src/pool_stats",
+    "src/strategy_history",
     "src/libraries/canister_client_macros",
     "src/libraries/canister_client",
     "src/libraries/candid_gen",

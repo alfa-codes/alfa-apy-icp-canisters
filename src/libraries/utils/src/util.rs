@@ -1,6 +1,6 @@
 use candid::{Int, Principal, Nat};
 use types::CanisterId;
-use num_bigint::{BigUint, Sign};
+use num_bigint::BigUint;
 
 pub fn nat_to_f64(n: &Nat) -> f64 {
     let nat_str = n.0.to_str_radix(10); // Convert to string

@@ -20,6 +20,11 @@ type Conf = record {
   controllers : opt vec principal;
 };
 
+type Environment = variant {
+  Production;
+  Test;
+};
+
 type Event = variant {
   StrategyWithdrawCompleted : StrategyWithdrawCompleted;
   StrategyWithdrawStarted : StrategyWithdrawStarted;
@@ -56,7 +61,11 @@ type EventRecordsPaginationResponse = record {
   items : vec EventRecord;
 };
 
-type ExchangeId = variant { Sonic; KongSwap; ICPSwap };
+type ExchangeId = variant {
+  Sonic;
+  KongSwap;
+  ICPSwap;
+};
 
 type GetEventRecordsResult = variant {
   Ok : EventRecordsPaginationResponse;
@@ -106,7 +115,14 @@ type ResponseError = record {
   details : opt vec record { text; text };
 };
 
-type SortOrder = variant { Asc; Desc };
+type RuntimeConfig = record {
+  environment : Environment;
+};
+
+type SortOrder = variant {
+  Asc;
+  Desc;
+};
 
 type StrategyDepositArgs = record {
   strategy_id : nat16;
@@ -158,6 +174,17 @@ type StrategyRebalanceFailed = record {
   previous_pool_id : opt text;
 };
 
+type StrategyRebalanceResponse = record {
+  previous_pool : Pool;
+  current_pool : Pool;
+  is_rebalanced : bool;
+};
+
+type StrategyRebalanceResult = variant {
+  Ok : StrategyRebalanceResponse;
+  Err : ResponseError;
+};
+
 type StrategyRebalanceStarted = record {
   strategy_id : text;
   previous_pool_id : opt text;
@@ -176,6 +203,7 @@ type StrategyResponse = record {
   total_balance : nat;
   pools : vec Pool;
   users_count : nat32;
+  position_id : opt nat64;
 };
 
 type StrategyWithdrawArgs = record {
@@ -273,20 +301,6 @@ type WithdrawLiquidityFromPoolStarted = record {
   pool_id : text;
 };
 
-type StrategyRebalanceResponse = record {
-  previous_pool : Pool;
-  current_pool : Pool;
-  is_rebalanced : bool;
-};
-
-type StrategyRebalanceResult = variant {
-  Ok : StrategyRebalanceResponse;
-  Err : ResponseError;
-};
-
-type Environment = variant { Production; Test };
-type RuntimeConfig = record { environment : Environment };
-
 service : (opt Conf, opt RuntimeConfig) -> {
   deposit : (StrategyDepositArgs) -> (StrategyDepositResult);
   get_config : () -> (Conf) query;
@@ -295,10 +309,10 @@ service : (opt Conf, opt RuntimeConfig) -> {
   get_strategies : () -> (vec StrategyResponse) query;
   icrc10_supported_standards : () -> (vec SupportedStandard) query;
   icrc28_trusted_origins : () -> (Icrc28TrustedOriginsResponse);
+  rebalance_strategy : (nat16) -> (StrategyRebalanceResult);
   test_icpswap_withdraw : (principal, nat, nat) -> (nat);
   test_reset_strategy : (nat16) -> ();
+  test_update_strategy_stats : () -> ();
   user_strategies : (principal) -> (vec UserStrategyResponse);
   withdraw : (StrategyWithdrawArgs) -> (StrategyWithdrawResult);
-  test_update_strategy_stats : () -> ();
-  rebalance_strategy : (nat16) -> (StrategyRebalanceResult);
 };

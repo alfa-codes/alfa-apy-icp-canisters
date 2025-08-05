@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
 use utils::environment::Environment;
+use utils::constants::{VAULT_CANISTER_ID_STAGING, VAULT_CANISTER_ID_DEV};
+use types::CanisterId;
 use providers::icpswap::{ICPSwapProvider, DefaultICPSwapProvider};
 use providers::kongswap::{KongSwapProvider, DefaultKongSwapProvider};
 use providers::mock::{icpswap::MockICPSwapProvider, kongswap::MockKongSwapProvider};
@@ -29,7 +31,6 @@ impl ServiceResolver {
             Arc::new(DefaultICRCLedgerClient)
         }
     }
-    
 
     pub fn provider_impls(&self) -> ProviderImpls {
         ProviderImpls {

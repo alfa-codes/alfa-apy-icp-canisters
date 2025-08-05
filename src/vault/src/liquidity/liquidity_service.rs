@@ -15,7 +15,10 @@ use crate::utils::service_resolver::get_service_resolver;
 
 pub async fn get_pools_data(pools: Vec<Pool>) -> Vec<PoolData> {
     let pool_ids: Vec<String> = pools.iter().map(|pool| pool.id.clone()).collect();
-    let pool_metrics = pool_stats_service::get_pool_metrics(pool_ids).await;
+    let pool_stats_actor = pool_stats_service::get_pool_stats_actor().await.unwrap();
+    let pool_metrics = pool_stats_actor.get_pool_metrics(
+        pool_ids
+    ).await;
 
     let pool_data: Vec<PoolData> = pools
         .into_iter()
