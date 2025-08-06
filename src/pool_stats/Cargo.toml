@@ -42,3 +42,4 @@ types = { path = "../libraries/types" }
 icrc_ledger_client = { path = "../libraries/icrc_ledger_client" }
 validation = { path = "../libraries/validation" }
 service_resolver = { path = "../libraries/service_resolver" }
+yield_calculator = { path = "../libraries/yield_calculator" }

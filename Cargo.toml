@@ -34,6 +34,7 @@ members = [
     "src/libraries/icrc_ledger_client",
     "src/libraries/validation",
     "src/libraries/service_resolver",
+    "src/libraries/yield_calculator",
 ]
 
 

@@ -158,10 +158,6 @@ pub fn get_snapshots_grouped_by_strategy_ids_in_range(
     })
 }
 
-
-
-
-
 pub fn delete_snapshots_by_strategy_id(strategy_id: u16) {
     STRATEGY_SNAPSHOTS.with(|strategy_snapshots| {
         strategy_snapshots.borrow_mut().remove(&strategy_id);
