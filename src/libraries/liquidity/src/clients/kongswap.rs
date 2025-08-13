@@ -9,7 +9,7 @@ use service_resolver::ProviderImpls;
 use providers::kongswap::KongSwapProvider;
 use providers::icpswap::ICPSwapProvider;
 use kongswap_canister::user_balances::UserBalancesReply;
-use utils::util::nat_to_f64;
+use utils::util::{nat_to_f64, nat_to_u128};
 use swap::swap_service;
 use types::liquidity::{AddLiquidityResponse, WithdrawLiquidityResponse, GetPositionByIdResponse, GetPoolDataResponse};
 use errors::internal_error::error::InternalError;
@@ -65,41 +65,56 @@ impl LiquidityClient for KongSwapLiquidityClient {
         self.canister_id
     }
 
-    async fn add_liquidity_to_pool(&self, amount: Nat) -> Result<AddLiquidityResponse, InternalError> {
-        let add_liq_amounts_reply = self.kongswap_provider().add_liquidity_amounts(
+    async fn add_liquidity_to_pool(
+        &self,
+        amount: Nat
+    ) -> Result<AddLiquidityResponse, InternalError> {
+        let provider_add_liquidity_amounts =
+            self.kongswap_provider().add_liquidity_amounts(
             self.token_kongswap_format(self.token0.clone()),
             amount.clone(),
             self.token_kongswap_format(self.token1.clone()),
         ).await?;
 
-        let amount_0_for_pool = add_liq_amounts_reply.amount_0;
-        let amount_1_for_pool = add_liq_amounts_reply.amount_1;
+        let provider_suggested_token0_for_pool = provider_add_liquidity_amounts.amount_0;
+        let provider_suggested_token1_for_pool = provider_add_liquidity_amounts.amount_1;
+
+        // Fetch token fees to reserve for subsequent transfers
+        // Note: approvals and provider pulls may require balance to cover fee per token
+        let token0_transfer_fee = self.icrc_ledger_client.icrc1_fee(self.token0.clone()).await?;
+        let token1_transfer_fee = self.icrc_ledger_client.icrc1_fee(self.token1.clone()).await?;
 
         // Get quote for token swap
-        let quote_result = swap_service::quote_swap_icrc2_optimal(
+        let optimal_quote = swap_service::quote_swap_icrc2_optimal(
             self.provider_impls.clone(),
             self.token0.clone(),
             self.token1.clone(),
             amount.clone(),
         ).await?;
 
-        let amount_out = quote_result.amount_out;
-        let swap_provider = quote_result.provider;
+        let quoted_token1_out_for_full_amount = optimal_quote.amount_out;
+        let selected_swap_provider = optimal_quote.provider;
 
         // Calculate pool ratio and swap price for better swap proposition 
         // to make equal amount of token0 and token1 in pool
-        let pool_ratio = nat_to_f64(&amount_1_for_pool) / nat_to_f64(&amount_0_for_pool); // TODO: Change f64 -> Nat
-        let swap_price = (amount_out as f64) / (nat_to_f64(&amount) as f64);
+        let provider_pool_target_ratio =
+            nat_to_f64(&provider_suggested_token1_for_pool) 
+            / nat_to_f64(&provider_suggested_token0_for_pool); // TODO: Change f64 -> Nat
 
-        // Calculate how much token_0 and token_1 to swap and add to pool
-        let calculator_response = LiquidityCalculator::calculate_token_amounts_for_deposit(
+        let quoted_swap_price_token0_to_token1 =
+            (quoted_token1_out_for_full_amount as f64) 
+            / (nat_to_f64(&amount) as f64);
+
+        // Calculate how much token_0 and token_1 to swap and add to pool (initial estimate)
+        let initial_split = 
+            LiquidityCalculator::calculate_token_amounts_for_deposit(
             nat_to_f64(&amount),
-            pool_ratio.clone(),
-            swap_price.clone(),
+                provider_pool_target_ratio.clone(),
+                quoted_swap_price_token0_to_token1.clone(),
         );
 
-        let token_0_for_swap_amount = calculator_response.token_0_for_swap;
-        let token_0_for_pool_amount = calculator_response.token_0_for_pool;
+        let planned_token0_for_swap = initial_split.token_0_for_swap;
+        let planned_token0_for_pool = initial_split.token_0_for_pool;
 
         // Swap token0 for token1 with the best exchange provider
         let swap_response = swap_service::swap_icrc2(
@@ -107,38 +122,138 @@ impl LiquidityClient for KongSwapLiquidityClient {
             self.icrc_ledger_client.clone(),
             self.token0.clone(),
             self.token1.clone(),
-            Nat::from(token_0_for_swap_amount as u128),
-            swap_provider,
+            Nat::from(planned_token0_for_swap as u128),
+            selected_swap_provider,
         ).await?;
 
-        let token_1_for_pool_amount = swap_response.amount_out;
+        // Actual token1 received from swap
+        let token1_received_u128 = swap_response.amount_out;
 
-        // Add token0 and token1 liquidity to pool
+        // Compute balanced pair using integer math based on provider suggested ratio
+        // ratio = provider_suggested_token1_for_pool / provider_suggested_token0_for_pool
+        let target_ratio_token1_per_token0_num = nat_to_u128(
+            &provider_suggested_token1_for_pool
+        ); // numerator
+
+        let target_ratio_token1_per_token0_den = nat_to_u128(
+            &provider_suggested_token0_for_pool
+        ); // denominator
+
+        // Initial intended token0 for pool (from calculator)
+        let mut token0_amount_for_pool_u128 = planned_token0_for_pool as u128;
+
+        // Max token0 that can be paired with actually received token1: floor(token1_received * den / num)
+        let max_token0_affordable_by_token1_u128 = if target_ratio_token1_per_token0_num == 0 {
+            0
+        } else {
+            token1_received_u128
+                .saturating_mul(target_ratio_token1_per_token0_den)
+                / target_ratio_token1_per_token0_num
+        };
+
+        // Respect both the calculator plan and the cap from actual token1
+        token0_amount_for_pool_u128 = token0_amount_for_pool_u128.min(
+            max_token0_affordable_by_token1_u128
+        );
+
+        // Reserve fees so transfers can succeed: reduce amounts to leave fee headroom
+        let token0_transfer_fee_u128 = nat_to_u128(&token0_transfer_fee);
+        let token1_transfer_fee_u128 = nat_to_u128(&token1_transfer_fee);
+
+        // Ensure token0 to pool leaves room for token0 transfer fee
+        token0_amount_for_pool_u128 = token0_amount_for_pool_u128.saturating_sub(
+            token0_transfer_fee_u128
+        );
+
+        // Corresponding token1 needed for this token0, based on ratio
+        let mut token1_amount_for_pool_u128 = if target_ratio_token1_per_token0_den == 0 {
+            0
+        } else {
+            token0_amount_for_pool_u128
+                .saturating_mul(target_ratio_token1_per_token0_num)
+                / target_ratio_token1_per_token0_den
+        };
+
+        let token1_available_for_pool_after_fee_u128 = token1_received_u128.saturating_sub(
+            token1_transfer_fee_u128
+        );
+
+        // Ensure token1 to pool leaves room for token1 transfer fee and does not exceed actual received
+        if token1_amount_for_pool_u128 > token1_available_for_pool_after_fee_u128 {
+            // Recalculate token0 to fit into available token1 after reserving fee
+            let recomputed_token0_amount_for_pool_u128 = 
+                if target_ratio_token1_per_token0_num == 0 {
+                    0
+                } else {
+                    token1_available_for_pool_after_fee_u128
+                        .saturating_mul(target_ratio_token1_per_token0_den)
+                        / target_ratio_token1_per_token0_num
+                };
+
+            token0_amount_for_pool_u128 = token0_amount_for_pool_u128.min(
+                recomputed_token0_amount_for_pool_u128
+            );
+
+            token1_amount_for_pool_u128 = if target_ratio_token1_per_token0_den == 0 {
+                0
+            } else {
+                token0_amount_for_pool_u128
+                    .saturating_mul(target_ratio_token1_per_token0_num)
+                    / target_ratio_token1_per_token0_den
+            };
+        }
+
+        // Guard against zero amounts
+        if token0_amount_for_pool_u128 == 0 || token1_amount_for_pool_u128 == 0 {
+            return Err(InternalError::business_logic(
+                build_error_code(0000, 0, 0),
+                "KongSwapLiquidityClient::add_liquidity_to_pool".to_string(),
+                "Insufficient amounts after swap/fees to add liquidity".to_string(),
+                None,
+            ));
+        }
+
+        // Add token0 and token1 liquidity to pool using final balanced amounts
         let response = self.kongswap_provider().add_liquidity(
             self.token_kongswap_format(self.token0.clone()),
-            Nat::from(token_0_for_pool_amount as u128),
+            Nat::from(token0_amount_for_pool_u128),
             self.token_kongswap_format(self.token1.clone()),
-            Nat::from(token_1_for_pool_amount as u128),
+            Nat::from(token1_amount_for_pool_u128),
             self.token0,
             self.token1,
         ).await?;
 
         // panic!("response: {:?}", response);
 
+        // Compute token0-equivalent total using the ratio we used to finalize the pair
+        let token0_equivalent_total = Nat::from(
+            token0_amount_for_pool_u128
+                .saturating_add(
+                    token1_amount_for_pool_u128
+                        .saturating_mul(target_ratio_token1_per_token0_den)
+                        / target_ratio_token1_per_token0_num
+                )
+        );
+
         Ok(AddLiquidityResponse {
-            token_0_amount: Nat::from(token_0_for_pool_amount as u128),
-            token_1_amount: Nat::from(token_1_for_pool_amount as u128),
+            token_0_amount: Nat::from(token0_amount_for_pool_u128),
+            token_1_amount: Nat::from(token1_amount_for_pool_u128),
             position_id: response.request_id,
+            token0_equivalent_total,
         })
     }
 
-    async fn withdraw_liquidity_from_pool(&self, total_shares: Nat, shares: Nat) -> Result<WithdrawLiquidityResponse, InternalError> {
+    async fn withdraw_liquidity_from_pool(
+        &self,
+        total_shares: Nat,
+        shares: Nat
+    ) -> Result<WithdrawLiquidityResponse, InternalError> {
         let canister_id = ic_cdk::id();
 
         // Fetch LP positions in pool
-        let user_balances_response = self.kongswap_provider().user_balances(
-            canister_id.to_string()
-        ).await?;
+        let user_balances_response = self.kongswap_provider()
+            .user_balances(canister_id.to_string())
+            .await?;
 
         // Get user balance in pool
         let balance = user_balances_response
@@ -148,8 +263,13 @@ impl LiquidityClient for KongSwapLiquidityClient {
                 _ => None,
             })
             .find(|balance|
-                (balance.address_0 == self.token0.to_text() && balance.address_1 == self.token1.to_text()) ||
-                (balance.address_0 == self.token1.to_text() && balance.address_1 == self.token0.to_text())
+                (
+                    balance.address_0 == self.token0.to_text() 
+                        && balance.address_1 == self.token1.to_text()
+                ) || (
+                    balance.address_0 == self.token1.to_text() 
+                        && balance.address_1 == self.token0.to_text()
+                )
             )
             .map(|balance_reply| balance_reply.balance)
             .ok_or_else(|| {
@@ -167,10 +287,14 @@ impl LiquidityClient for KongSwapLiquidityClient {
             })?;
 
         // Calculate how much LP tokens to withdraw
-        let lp_tokens_to_withdraw: f64 = balance.mul(nat_to_f64(&shares)).div(nat_to_f64(&total_shares)).mul(100000000.0);
+        let lp_tokens_to_withdraw: f64 = balance
+            .mul(nat_to_f64(&shares))
+            .div(nat_to_f64(&total_shares))
+            .mul(100000000.0);
 
         // Remove liquidity from pool
-        let remove_liquidity_response = self.kongswap_provider().remove_liquidity(
+        let remove_liquidity_response = self.kongswap_provider()
+            .remove_liquidity(
             self.token_kongswap_format(self.token0.clone()),
             self.token_kongswap_format(self.token1.clone()),
             Nat::from(lp_tokens_to_withdraw.round() as u128),
@@ -182,7 +306,10 @@ impl LiquidityClient for KongSwapLiquidityClient {
         })
     }
 
-    async fn get_position_by_id(&self, position_id: u64) -> Result<GetPositionByIdResponse, InternalError> {
+    async fn get_position_by_id(
+        &self,
+        position_id: u64
+    ) -> Result<GetPositionByIdResponse, InternalError> {
         let canister_id = ic_cdk::id();
 
         // Fetch user positions in pool

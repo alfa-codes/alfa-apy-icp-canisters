@@ -58,6 +58,7 @@ pub struct StrategyResponse {
     pub current_liquidity: Option<Nat>,
     pub current_liquidity_updated_at: Option<u64>,
     pub position_id: Option<u64>,
+    pub test: bool,
 }
 
 // TODO: rename to UserPositionResponse

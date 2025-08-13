@@ -4,7 +4,7 @@ use ic_cdk::api::call::CallResult;
 use utils::constants::VAULT_PRINCIPAL_DEV;
 use errors::internal_error::error::InternalError;
 
-use crate::types::types::VaultStrategyResponse;
+use crate::types::types::{VaultStrategyResponse, StrategyDepositArgs, StrategyDepositResponse};
 
 pub struct VaultActor {
     principal: Principal,
@@ -16,6 +16,13 @@ impl VaultActor {
             ic_cdk::call(self.principal, "get_strategies", ()).await?;
 
         Ok(strategies)
+    }
+
+    pub async fn deposit(&self, args: StrategyDepositArgs) -> CallResult<StrategyDepositResponse> {
+        let (response,): (StrategyDepositResponse,) =
+            ic_cdk::call(self.principal, "deposit", (args,)).await?;
+
+        Ok(response)
     }
 }
 

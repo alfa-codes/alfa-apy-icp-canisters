@@ -204,6 +204,7 @@ type StrategyResponse = record {
   pools : vec Pool;
   users_count : nat32;
   position_id : opt nat64;
+  test : bool;
 };
 
 type StrategyWithdrawArgs = record {

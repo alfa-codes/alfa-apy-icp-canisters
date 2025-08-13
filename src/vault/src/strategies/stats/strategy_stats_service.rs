@@ -52,7 +52,7 @@ pub async fn update_all_strategy_liquidity() {
         .collect::<Vec<_>>();
 
     for strategy in strategies {
-        update_strategy_liquidity(strategy).await;
+        let _ = update_strategy_liquidity(strategy).await;
     }
 }
 

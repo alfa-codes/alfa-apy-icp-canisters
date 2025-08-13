@@ -34,13 +34,15 @@ describe("Vault DEV Integration Tests", () => {
 
     beforeEach(async () => {
         memberIdentity = getIdentity(identity);
+
         // 2ammq-nltzb-zsfkk-35abp-eprrz-eawlg-f36u7-arsde-gdhv5-flu25-iqe
         principalId = memberIdentity.getPrincipal();
+
         // 0d445feb87a73ff4dd16e744c70aede3ab806a4d6cf9a224d439d9d82489302a
         let userAddress = await principalToAddress(principalId);
 
-        console.log("Member principal:", principalId.toText());
-        console.log("Member address:", userAddress);
+        console.log(`Member principal: ${principalId.toText()}`);
+        console.log(`Member address: ${userAddress}\n`);
 
         ledgerActor = await getTypedActor<ledgerService>({
             canisterId: ledgerCanisterId,
@@ -55,6 +57,15 @@ describe("Vault DEV Integration Tests", () => {
             idl: idlFactory,
             useLocalEnv: USE_LOCAL_ENV
         });
+
+        await logIcrc1Balance(PANDA_CANISTER_ID, memberIdentity, principalId, "PANDA");
+        await logIcrc1Balance(ICP_CANISTER_ID, memberIdentity, principalId, "ICP");
+        console.log("\nTESTS STARTED\n");
+    });
+
+    it("Show balances", async () => {
+        await logIcrc1Balance(PANDA_CANISTER_ID, memberIdentity, principalId, "PANDA");
+        await logIcrc1Balance(ICP_CANISTER_ID, memberIdentity, principalId, "ICP");
     });
 
     describe(".deposit", () => {
@@ -62,9 +73,8 @@ describe("Vault DEV Integration Tests", () => {
         // const strategyId = 5; // ICS-ICP Balanced Strategy
 
         const approveAmount = BigInt(10000000000);
-        const depositAmount = BigInt(100_000_000);
-        // const depositAmount = BigInt(40_000_000);
-        // const depositAmount = BigInt(10_000);
+        const depositAmount = BigInt(200_000_000);
+        // const depositAmount = BigInt(1_000_000_000);
 
         it("Deposits to strategy without any liquidity", async () => {
             console.log("== START \"Deposits to strategy without any liquidity\" TEST ==");
@@ -91,8 +101,9 @@ describe("Vault DEV Integration Tests", () => {
                         depositResp.position_id,
                     );
 
-                    expect(depositResp.amount).to.equal(depositAmount);
-                    expect(depositResp.shares).to.equal(depositAmount);
+                    expect(Number(depositResp.amount)).to.be.greaterThan(0);
+                    expect(Number(depositResp.shares)).to.be.greaterThan(0);
+                    expect(Number(depositResp.position_id)).to.be.greaterThan(0);
                 } else {
                     console.error("Deposit failed:", result.Err);
                     throw new Error(`Deposit failed: ${JSON.stringify(result.Err)}`);
@@ -112,7 +123,7 @@ describe("Vault DEV Integration Tests", () => {
         const strategyId = 4; // Panda-ICP Balanced Strategy
         // const strategyId = 5; // ICS-ICP Balanced Strategy
         const approveAmount = BigInt(10000000000);
-        const depositAmount = BigInt(100_000_000);
+        const depositAmount = BigInt(200_000_000);
         // const depositAmount = BigInt(40_000_000);
         // const depositAmount = BigInt(50_000);
 
@@ -151,12 +162,12 @@ describe("Vault DEV Integration Tests", () => {
         it("Withdraws full balance", async () => {
             console.log("== START \"Withdraws full balance\" TEST ==");
 
-            let percentage = 100n; // For testing without deposit
+            let percentageToWithdraw = 100n; // For testing without deposit
             remainingShares = 0n; // No shares left
 
             try {
                 const result = await actorVault.withdraw({
-                    percentage: percentage,
+                    percentage: percentageToWithdraw,
                     strategy_id: strategyId,
                     ledger: Principal.fromText(ledgerCanisterId)
                 });
@@ -165,7 +176,7 @@ describe("Vault DEV Integration Tests", () => {
                     const withdrawResp = result.Ok;
                     console.log("Withdraw success:", withdrawResp.amount, withdrawResp.current_shares);
 
-                    expect(withdrawResp.current_shares).to.equal(0n);
+                    expect(withdrawResp.current_shares).to.equal(remainingShares);
                 } else {
                     console.error("Withdraw failed:", result.Err);
                     throw new Error(`Withdraw failed: ${JSON.stringify(result.Err)}`);
@@ -180,15 +191,14 @@ describe("Vault DEV Integration Tests", () => {
             console.log("== START \"Withdraws part of balance\" TEST ==");
 
             shares = depositAmount; // For testing without deposit
-            let percentage = 50n; // 50% withdraw
-            // let sharesToWithdraw = BigInt(100_000_000);
-            let remainingShares = BigInt(shares) - sharesToWithdraw;
+            let percentageToWithdraw = 50n; // 50% withdraw
+            let remainingShares = BigInt(shares) - BigInt(shares) * percentageToWithdraw / 100n;
 
             try {
                 console.log("Withdraw starting...");
 
                 const result = await actorVault.withdraw({
-                    percentage: percentage,
+                    percentage: percentageToWithdraw,
                     strategy_id: strategyId,
                     ledger: Principal.fromText(ledgerCanisterId)
                 });
@@ -354,3 +364,35 @@ export const principalToAddress = async (principalId: Principal): Promise<string
 
     return accountIdentifier.toHex();
 }
+
+const logIcrc1Balance = async (
+    tokenCanisterId: string, 
+    memberIdentity: Ed25519KeyIdentity, 
+    principalId: Principal, 
+    label?: string
+) => {
+    const actor = await getTypedActor<ledgerService>({
+        canisterId: tokenCanisterId,
+        identity: memberIdentity,
+        idl: ledger_idl,
+        useLocalEnv: USE_LOCAL_ENV,
+    });
+
+    const [decimals, symbol] = await Promise.all([
+        actor.icrc1_decimals(),
+        actor.icrc1_symbol(),
+    ]);
+
+    const balance = await actor.icrc1_balance_of({
+        owner: principalId,
+        subaccount: [], // null
+    });
+
+    const raw = BigInt(balance as unknown as bigint); // тип Nat → bigint в тестах
+    const pretty =
+        decimals > 0 ? Number(raw) / 10 ** Number(decimals) : Number(raw);
+
+    console.log(
+        `[${label ?? symbol}] balance: raw=${raw.toString()} formatted=${pretty}`
+    );
+};

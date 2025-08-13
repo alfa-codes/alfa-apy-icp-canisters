@@ -147,6 +147,10 @@ mod tests {
             None
         }
 
+        fn get_test(&self) -> bool {
+            false
+        }
+
         fn set_user_shares(&mut self, _shares: HashMap<Principal, Nat>) {}
         fn set_total_shares(&mut self, _shares: Nat) {}
         fn set_total_balance(&mut self, _balance: Nat) {}

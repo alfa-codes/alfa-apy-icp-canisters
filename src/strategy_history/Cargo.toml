@@ -19,6 +19,8 @@ types = { path = "../libraries/types" }
 errors = { path = "../libraries/errors" }
 utils = { path = "../libraries/utils" }
 validation = { path = "../libraries/validation" }
+service_resolver = { path = "../libraries/service_resolver" }
+swap = { path = "../libraries/swap" }
 
 [lib]
 crate-type = ["cdylib"]

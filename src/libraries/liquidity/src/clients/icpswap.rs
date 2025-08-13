@@ -5,7 +5,7 @@ use num_traits::ToPrimitive;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use utils::util::{nat_to_u64, int_to_nat};
+use utils::util::{nat_to_u64, int_to_nat, nat_to_f64};
 use types::CanisterId;
 use service_resolver::ProviderImpls;
 use providers::icpswap::ICPSwapProvider;
@@ -32,6 +32,7 @@ use types::liquidity::{
     GetPoolDataResponse,
 };
 
+use crate::liquidity_calculator::LiquidityCalculator;
 use crate::liquidity_client::LiquidityClient;
 
 // Use full range of prices for liquidity in the pool
@@ -144,8 +145,16 @@ impl ICPSwapLiquidityClient {
         }
     }
 
-    async fn get_pool(&self, token0: CanisterId, token1: CanisterId) -> Result<ICPSwapPool, InternalError> {
-        let pool =  self.icpswap_provider().get_pool(token0, token1).await?;
+    async fn get_pool(
+        &self,
+        token0: CanisterId,
+        token1: CanisterId
+    ) -> Result<ICPSwapPool, InternalError> {
+        let pool =  self.icpswap_provider()
+            .get_pool(
+                token0,
+                token1
+            ).await?;
 
         Ok(pool)
     }
@@ -153,20 +162,27 @@ impl ICPSwapLiquidityClient {
     async fn get_token_meta(&self) -> Result<TokenMeta, InternalError> {
         let canister_id = self.canister_id.as_ref().unwrap();
 
-        let token_meta = self.icpswap_provider().get_token_meta(canister_id.clone()).await?;
+        let token_meta = self.icpswap_provider()
+            .get_token_meta(canister_id.clone()).await?;
 
         Ok(token_meta)
     }
 
-    async fn deposit_from(&self, token: CanisterId, amount: Nat, token_fee: Nat) -> Result<Nat, InternalError> {
+    async fn deposit_from(
+        &self,
+        token: CanisterId,
+        amount: Nat,
+        token_fee: Nat
+    ) -> Result<Nat, InternalError> {
         let canister_id = self.canister_id.as_ref().unwrap();
 
-        let deposited_amount = self.icpswap_provider().deposit_from(
-            canister_id.clone(),
-            token.clone(),
-            amount.clone(),
-            token_fee.clone()
-        ).await?;
+        let deposited_amount = self.icpswap_provider()
+            .deposit_from(
+                canister_id.clone(),
+                token.clone(),
+                amount.clone(),
+                token_fee.clone()
+            ).await?;
 
         Ok(Nat::from(deposited_amount))
     }
@@ -185,11 +201,12 @@ impl ICPSwapLiquidityClient {
         token_0_decimals: Nat,
         token_1_decimals: Nat
     ) -> Result<f64, InternalError> {
-        let price = self.icpswap_provider().get_price(
-            sqrt_price_x96.clone(),
-            token_0_decimals.clone(),
-            token_1_decimals.clone()
-        ).await?;
+        let price = self.icpswap_provider()
+            .get_price(
+                sqrt_price_x96.clone(),
+                token_0_decimals.clone(),
+                token_1_decimals.clone()
+            ).await?;
 
         Ok(price)
     }
@@ -202,12 +219,13 @@ impl ICPSwapLiquidityClient {
     ) -> Result<Nat, InternalError> {
         let canister_id = self.canister_id.as_ref().unwrap();
 
-        let amount_out = self.icpswap_provider().quote(
-            canister_id.clone(),
-            amount_in,
-            zero_for_one,
-            amount_out_minimum
-        ).await?;
+        let amount_out = self.icpswap_provider()
+            .quote(
+                canister_id.clone(),
+                amount_in,
+                zero_for_one,
+                amount_out_minimum
+            ).await?;
 
         Ok(amount_out)
     }
@@ -281,11 +299,12 @@ impl ICPSwapLiquidityClient {
     ) -> Result<DecreaseLiquidityResponse, InternalError> {
         let canister_id = self.canister_id.as_ref().unwrap();
 
-        let amount_out_nat = self.icpswap_provider().decrease_liquidity(
-            canister_id.clone(),
-            position_id.clone(),
-            liquidity.clone()
-        ).await?;
+        let amount_out_nat = self.icpswap_provider()
+            .decrease_liquidity(
+                canister_id.clone(),
+                position_id.clone(),
+                liquidity.clone()
+            ).await?;
 
         Ok(amount_out_nat)
     }
@@ -298,12 +317,13 @@ impl ICPSwapLiquidityClient {
     ) -> Result<Nat, InternalError> {
         let canister_id = self.canister_id.as_ref().unwrap();
 
-        let amount_out_nat = self.icpswap_provider().withdraw(
-            canister_id.clone(),
-            token_out.clone(),
-            amount.clone(),
-            token_fee.clone()
-        ).await?;
+        let amount_out_nat = self.icpswap_provider()
+            .withdraw(
+                canister_id.clone(),
+                token_out.clone(),
+                amount.clone(),
+                token_fee.clone()
+            ).await?;
 
         Ok(amount_out_nat)
     }
@@ -314,10 +334,11 @@ impl ICPSwapLiquidityClient {
     ) -> Result<ClaimResponse, InternalError> {
         let canister_id = self.canister_id.as_ref().unwrap();
 
-        let claim_response = self.icpswap_provider().claim(
-            canister_id.clone(),
-            position_id.clone()
-        ).await?;
+        let claim_response = self.icpswap_provider()
+            .claim(
+                canister_id.clone(),
+                position_id.clone()
+            ).await?;
 
         Ok(claim_response)
     }
@@ -326,10 +347,11 @@ impl ICPSwapLiquidityClient {
         let canister_id = self.canister_id.as_ref().unwrap();
         let principal = ic_cdk::api::id();
 
-        let position_ids = self.icpswap_provider().get_user_position_ids_by_principal(
-            canister_id.clone(),
-            principal
-        ).await?;
+        let position_ids = self.icpswap_provider()
+            .get_user_position_ids_by_principal(
+                canister_id.clone(),
+                principal
+            ).await?;
 
         Ok(position_ids)
     }
@@ -338,10 +360,11 @@ impl ICPSwapLiquidityClient {
         let canister_id = self.canister_id.as_ref().unwrap();
         let principal = ic_cdk::api::id();
 
-        let user_positions = self.icpswap_provider().get_user_positions_by_principal(
-            canister_id.clone(),
-            principal
-        ).await?;
+        let user_positions = self.icpswap_provider()
+            .get_user_positions_by_principal(
+                canister_id.clone(),
+                principal
+            ).await?;
 
         Ok(user_positions)
     }
@@ -349,10 +372,11 @@ impl ICPSwapLiquidityClient {
     async fn get_user_position(&self, position_id: Nat) -> Result<UserPosition, InternalError> {
         let canister_id = self.canister_id.as_ref().unwrap();
 
-        let user_position = self.icpswap_provider().get_user_position(
-            canister_id.clone(),
-            position_id.clone()
-        ).await?;
+        let user_position = self.icpswap_provider()
+            .get_user_position(
+                canister_id.clone(),
+                position_id.clone()
+            ).await?;
 
         Ok(user_position)
     }
@@ -364,25 +388,28 @@ impl ICPSwapLiquidityClient {
         tick_upper: Int,
         liquidity: Nat
     ) -> Result<GetTokenAmountByLiquidityResponse, InternalError> {
-        let token_amount = self.icpswap_provider().get_token_amount_by_liquidity(
-            sqrt_price_x96.clone(),
-            tick_lower.clone(),
-            tick_upper.clone(),
-            liquidity.clone()
-        ).await?;
+        let token_amount = self.icpswap_provider()
+            .get_token_amount_by_liquidity(
+                sqrt_price_x96.clone(),
+                tick_lower.clone(),
+                tick_upper.clone(),
+                liquidity.clone()
+            ).await?;
 
         Ok(token_amount)
     }
 
     async fn get_all_tokens(&self) -> Result<Vec<TokenData>, InternalError> {
-        let tokens = self.icpswap_provider().get_all_tokens()
+        let tokens = self.icpswap_provider()
+            .get_all_tokens()
             .await?;
 
         Ok(tokens)
     }
 
     async fn get_tvl_storage_canister(&self) -> Result<String, InternalError> {
-        let tvl_storage_canister_response = self.icpswap_provider().get_tvl_storage_canister().await?;
+        let tvl_storage_canister_response = self.icpswap_provider()
+            .get_tvl_storage_canister().await?;
 
         Ok(tvl_storage_canister_response[0].clone())
     }
@@ -392,12 +419,13 @@ impl ICPSwapLiquidityClient {
         let offset = Nat::from(0u128);
         let limit = Nat::from(0u128);
 
-        let pool_chart_tvl = self.icpswap_provider().get_pool_chart_tvl(
-            tvl_storage_canister_id.clone(),
-            canister_id.to_string(),
-            offset.clone(),
-            limit.clone()
-        ).await?;
+        let pool_chart_tvl = self.icpswap_provider()
+            .get_pool_chart_tvl(
+                tvl_storage_canister_id.clone(),
+                canister_id.to_string(),
+                offset.clone(),
+                limit.clone()
+            ).await?;
 
         Ok(pool_chart_tvl)
     }
@@ -409,7 +437,10 @@ impl LiquidityClient for ICPSwapLiquidityClient {
         self.canister_id.as_ref().unwrap().clone()
     }
 
-    async fn add_liquidity_to_pool(&self, amount: Nat) -> Result<AddLiquidityResponse, InternalError> {
+    async fn add_liquidity_to_pool(
+        &self, 
+        amount: Nat
+    ) -> Result<AddLiquidityResponse, InternalError> {
         // Flow:
         // 1. Get user position ids
         // 2. Get token fees
@@ -445,18 +476,37 @@ impl LiquidityClient for ICPSwapLiquidityClient {
             token0_fee.clone()
         ).await?;
 
-        // Divided by 2 to swap half of the token0 amount to token1 for the pool
-        let amount0_for_swap = amount0_deposited.clone().div(2u32);
-        let amount0_for_pool = amount0_deposited.clone() - amount0_for_swap.clone();
-        let amount1_out_minimum = Nat::from(0u128);
-        let is_zero_for_one_swap_direction = self.is_zero_for_one_swap_direction()?;
+        // Determine pool price (token1 per token0) and compute optimal split
+        let token0_decimals = self.icrc_ledger_client.icrc1_decimals(self.token0.clone()).await?;
+        let token1_decimals = self.icrc_ledger_client.icrc1_decimals(self.token1.clone()).await?;
+        let pool_ratio_f64 = self.get_price(
+            metadata.sqrtPriceX96.clone(),
+            Nat::from(token0_decimals as u64),
+            Nat::from(token1_decimals as u64)
+        ).await?; // token1 per token0
 
-        // 6. Quote
-        // ICPSWAP provider is more convenient for swap for adding liquidity to ICPSwap pool
+        let is_zero_for_one_swap_direction = self.is_zero_for_one_swap_direction()?;
+        let quote_full = self.quote(
+            amount0_deposited.clone(),
+            is_zero_for_one_swap_direction,
+            Nat::from(0u128)
+        ).await?;
+        let swap_price_f64 = (nat_to_f64(&quote_full)) / (nat_to_f64(&amount0_deposited));
+
+        let split = LiquidityCalculator::calculate_token_amounts_for_deposit(
+            nat_to_f64(&amount0_deposited),
+            pool_ratio_f64,
+            swap_price_f64,
+        );
+
+        let amount0_for_swap = Nat::from(split.token_0_for_swap as u128);
+        let amount0_for_pool = Nat::from(split.token_0_for_pool as u128);
+
+        // 6. Quote for planned swap amount and set slippage-protected min_out
         let quote_amount = self.quote(
             amount0_for_swap.clone(),
             is_zero_for_one_swap_direction,
-            amount1_out_minimum.clone()
+            Nat::from(0u128)
         ).await?;
 
         // Considering slippage tolerance
@@ -472,7 +522,8 @@ impl LiquidityClient for ICPSwapLiquidityClient {
         ).await?;
 
         // Token0 and token1 in the pool are determined by the token0 and token1 in the metadata
-        // So we need to determine the tokens amount order in the pool for minting new position or increasing liquidity
+        // So we need to determine the tokens amount order in the pool for minting new position 
+        // or increasing liquidity
         let (amount0_for_position, amount1_for_position) = match (
             self.token0.to_text() == metadata.token0.address,
             self.token1.to_text() == metadata.token1.address,
@@ -480,9 +531,13 @@ impl LiquidityClient for ICPSwapLiquidityClient {
             self.token1.to_text() == metadata.token0.address,
         ) {
             // Token0 is token0 in the pool and token1 is token1 in the pool
-            (true, true, _, _) => (amount0_for_pool.to_string(), amount1_swapped_for_pool.to_string()),
+            (true, true, _, _) => {
+                (amount0_for_pool.to_string(), amount1_swapped_for_pool.to_string())
+            }
             // Token1 is token0 in the pool and token0 is token1 in the pool
-            (_, _, true, true) => (amount1_swapped_for_pool.to_string(), amount0_for_pool.to_string()),
+            (_, _, true, true) => {
+                (amount1_swapped_for_pool.to_string(), amount0_for_pool.to_string())
+            }
             _ => {
                 return Err(InternalError::business_logic(
                     build_error_code(2102, 3, 3), // 2102 03 03
@@ -523,10 +578,25 @@ impl LiquidityClient for ICPSwapLiquidityClient {
             }
         };
 
+        // Compute token0-equivalent total using pool price and decimals
+        // token1_in_token0 = floor( amount1 * 10^d0 / (price * 10^d1) )
+        let amount1_f64 = nat_to_f64(&amount1_swapped_for_pool);
+        let token1_in_token0_f64 = (amount1_f64 * 10f64.powi(token0_decimals as i32))
+            / (pool_ratio_f64 * 10f64.powi(token1_decimals as i32));
+
+        let token1_in_token0_u128 = if token1_in_token0_f64.is_finite() && token1_in_token0_f64 > 0.0 {
+            token1_in_token0_f64.floor() as u128
+        } else { 
+            0u128 
+        };
+
+        let token0_equivalent_total = amount0_for_pool.clone() + Nat::from(token1_in_token0_u128);
+
         Ok(AddLiquidityResponse {
             token_0_amount: Nat::from(amount0_for_pool),
             token_1_amount: Nat::from(amount1_swapped_for_pool),
             position_id: nat_to_u64(&position_id),
+            token0_equivalent_total,
         })
     }
 
@@ -613,7 +683,10 @@ impl LiquidityClient for ICPSwapLiquidityClient {
         })
     }
 
-    async fn get_position_by_id(&self, position_id: u64) -> Result<GetPositionByIdResponse, InternalError> {
+    async fn get_position_by_id(
+        &self,
+        position_id: u64
+    ) -> Result<GetPositionByIdResponse, InternalError> {
         // 1. Get metadata
         let metadata = self.metadata().await?;
 
@@ -645,7 +718,8 @@ impl LiquidityClient for ICPSwapLiquidityClient {
         let pool_tokens = all_tokens
             .iter()
             .filter(|token_data| {
-                token_data.address == self.token0.to_text() || token_data.address == self.token1.to_text()
+                token_data.address == self.token0.to_text() 
+                    || token_data.address == self.token1.to_text()
             }).collect::<Vec<_>>();
 
         let mut token0_price_usd = 0.0;
@@ -654,8 +728,12 @@ impl LiquidityClient for ICPSwapLiquidityClient {
         // Select token0 and token1 prices from all tokens
         for token_data in &pool_tokens {
             match token_data.address.as_str() {
-                addr if addr == self.token0.to_text() => { token0_price_usd = token_data.priceUSD },
-                addr if addr == self.token1.to_text() => { token1_price_usd = token_data.priceUSD },
+                addr if addr == self.token0.to_text() => {
+                    token0_price_usd = token_data.priceUSD
+                },
+                addr if addr == self.token1.to_text() => {
+                    token1_price_usd = token_data.priceUSD
+                },
                 _ => {}
             }
             if token0_price_usd != 0.0 && token1_price_usd != 0.0 {

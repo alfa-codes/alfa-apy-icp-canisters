@@ -1,7 +1,6 @@
 use candid::Principal;
 use ic_cdk::api::time;
 
-use errors::internal_error::error::InternalError;
 use event_records::generic_event_record::GenericEventRecord;
 
 use crate::event_records::event_record::{EventRecord, Event};

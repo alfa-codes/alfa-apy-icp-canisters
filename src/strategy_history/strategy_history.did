@@ -1,18 +1,4 @@
-type ExchangeId = variant {
-  Sonic;
-  KongSwap;
-  ICPSwap;
-};
-
-type FetchAndSaveStrategiesResponse = record {
-  errors : vec text;
-  success_count : nat64;
-};
-
-type FetchAndSaveStrategiesResult = variant {
-  Ok : FetchAndSaveStrategiesResponse;
-  Err : ResponseError;
-};
+type ExchangeId = variant { Sonic; KongSwap; ICPSwap };
 
 type GetStrategiesHistoryRequest = record {
   from_timestamp : opt nat64;
@@ -22,6 +8,16 @@ type GetStrategiesHistoryRequest = record {
 
 type GetStrategiesHistoryResult = variant {
   Ok : vec StrategyHistory;
+  Err : ResponseError;
+};
+
+type InitializeStrategyStatesAndCreateSnapshotsResponse = record {
+  errors : vec text;
+  success_count : nat64;
+};
+
+type InitializeStrategyStatesAndCreateSnapshotsResult = variant {
+  Ok : InitializeStrategyStatesAndCreateSnapshotsResponse;
   Err : ResponseError;
 };
 
@@ -49,10 +45,7 @@ type ResponseErrorKind = variant {
   Validation;
 };
 
-type SaveStrategySnapshotResult = variant {
-  Ok;
-  Err : ResponseError;
-};
+type SaveStrategySnapshotResult = variant { Ok; Err : ResponseError };
 
 type StrategyHistory = record {
   snapshots : vec StrategySnapshot;
@@ -73,10 +66,24 @@ type StrategySnapshot = record {
   position_id : opt nat64;
 };
 
+type StrategyState = record {
+  last_error : opt text;
+  test_liquidity_amount : opt nat;
+  snapshot_cadence_secs : opt nat64;
+  initialized_at : opt nat64;
+  bootstrap_attempts : nat32;
+  is_initialized : bool;
+  last_snapshot_at : opt nat64;
+};
+
+type GetAllStrategyStatesResult = vec record { nat16; StrategyState };
+
 service : () -> {
-  fetch_and_save_strategies : () -> (FetchAndSaveStrategiesResult);
-  get_strategies_history : (GetStrategiesHistoryRequest) -> (GetStrategiesHistoryResult) query;
+  get_strategies_history : (GetStrategiesHistoryRequest) -> (GetStrategiesHistoryResult,) query;
   get_strategy_snapshots_count : (nat16) -> (nat64) query;
-  save_strategy_snapshot : (StrategySnapshot) -> (SaveStrategySnapshotResult);
+  get_strategy_state : (nat16) -> (opt StrategyState) query;
+  get_all_strategy_states : () -> (GetAllStrategyStatesResult) query;
   test_delete_all_snapshots : () -> ();
+  test_initialize_strategy_states_and_create_snapshots : () -> (InitializeStrategyStatesAndCreateSnapshotsResult,);
+  test_save_strategy_snapshot : (StrategySnapshot) -> (SaveStrategySnapshotResult,);
 };

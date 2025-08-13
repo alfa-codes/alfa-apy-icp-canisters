@@ -1,6 +1,6 @@
 pub mod repository;
 pub mod strategy_snapshot;
-pub mod service;
+pub mod services;
 pub mod types;
 pub mod utils;
 pub mod vault;
@@ -12,14 +12,20 @@ use ic_cdk_timers::TimerId;
 
 use errors::response_error::error::ResponseError;
 
+
 use crate::repository::stable_state;
-use crate::service::strategy_history_service;
+use crate::services::strategy_history_service;
+use crate::services::strategy_states_service;
+use crate::services::scheduler_service;
+use crate::services::strategy_snapshots_service;
 use crate::strategy_snapshot::strategy_snapshot::StrategySnapshot;
 use crate::types::types::{
     SaveStrategySnapshotResult,
-    FetchAndSaveStrategiesResult,
+    InitializeStrategyStatesAndCreateSnapshotsResult,
     GetStrategiesHistoryRequest,
     GetStrategiesHistoryResult,
+    StrategyState,
+    GetAllStrategyStatesResult,
 };
 
 const STRATEGY_HISTORY_FETCHING_INTERVAL: u64 = 1800; // 30 minutes
@@ -32,7 +38,7 @@ thread_local! {
 
 #[init]
 fn init() {
-    strategy_history_service::start_fetching_timer(STRATEGY_HISTORY_FETCHING_INTERVAL);
+    scheduler_service::start_fetching_timer(STRATEGY_HISTORY_FETCHING_INTERVAL);
 }
 
 #[pre_upgrade]
@@ -43,20 +49,10 @@ fn pre_upgrade() {
 #[post_upgrade]
 fn post_upgrade() {
     stable_state::stable_restore();
-    strategy_history_service::start_fetching_timer(STRATEGY_HISTORY_FETCHING_INTERVAL);
+    scheduler_service::start_fetching_timer(STRATEGY_HISTORY_FETCHING_INTERVAL);
 }
 
 // =============== API Methods ===============
-
-/// Save a strategy snapshot
-#[update]
-async fn save_strategy_snapshot(snapshot: StrategySnapshot) -> SaveStrategySnapshotResult {
-    let result =
-        strategy_history_service::save_strategy_snapshot(snapshot)
-            .map_err(|e| ResponseError::from_internal_error(e));
-
-    SaveStrategySnapshotResult(result)
-}
 
 #[query]
 async fn get_strategies_history(arg: GetStrategiesHistoryRequest) -> GetStrategiesHistoryResult {
@@ -73,18 +69,40 @@ async fn get_strategies_history(arg: GetStrategiesHistoryRequest) -> GetStrategi
 /// Get the count of snapshots for a strategy
 #[query]
 fn get_strategy_snapshots_count(strategy_id: u16) -> u64 {
-    strategy_history_service::get_strategy_snapshots_count(strategy_id)
+    strategy_snapshots_service::get_strategy_snapshots_count(strategy_id)
+}
+
+#[query]
+fn get_all_strategy_states() -> GetAllStrategyStatesResult {
+    let result = strategy_states_service::get_all_strategy_states();
+
+    GetAllStrategyStatesResult(result)
+}
+
+#[query]
+fn get_strategy_state(strategy_id: u16) -> Option<StrategyState> {
+    strategy_states_service::get_strategy_state(strategy_id)
 }
 
 /// Fetch and save current strategies from vault
 #[update]
-async fn fetch_and_save_strategies() -> FetchAndSaveStrategiesResult {
+async fn test_initialize_strategy_states_and_create_snapshots() -> InitializeStrategyStatesAndCreateSnapshotsResult {
     let result =
-        strategy_history_service::fetch_and_save_strategies()
+        strategy_history_service::initialize_strategy_states_and_create_snapshots()
             .await
             .map_err(|e| ResponseError::from_internal_error(e));
 
-    FetchAndSaveStrategiesResult(result)
+    InitializeStrategyStatesAndCreateSnapshotsResult(result)
+}
+
+/// Save a strategy snapshot
+#[update]
+async fn test_save_strategy_snapshot(snapshot: StrategySnapshot) -> SaveStrategySnapshotResult {
+    let result =
+        strategy_snapshots_service::save_strategy_snapshot(snapshot)
+            .map_err(|e| ResponseError::from_internal_error(e));
+
+    SaveStrategySnapshotResult(result)
 }
 
 #[update]

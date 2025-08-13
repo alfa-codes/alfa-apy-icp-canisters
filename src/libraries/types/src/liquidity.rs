@@ -12,6 +12,8 @@ pub struct AddLiquidityResponse {
     pub token_0_amount: Nat,
     pub token_1_amount: Nat,
     pub position_id: u64,
+    // Total liquidity added, expressed in token0 units (token_0_amount + token_1 converted to token0)
+    pub token0_equivalent_total: Nat,
 }
 
 #[derive(CandidType, Deserialize, Clone, Serialize)]

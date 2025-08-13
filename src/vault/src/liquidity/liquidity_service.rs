@@ -118,24 +118,25 @@ pub async fn withdraw_liquidity_from_pool(
         pool.provider
     ).await;
 
-    let withdraw_liquidity_response = liquidity_client.withdraw_liquidity_from_pool(
-        total_shares.clone(),
-        shares.clone(),
-    ).await
-        .map_err(|error| {
-            // Event: Withdraw liquidity from pool failed
-            event_record_service::create_event_record(
-                Event::withdraw_liquidity_from_pool_failed(
-                    pool.id.clone(),
-                    total_shares.clone(),
-                    shares.clone(),
-                    error.clone(),
-                ),
-                context.correlation_id.clone(),
-                Some(user),
-            );
-            error
-        })?;
+    let withdraw_liquidity_response = 
+        liquidity_client.withdraw_liquidity_from_pool(
+            total_shares.clone(),
+            shares.clone(),
+        ).await
+            .map_err(|error| {
+                // Event: Withdraw liquidity from pool failed
+                event_record_service::create_event_record(
+                    Event::withdraw_liquidity_from_pool_failed(
+                        pool.id.clone(),
+                        total_shares.clone(),
+                        shares.clone(),
+                        error.clone(),
+                    ),
+                    context.correlation_id.clone(),
+                    Some(user),
+                );
+                error
+            })?;
 
     // Event: Withdraw liquidity from pool completed
     event_record_service::create_event_record(
@@ -168,19 +169,41 @@ pub async fn withdraw_liquidity_from_pool_and_swap(
         pool.clone(),
     ).await?;
 
+    let service_resolver = get_service_resolver();
+
+    // Reserve token1 fee before swap; if not enough for fee, skip swap safely
+    let token1_fee = service_resolver.icrc_ledger_client()
+        .icrc1_fee(pool.token1)
+        .await
+        .unwrap_or_else(|_| Nat::from(0u64));
+
+    // Leave a safety reserve (2x fee) to avoid insufficient funds on transfer_from
+    let token1_safety_fee = token1_fee.clone() * Nat::from(2u64);
+
+    let token1_for_swap = if withdraw_response.token_1_amount > token1_safety_fee.clone() {
+        withdraw_response.token_1_amount.clone() - token1_safety_fee.clone()
+    } else {
+        Nat::from(0u64)
+    };
+
+    let mut amount_0_to_withdraw = withdraw_response.token_0_amount.clone();
+
+    // If token1 for swap is 0, skip swap
+    if token1_for_swap <= Nat::from(0u64) {
+        return Ok(amount_0_to_withdraw);
+    }
+
     // Event: Swap token started
     event_record_service::create_event_record(
         Event::swap_token_started(
             pool.id.clone(),
             pool.token1,
             pool.token0,
-            Some(withdraw_response.token_1_amount.clone()),
+            Some(token1_for_swap.clone()),
         ),
         context.correlation_id.clone(),
         Some(user),
     );
-
-    let service_resolver = get_service_resolver();
 
     // Swap withdrawn token_1 to token_0 (base token)
     let swap_response = swap_service::swap_icrc2_optimal(
@@ -188,7 +211,7 @@ pub async fn withdraw_liquidity_from_pool_and_swap(
         service_resolver.icrc_ledger_client(),
         pool.token1,
         pool.token0,
-        withdraw_response.token_1_amount.clone(),
+        token1_for_swap.clone(),
     ).await
         .map_err(|error| {
             // Event: Swap token failed
@@ -197,7 +220,7 @@ pub async fn withdraw_liquidity_from_pool_and_swap(
                     pool.id.clone(),
                     pool.token1,
                     pool.token0,
-                    Some(withdraw_response.token_1_amount.clone()),
+                    Some(token1_for_swap.clone()),
                     error.clone()
                 ),
                 context.correlation_id.clone(),
@@ -213,14 +236,14 @@ pub async fn withdraw_liquidity_from_pool_and_swap(
             pool.id.clone(),
             pool.token1,
             pool.token0,
-            Some(withdraw_response.token_1_amount.clone()),
+            Some(token1_for_swap.clone()),
             Some(Nat::from(swap_response.amount_out)),
         ),
         context.correlation_id.clone(),
         Some(user),
     );
 
-    let amount_0_to_withdraw = withdraw_response.token_0_amount + swap_response.amount_out;
+    amount_0_to_withdraw = amount_0_to_withdraw + swap_response.amount_out;
 
     Ok(amount_0_to_withdraw)
 }

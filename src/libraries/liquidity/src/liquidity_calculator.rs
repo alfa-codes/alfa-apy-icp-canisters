@@ -15,19 +15,20 @@ pub struct CalculatePoolLiquidityAmountsResponse {
 impl LiquidityCalculator {
     pub fn calculate_shares_for_deposit(amount: Nat, total_balance: Nat, total_shares: Nat) -> Nat {
         let zero = Nat::from(0u64);
-        let one = Nat::from(1u64);
 
-        let share_price = if total_shares == zero {
-            one.clone()
-        } else {
-            total_balance.clone() / total_shares.clone()
-        };
-
-        if total_balance == zero || total_shares == zero {
-            amount
-        } else {
-            amount / share_price
+        // First deposit: 1:1 share price
+        if total_shares == zero {
+            return amount;
         }
+
+        // For subsequent deposits, compute shares as amount * total_shares / total_balance
+        // This avoids precision loss from computing share_price = total_balance / total_shares first
+        if total_balance == zero {
+            // Defensive: avoid division by zero, fallback to minting amount shares
+            return amount;
+        }
+
+        amount * total_shares / total_balance
     }
 
     pub fn calculate_token_amounts_for_deposit(
@@ -35,8 +36,18 @@ impl LiquidityCalculator {
         pool_ratio: f64,
         swap_price: f64,
     ) -> CalculatePoolLiquidityAmountsResponse {
-        // Calculate token_0 amount for swap
-        let token_0_for_swap: f64 = amount * pool_ratio / (swap_price + pool_ratio);
+        // Defensive guards
+        if amount <= 0.0 || pool_ratio <= 0.0 || swap_price <= 0.0 || (swap_price + pool_ratio) <= 0.0 {
+            return CalculatePoolLiquidityAmountsResponse {
+                token_0_for_swap: 0.0,
+                token_0_for_pool: 0.0,
+                token_1_for_pool: 0.0,
+            };
+        }
+
+        // Calculate token_0 amount for swap (pre-swap estimate)
+        let denom = swap_price + pool_ratio;
+        let token_0_for_swap: f64 = amount * pool_ratio / denom;
         let token_0_for_pool = amount - token_0_for_swap;
 
         // token1 amount from swap
@@ -54,10 +65,16 @@ impl LiquidityCalculator {
             (token_0_for_pool, required_token_1)
         };
 
+        // Use floor to avoid overspending due to rounding up
+        // Also clamp to non-negative values
+        let t0_swap = token_0_for_swap.floor().max(0.0).min(amount);
+        let t0_pool = final_token_0_for_pool.floor().max(0.0).min(amount);
+        let t1_pool = final_token_1_for_pool.floor().max(0.0);
+
         CalculatePoolLiquidityAmountsResponse {
-            token_0_for_swap: token_0_for_swap.round(),
-            token_0_for_pool: final_token_0_for_pool.round(),
-            token_1_for_pool: final_token_1_for_pool.round(),
+            token_0_for_swap: t0_swap,
+            token_0_for_pool: t0_pool,
+            token_1_for_pool: t1_pool,
         }
     }
 }

@@ -24,6 +24,7 @@ pub struct ckBTCStrategy {
     initial_deposit: HashMap<Principal, Nat>,
     current_liquidity: Option<Nat>,
     current_liquidity_updated_at: Option<u64>,
+    test: bool,
 }
 
 impl ckBTCStrategy {
@@ -39,6 +40,7 @@ impl ckBTCStrategy {
             initial_deposit: HashMap::new(),
             current_liquidity: None,
             current_liquidity_updated_at: None,
+            test: false,
         }
     }
 }

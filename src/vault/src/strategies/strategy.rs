@@ -88,7 +88,12 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
 
                 // Event: Strategy deposit failed
                 event_record_service::create_event_record(
-                    Event::strategy_deposit_failed(strategy_id.clone(), None, Some(amount), error.clone()),
+                    Event::strategy_deposit_failed(
+                        strategy_id.clone(), 
+                        None, 
+                        Some(amount.clone()), 
+                        error.clone()
+                    ),
                     context.correlation_id,
                     Some(investor),
                 );
@@ -108,22 +113,28 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
             current_pool.clone()
         ).await?;
 
+        let token0_equivalent_total = add_liquidity_response.token0_equivalent_total.clone();
+
         self.update_strategy_state_after_deposit(
             investor,
-            amount.clone(),
+            token0_equivalent_total.clone(),
             current_pool.clone(),
             add_liquidity_response.position_id,
         );
 
         // Event: Strategy deposit completed
         event_record_service::create_event_record(
-            Event::strategy_deposit_completed(strategy_id, Some(current_pool.get_id()), Some(amount.clone())),
+            Event::strategy_deposit_completed(
+                strategy_id, 
+                Some(current_pool.get_id()), 
+                Some(token0_equivalent_total.clone())
+            ),
             context.correlation_id,
             Some(investor),
         );
 
         Ok(StrategyDepositResponse {
-            amount: amount,
+            amount: token0_equivalent_total,
             shares: self.get_user_shares().get(&investor).unwrap().clone(),
             tx_id: 0,
             position_id: add_liquidity_response.position_id,
@@ -523,7 +534,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
 
         pools_data
             .iter()
-            .filter(|x| x.pool.provider == ExchangeId::KongSwap) // TODO: remove this after testing
+            .filter(|x| x.pool.provider == ExchangeId::ICPSwap) // TODO: remove this after testing
             // .max_by_key(|x| x.apy) // TODO: uncomment this after testing
             .map(|x| x.pool.clone())
             .next()
@@ -642,6 +653,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
             current_liquidity: self.get_current_liquidity(),
             current_liquidity_updated_at: self.get_current_liquidity_updated_at(),
             position_id: self.get_position_id(),
+            test: self.get_test(),
         }
     }
 

@@ -1201,6 +1201,8 @@ dependencies = [
  "lazy_static",
  "serde",
  "serde_json",
+ "service_resolver",
+ "swap",
  "types",
  "utils",
  "validation",
