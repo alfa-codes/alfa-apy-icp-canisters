@@ -1,7 +1,7 @@
 use candid::{CandidType, Deserialize, Nat};
 use serde::Serialize;
 
-use errors::response_error::error::ResponseError;
+use errors::{internal_error::error::InternalError, response_error::error::ResponseError};
 
 use crate::strategy_snapshot::strategy_snapshot::StrategySnapshot;
 use crate::types::external_canister_types::StrategyId;
@@ -59,20 +59,20 @@ impl StrategyState {
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
 pub struct InitializeStrategyStatesAndCreateSnapshotsResponse {
     pub success_count: u64,
-    pub errors: Vec<String>,
+    pub errors: Vec<InternalError>,
 }
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
 pub struct CreateStrategiesSnapshotsResponse {
     pub success_count: u64,
-    pub errors: Vec<String>,
+    pub errors: Vec<InternalError>,
 }
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
 pub struct InitializeStrategyStatesResponse {
     pub initialized_strategy_states: Vec<StrategyId>,
     pub skipped_already_initialized_strategy_states: Vec<StrategyId>,
-    pub failed_strategy_states: Vec<(StrategyId, String)>,
+    pub failed_strategy_states: Vec<(StrategyId, InternalError)>,
 }
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]

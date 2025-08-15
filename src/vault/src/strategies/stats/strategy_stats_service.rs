@@ -8,7 +8,7 @@ use errors::internal_error::error::{InternalError, build_error_code};
 use types::exchange_id::ExchangeId;
 use liquidity::liquidity_router;
 use swap::swap_service;
-use utils::util::current_timestamp;
+use utils::util::current_timestamp_secs;
 
 use crate::repository::strategies_repo;
 use crate::strategies::strategy::IStrategy;
@@ -60,7 +60,7 @@ pub async fn update_strategy_liquidity(mut strategy: Box<dyn IStrategy>) -> Resu
     let liquidity_amount = get_strategy_current_liquidity(strategy.as_ref()).await?;
     
     strategy.set_current_liquidity(Some(liquidity_amount));
-    strategy.set_current_liquidity_updated_at(Some(current_timestamp()));
+    strategy.set_current_liquidity_updated_at(Some(current_timestamp_secs()));
 
     strategies_repo::save_strategy(strategy);
     

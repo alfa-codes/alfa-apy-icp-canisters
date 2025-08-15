@@ -55,7 +55,7 @@ pub async fn initialize_strategy_states_and_create_snapshots() -> Result<Initial
             "Failed to save {} out of {} snapshots. Errors: {}",
             errors.len(),
             vault_strategies.len(),
-            errors.join("; ")
+            errors.iter().map(|e| e.to_string()).collect::<Vec<_>>().join("; ")
         );
 
         return Err(InternalError::business_logic(

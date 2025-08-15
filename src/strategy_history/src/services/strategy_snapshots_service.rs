@@ -3,11 +3,13 @@ use std::ops::{Div, Mul};
 
 use errors::internal_error::error::{InternalError, build_error_code};
 use validation::validation::Validation;
+use ::utils::util::current_timestamp_secs;
 
 use crate::repository::snapshots_repo;
 use crate::strategy_snapshot::strategy_snapshot::StrategySnapshot;
 use crate::types::types::{StrategyState, CreateStrategiesSnapshotsResponse};
 use crate::types::external_canister_types::{StrategyId, VaultStrategyResponse};
+use crate::services::strategy_yield_service;
 
 pub fn save_strategy_snapshot(snapshot: StrategySnapshot) -> Result<(), InternalError> {
     // Validate snapshot
@@ -52,11 +54,7 @@ pub fn create_strategies_snapshots(
                 success_count += 1;
             }
             Err(error) => {
-                errors.push(format!(
-                    "Failed to save snapshot for strategy {}: {:?}",
-                    vault_strategy.id,
-                    error
-                ));
+                errors.push(error);
             }
         }
     }
@@ -72,26 +70,12 @@ pub fn create_strategies_snapshots(
 fn build_strategy_snapshot(
     vault_strategy: &VaultStrategyResponse,
 ) -> Result<StrategySnapshot, InternalError> {
-    let canister_principal = ic_cdk::api::id();
-    let canister_liquidity_shares = vault_strategy.user_shares
-        .get(&canister_principal)
-        .unwrap_or(&Nat::from(0u64))
-        .clone();
+    let test_liquidity_amount = current_test_liquidity_amount(vault_strategy);
 
-    let current_liquidity = vault_strategy.current_liquidity
-        .clone()
-        .unwrap_or(Nat::from(0u64));
-
-    // TODO: calculate APY
-    let _canister_current_liquidity = current_liquidity
-        .mul(canister_liquidity_shares.clone())
-        .div(vault_strategy.total_shares.clone());
-
-    // Pseudo-random APY in [5.0, 15.0]
-    let apy = 5.0
-    + (((ic_cdk::api::time() ^ (vault_strategy.id as u64)) % 10_000) as f64
-        / 10_000.0)
-        * 10.0;
+    let apy = strategy_yield_service::calculate_strategy_yield_by_id(
+        vault_strategy.id, 
+        current_timestamp_secs()
+    );
 
     Ok(StrategySnapshot::build(
         vault_strategy.id,
@@ -102,7 +86,21 @@ fn build_strategy_snapshot(
         vault_strategy.users_count,
         vault_strategy.current_liquidity_updated_at,
         vault_strategy.current_pool.clone(),
+        test_liquidity_amount,
         apy
     ))
 }
 
+fn current_test_liquidity_amount(vault_strategy: &VaultStrategyResponse) -> Option<Nat> {
+    let canister_principal = ic_cdk::api::id();
+    let test_liquidity_shares = vault_strategy
+        .user_shares
+        .get(&canister_principal);
+
+    test_liquidity_shares.map(|shares| {
+        vault_strategy
+            .current_liquidity.clone().unwrap_or(Nat::from(0u64))
+            .mul(shares.clone())
+            .div(vault_strategy.total_shares.clone())
+    })
+}

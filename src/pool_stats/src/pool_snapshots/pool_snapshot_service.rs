@@ -53,10 +53,11 @@ pub async fn create_all_pool_snapshots() {
     let pools = pools_repo::get_pools();
 
     for pool in pools.into_iter().filter(|p| p.position_id.is_some()) {
-        create_pool_snapshot(context.clone(), &pool).await
-        .map_err(|error| {
-            // TODO: add event logging
-        });
+        create_pool_snapshot(context.clone(), &pool)
+            .await
+            .map_err(|error| {
+                // TODO: add event logging
+            });
     }
 }
 

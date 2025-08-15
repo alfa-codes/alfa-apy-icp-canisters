@@ -19,8 +19,7 @@ pub fn nat_to_u64(n: &Nat) -> u64 {
 
 pub fn int_to_nat(int_value: Int) -> Option<Nat> {
     if int_value.0.sign() == num_bigint::Sign::Minus {
-        // Negative value cannot be converted to Nat
-        None
+        None // Negative value cannot be converted to Nat
     } else {
         Some(Nat(BigUint::from_bytes_be(&int_value.0.to_bytes_be().1)))
     }
@@ -31,6 +30,6 @@ pub fn principal_to_canister_id(principal_str: &str) -> CanisterId {
     CanisterId::from_slice(principal.as_slice())
 }
 
-pub fn current_timestamp() -> u64 {
-    ic_cdk::api::time() / 1_000_000_000 // convert to seconds
+pub fn current_timestamp_secs() -> u64 {
+    ic_cdk::api::time() / 1_000_000_000
 }

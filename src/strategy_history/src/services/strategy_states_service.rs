@@ -2,7 +2,7 @@ use candid::Nat;
 use candid::Principal;
 
 use ::utils::constants::{ICP_TOKEN_CANISTER_ID, VAULT_PRINCIPAL_DEV};
-use ::utils::util::nat_to_f64;
+use ::utils::util::{nat_to_f64, current_timestamp_secs};
 use swap::swap_service;
 use errors::internal_error::error::{InternalError, build_error_code};
 
@@ -60,7 +60,7 @@ pub async fn initialize_strategy_states_with_list(
                     vault_strategy.id,
                     |prev| {
                         let mut st = prev.unwrap_or_default();
-                        st.initialized_at = Some(ic_cdk::api::time() / 1_000_000);
+                        st.initialized_at = Some(current_timestamp_secs());
                         st.test_liquidity_data = Some(build_test_liquidity_data(deposit_response));
                         st.initialize_attempts = st.initialize_attempts.saturating_add(1);
                         st.last_error = None;
@@ -75,12 +75,12 @@ pub async fn initialize_strategy_states_with_list(
                     |prev| {
                         let mut st = prev.unwrap_or_default();
                         st.initialize_attempts = st.initialize_attempts.saturating_add(1);
-                        st.last_error = Some(format!("{:?}", err));
+                        st.last_error = Some(err.to_string());
                         st
                     }
                 );
                 failed_strategy_states.push(
-                    (vault_strategy.id, "Failed to deposit test liquidity".to_string())
+                    (vault_strategy.id, err)
                 );
             }
         }

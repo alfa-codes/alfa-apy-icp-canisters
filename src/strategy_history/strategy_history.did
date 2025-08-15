@@ -12,13 +12,21 @@ type GetStrategiesHistoryResult = variant {
 };
 
 type InitializeStrategyStatesAndCreateSnapshotsResponse = record {
-  errors : vec text;
+  errors : vec InternalError;
   success_count : nat64;
 };
 
 type InitializeStrategyStatesAndCreateSnapshotsResult = variant {
   Ok : InitializeStrategyStatesAndCreateSnapshotsResponse;
   Err : ResponseError;
+};
+
+type InternalError = record {
+  context : text;
+  code : nat32;
+  kind : ResponseErrorKind;
+  extra : opt vec record { text; text };
+  message : text;
 };
 
 type Pool = record {
@@ -62,6 +70,7 @@ type StrategyHistory = record {
 type StrategySnapshot = record {
   id : text;
   apy : float64;
+  test_liquidity_amount : opt nat;
   current_liquidity_updated_at : opt nat64;
   total_shares : nat;
   strategy_id : nat16;

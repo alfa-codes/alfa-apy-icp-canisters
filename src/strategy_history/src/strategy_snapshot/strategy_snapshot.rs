@@ -1,6 +1,7 @@
 use candid::{CandidType, Deserialize, Nat};
 use serde::Serialize;
 
+use ::utils::util::current_timestamp_secs;
 use types::exchange_id::ExchangeId;
 use types::CanisterId;
 use validation::validation::Validation;
@@ -21,6 +22,7 @@ pub struct StrategySnapshot {
     pub position_id: Option<u64>,
     pub users_count: u32,
     pub current_pool: Option<Pool>,
+    pub test_liquidity_amount: Option<Nat>,
     pub apy: f64,
 }
 
@@ -36,6 +38,7 @@ impl StrategySnapshot {
         users_count: u32,
         current_liquidity_updated_at: Option<u64>,
         current_pool: Option<Pool>,
+        test_liquidity_amount: Option<Nat>,
         apy: f64,
     ) -> Self {
         Self {
@@ -49,6 +52,7 @@ impl StrategySnapshot {
             users_count,
             current_liquidity_updated_at,
             current_pool,
+            test_liquidity_amount,
             apy,
         }
     }
@@ -62,10 +66,11 @@ impl StrategySnapshot {
         users_count: u32,
         current_liquidity_updated_at: Option<u64>,
         current_pool: Option<Pool>,
+        test_liquidity_amount: Option<Nat>,
         apy: f64,
     ) -> Self {
         let id = get_next_snapshot_id(strategy_id);
-        let timestamp = ic_cdk::api::time() / 1_000_000; // Convert to seconds
+        let timestamp = current_timestamp_secs();
 
         Self::new(
             id,
@@ -78,6 +83,7 @@ impl StrategySnapshot {
             users_count,
             current_liquidity_updated_at,
             current_pool,
+            test_liquidity_amount,
             apy,
         )
     }

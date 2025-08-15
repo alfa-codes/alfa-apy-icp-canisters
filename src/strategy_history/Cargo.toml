@@ -21,6 +21,7 @@ utils = { path = "../libraries/utils" }
 validation = { path = "../libraries/validation" }
 service_resolver = { path = "../libraries/service_resolver" }
 swap = { path = "../libraries/swap" }
+yield_calculator = { path = "../libraries/yield_calculator" }
 
 [lib]
 crate-type = ["cdylib"]

@@ -2,7 +2,7 @@ use candid::{CandidType, Deserialize};
 use serde::Serialize;
 
 use errors::internal_error::error::InternalError;
-use utils::util::current_timestamp;
+use utils::util::current_timestamp_secs;
 
 use crate::repository::pools_repo;
 use crate::pool_snapshots::position_data::position_data::PositionData;
@@ -36,7 +36,7 @@ impl PoolSnapshot {
 
     pub fn build(pool_id: String, position_data: Option<PositionData>, pool_data: Option<PoolData>) -> Self {
         let id = (pools_repo::get_pool_snapshots_count(pool_id.clone()) + 1).to_string();
-        let timestamp = current_timestamp();
+        let timestamp = current_timestamp_secs();
 
         Self::new(
             id,
