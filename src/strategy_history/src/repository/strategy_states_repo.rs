@@ -1,7 +1,8 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-use crate::types::types::{StrategyId, StrategyState};
+use crate::types::external_canister_types::StrategyId;
+use crate::types::types::StrategyState;
 
 thread_local! {
     static STRATEGY_STATES: RefCell<HashMap<StrategyId, StrategyState>> = RefCell::new(HashMap::new());
@@ -41,7 +42,7 @@ pub fn get_all_initialized_strategy_states() -> Vec<(StrategyId, StrategyState)>
     STRATEGY_STATES.with(|states| {
         states.borrow()
             .iter()
-            .filter(|(_, v)| v.is_initialized)
+            .filter(|(_, state)| state.is_initialized())
             .map(|(k, v)| (*k, v.clone()))
             .collect()
     })

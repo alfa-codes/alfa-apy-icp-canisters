@@ -1,12 +1,10 @@
-use candid::{CandidType, Deserialize, Nat, Principal};
-use std::collections::HashMap;
+use candid::{CandidType, Deserialize, Nat};
 use serde::Serialize;
 
 use errors::response_error::error::ResponseError;
 
-use crate::strategy_snapshot::strategy_snapshot::{StrategySnapshot, Pool};
-
-pub type StrategyId = u16;
+use crate::strategy_snapshot::strategy_snapshot::StrategySnapshot;
+use crate::types::external_canister_types::StrategyId;
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
 pub struct SaveStrategySnapshotResult(pub Result<(), ResponseError>);
@@ -44,13 +42,18 @@ pub struct StrategySnapshotsResponse {
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug, Default)]
 pub struct StrategyState {
-    pub is_initialized: bool,
     pub initialized_at: Option<u64>,
-    pub last_snapshot_at: Option<u64>,
+    pub initialize_attempts: u32,
     pub snapshot_cadence_secs: Option<u64>,
-    pub test_liquidity_amount: Option<Nat>,
-    pub bootstrap_attempts: u32,
+    pub test_liquidity_data: Option<TestLiquidityData>,
+    pub last_snapshot_at: Option<u64>,
     pub last_error: Option<String>,
+}
+
+impl StrategyState {
+    pub fn is_initialized(&self) -> bool {
+        self.test_liquidity_data.is_some()
+    }
 }
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
@@ -73,35 +76,9 @@ pub struct InitializeStrategyStatesResponse {
 }
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
-pub struct StrategyDepositArgs {
-    pub ledger: ::types::CanisterId,
-    pub amount: Nat,
-    pub strategy_id: StrategyId,
-}
-
-#[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
-pub struct StrategyDepositResponse {
+pub struct TestLiquidityData {
     pub amount: Nat,
     pub shares: Nat,
     pub tx_id: u64,
     pub position_id: u64,
-}
-
-// Struct from vault
-#[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
-pub struct VaultStrategyResponse {
-    pub name: String,
-    pub id: StrategyId,
-    pub description: String,
-    pub pools: Vec<Pool>,
-    pub current_pool: Option<Pool>,
-    pub total_balance: Nat,
-    pub total_shares: Nat,
-    pub user_shares: HashMap<Principal, Nat>,
-    pub initial_deposit: HashMap<Principal, Nat>,
-    pub users_count: u32,
-    pub current_liquidity: Option<Nat>,
-    pub current_liquidity_updated_at: Option<u64>,
-    pub position_id: Option<u64>,
-    pub test: bool,
 }

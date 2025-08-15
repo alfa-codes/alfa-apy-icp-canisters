@@ -106,6 +106,11 @@ async fn test_save_strategy_snapshot(snapshot: StrategySnapshot) -> SaveStrategy
 }
 
 #[update]
+fn test_delete_strategy_state(strategy_id: u16) {
+    strategy_states_service::delete_strategy_state(strategy_id);
+}
+
+#[update]
 fn test_delete_all_snapshots() {
     repository::snapshots_repo::delete_all_snapshots();
 }

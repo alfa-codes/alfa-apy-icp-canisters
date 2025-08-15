@@ -47,6 +47,13 @@ type ResponseErrorKind = variant {
 
 type SaveStrategySnapshotResult = variant { Ok; Err : ResponseError };
 
+type TestLiquidityData = record {
+  tx_id : nat64;
+  shares : nat;
+  amount : nat;
+  position_id : nat64;
+};
+
 type StrategyHistory = record {
   snapshots : vec StrategySnapshot;
   strategy_id : nat16;
@@ -68,22 +75,26 @@ type StrategySnapshot = record {
 
 type StrategyState = record {
   last_error : opt text;
-  test_liquidity_amount : opt nat;
+  initialize_attempts : nat32;
   snapshot_cadence_secs : opt nat64;
   initialized_at : opt nat64;
-  bootstrap_attempts : nat32;
-  is_initialized : bool;
+  test_liquidity_data : opt TestLiquidityData;
   last_snapshot_at : opt nat64;
 };
 
-type GetAllStrategyStatesResult = vec record { nat16; StrategyState };
-
 service : () -> {
-  get_strategies_history : (GetStrategiesHistoryRequest) -> (GetStrategiesHistoryResult,) query;
+  get_all_strategy_states : () -> (vec record { nat16; StrategyState }) query;
+  get_strategies_history : (GetStrategiesHistoryRequest) -> (
+    GetStrategiesHistoryResult,
+  ) query;
   get_strategy_snapshots_count : (nat16) -> (nat64) query;
   get_strategy_state : (nat16) -> (opt StrategyState) query;
-  get_all_strategy_states : () -> (GetAllStrategyStatesResult) query;
   test_delete_all_snapshots : () -> ();
-  test_initialize_strategy_states_and_create_snapshots : () -> (InitializeStrategyStatesAndCreateSnapshotsResult,);
-  test_save_strategy_snapshot : (StrategySnapshot) -> (SaveStrategySnapshotResult,);
+  test_delete_strategy_state : (nat16) -> ();
+  test_initialize_strategy_states_and_create_snapshots : () -> (
+    InitializeStrategyStatesAndCreateSnapshotsResult,
+  );
+  test_save_strategy_snapshot : (StrategySnapshot) -> (
+    SaveStrategySnapshotResult,
+  );
 };

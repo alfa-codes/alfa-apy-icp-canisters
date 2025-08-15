@@ -6,12 +6,8 @@ use validation::validation::Validation;
 
 use crate::repository::snapshots_repo;
 use crate::strategy_snapshot::strategy_snapshot::StrategySnapshot;
-use crate::types::types::{
-    StrategyId,
-    StrategyState,
-    VaultStrategyResponse,
-    CreateStrategiesSnapshotsResponse,
-};
+use crate::types::types::{StrategyState, CreateStrategiesSnapshotsResponse};
+use crate::types::external_canister_types::{StrategyId, VaultStrategyResponse};
 
 pub fn save_strategy_snapshot(snapshot: StrategySnapshot) -> Result<(), InternalError> {
     // Validate snapshot
@@ -87,7 +83,7 @@ fn build_strategy_snapshot(
         .unwrap_or(Nat::from(0u64));
 
     // TODO: calculate APY
-    let canister_current_liquidity = current_liquidity
+    let _canister_current_liquidity = current_liquidity
         .mul(canister_liquidity_shares.clone())
         .div(vault_strategy.total_shares.clone());
 
