@@ -335,6 +335,8 @@ Where:
 **3100 03 07** - Strategy has no current pool in strategy_stats_service::get_strategy_current_liquidity (BusinessLogic)
 **3100 03 08** - Strategy has no position id in strategy_stats_service::get_strategy_current_liquidity (BusinessLogic)
 
+**3100 03 09** - Strategy has no current pool in strategy_stats_service::get_strategy_current_liquidity_usd (Business Logic)
+
 ## 4000 - Service (PoolStats)
 
 **4000 01 01** - Pool not found in service::delete_pool (NotFound)  

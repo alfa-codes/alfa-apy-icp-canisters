@@ -1175,6 +1175,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "smart_rebalance"
+version = "0.1.0"
+dependencies = [
+ "candid",
+ "serde",
+ "types",
+ "utils",
+]
+
+[[package]]
 name = "stacker"
 version = "0.1.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1473,6 +1483,7 @@ dependencies = [
  "serde_bytes",
  "serde_json",
  "service_resolver",
+ "smart_rebalance",
  "swap",
  "types",
  "utils",

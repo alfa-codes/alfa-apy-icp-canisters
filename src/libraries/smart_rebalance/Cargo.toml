@@ -1,0 +1,12 @@
+[package]
+name = "smart_rebalance"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+candid = { workspace = true }
+serde = { workspace = true }
+utils = { path = "../utils" }
+types = { path = "../types" }
+
+

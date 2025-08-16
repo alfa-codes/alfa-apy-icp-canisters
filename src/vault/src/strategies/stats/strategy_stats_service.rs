@@ -9,6 +9,7 @@ use types::exchange_id::ExchangeId;
 use liquidity::liquidity_router;
 use swap::swap_service;
 use utils::util::current_timestamp_secs;
+use utils::constants::CKUSDT_TOKEN_CANISTER_ID;
 
 use crate::repository::strategies_repo;
 use crate::strategies::strategy::IStrategy;
@@ -69,7 +70,7 @@ pub async fn update_strategy_liquidity(mut strategy: Box<dyn IStrategy>) -> Resu
 
 pub fn spawn_update_strategy_liquidity(strategy: Box<dyn IStrategy>) -> () {
     ic_cdk::spawn(async move {
-        update_strategy_liquidity(strategy).await; // TODO: handle error
+        let _ = update_strategy_liquidity(strategy).await; // TODO: handle error
     });
 }
 
@@ -126,4 +127,41 @@ pub async fn get_strategy_current_liquidity(strategy: &dyn IStrategy) -> Result<
     let base_token_amount = Nat::from(quote_response.amount_out) + position_response.token_0_amount;
 
     Ok(base_token_amount)
+}
+
+pub async fn get_strategy_current_liquidity_usd(strategy: Box<dyn IStrategy>) -> Result<f64, InternalError> {
+    let current_liquidity_base = get_strategy_current_liquidity(strategy.as_ref()).await?;
+
+    let pool = strategy.get_current_pool().ok_or_else(|| {
+        InternalError::business_logic(
+            build_error_code(3100, 3, 9), // 3100 03 09
+            "strategy_stats_service::get_strategy_current_liquidity_usd".to_string(),
+            "Strategy has no current pool".to_string(),
+            Some(HashMap::from([
+                ("strategy_id".to_string(), strategy.get_id().to_string()),
+            ]))
+        )
+    })?;
+
+    let service_resolver = get_service_resolver();
+
+    // Quote base token (token0) to ckUSDT to approximate USD value
+    let quote_to_usdt = swap_service::quote_swap_icrc2_optimal(
+        service_resolver.provider_impls(),
+        pool.token0,
+        *CKUSDT_TOKEN_CANISTER_ID,
+        current_liquidity_base,
+    ).await?;
+
+    // Convert raw ckUSDT amount to float USD using token decimals
+    let usdt_decimals = service_resolver
+        .icrc_ledger_client()
+        .icrc1_decimals(*CKUSDT_TOKEN_CANISTER_ID)
+        .await?;
+
+    let amount_out_u128 = quote_to_usdt.amount_out;
+    let scale_factor = 10f64.powi(usdt_decimals as i32);
+    let usd_value = (amount_out_u128 as f64) / scale_factor;
+
+    Ok(usd_value)
 }

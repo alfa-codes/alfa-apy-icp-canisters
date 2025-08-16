@@ -43,3 +43,4 @@ errors = { path = "../libraries/errors" }
 event_records = { path = "../libraries/event_records" }
 service_resolver = { path = "../libraries/service_resolver" }
 icrc_ledger_client = { path = "../libraries/icrc_ledger_client" }
+smart_rebalance = { path = "../libraries/smart_rebalance" }

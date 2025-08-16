@@ -5,3 +5,4 @@ pub mod strategy_candid;
 pub mod basic_strategy;
 pub mod test;
 pub mod stats;
+pub mod smart_rebalance_service;

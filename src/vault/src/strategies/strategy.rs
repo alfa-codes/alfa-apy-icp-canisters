@@ -21,6 +21,7 @@ use crate::strategies::strategy_candid::StrategyCandid;
 use crate::liquidity::liquidity_service;
 use crate::pools::pool::Pool;
 use crate::strategies::stats::strategy_stats_service;
+use crate::strategies::smart_rebalance_service;
 use crate::types::types::{
     StrategyDepositResponse,
     StrategyRebalanceResponse,
@@ -315,7 +316,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
         })
     }
 
-    /// Rebalances the strategy by finding and moving to the pool with the highest APY
+    /// Rebalances the strategy using Smart Rebalance scoring/decision
     ///
     /// # Details
     ///
@@ -343,69 +344,56 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
             None,
         );
 
-        let pools_data = liquidity_service::get_pools_data(self.get_pools()).await;
-        let mut max_apy = 0.0;
-        let mut max_apy_pool = None;
-
-        // Find pool with highest APY
-        for pool_data in pools_data {
-            if pool_data.apy > max_apy {
-                max_apy = pool_data.apy;
-                max_apy_pool = Some(pool_data.pool);
-            }
-        }
-
         let current_pool = self.get_current_pool();
 
-        if max_apy_pool.is_none() {
+        if current_pool.is_none() {
+            let error = InternalError::not_found(
+                build_error_code(3100, 1, 6),
+                "Strategy::rebalance".to_string(),
+                "No current pool found in strategy".to_string(),
+                None,
+            );
+
+            event_record_service::create_event_record(
+                Event::strategy_rebalance_failed(strategy_id, None, None, error.clone()),
+                context.correlation_id,
+                None,
+            );
+
+            return Err(error);
+        }
+
+        let current_pool = current_pool.unwrap();
+
+        let position_value_usd = strategy_stats_service::get_strategy_current_liquidity_usd(
+            self.clone_self()
+        ).await?;
+
+        let rebalance_decision = smart_rebalance_service::decide_rebalance(
+            smart_rebalance_service::RebalanceInputs {
+                current_pool: current_pool.clone(),
+                pools: self.get_pools(),
+                profile: smart_rebalance::types::StrategyProfile::Balanced,
+                last_rebalance_at: None, // TODO: track in state
+                position_value_usd,
+            }
+        ).await;
+
+        if !rebalance_decision.should_move {
             return Ok(StrategyRebalanceResponse {
-                previous_pool: current_pool.clone().unwrap(),
-                current_pool: current_pool.clone().unwrap(),
+                previous_pool: current_pool.clone(),
+                current_pool: current_pool.clone(),
                 is_rebalanced: false,
             });
         }
 
+        let target_pool_id = rebalance_decision.target_pool_id.unwrap();
+        let max_apy_pool = self.get_pools()
+            .into_iter()
+            .find(|p| p.get_id() == target_pool_id)
+            .unwrap();
 
-        // TODO: Change this after testing
-        // let max_apy_pool = max_apy_pool.unwrap();
-        let max_apy_pool = current_pool.clone().unwrap();
-
-        if let Some(current_pool) = &current_pool {
-            if current_pool.is_same_pool(&max_apy_pool) {
-
-                // Event: Strategy rebalance completed
-                event_record_service::create_event_record(
-                    Event::strategy_rebalance_completed(
-                        strategy_id,
-                        Some(current_pool.get_id()),
-                        Some(max_apy_pool.get_id()),
-                    ),
-                    context.correlation_id,
-                    None,
-                );
-
-                return Ok(StrategyRebalanceResponse {
-                    previous_pool: current_pool.clone(),
-                    current_pool: current_pool.clone(),
-                    is_rebalanced: false,
-                });
-            }
-
-            // Withdraw liquidity from current pool and swap token_1 to token_0 (base token)
-            let token_0_to_pool_amount = liquidity_service::withdraw_liquidity_from_pool_and_swap(
-                context.clone(),
-                self.get_total_shares(),
-                self.get_total_shares(),
-                current_pool.clone(),
-            ).await?;
-
-            // Add liquidity to new pool
-            let add_liquidity_response = liquidity_service::add_liquidity_to_pool(
-                context.clone(),
-                token_0_to_pool_amount.clone(),
-                max_apy_pool.clone(),
-            ).await?;
-
+        if current_pool.is_same_pool(&max_apy_pool) {
             // Event: Strategy rebalance completed
             event_record_service::create_event_record(
                 Event::strategy_rebalance_completed(
@@ -417,34 +405,50 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
                 None,
             );
 
-            // Update current pool
-            self.set_current_pool(Some(max_apy_pool));
-
-            // Update position id
-            self.set_position_id(Some(add_liquidity_response.position_id));
-
-            Ok(StrategyRebalanceResponse {
+            return Ok(StrategyRebalanceResponse {
                 previous_pool: current_pool.clone(),
-                current_pool: self.get_current_pool().unwrap(),
-                is_rebalanced: true,
-            })
-        } else {
-            let error = InternalError::not_found(
-                build_error_code(3100, 1, 6), // 3100 01 06
-                "Strategy::rebalance".to_string(),
-                "No current pool found in strategy".to_string(),
-                None,
-            );
-
-            // Event: Strategy rebalance failed
-            event_record_service::create_event_record(
-                Event::strategy_rebalance_failed(strategy_id, None, None, error.clone()),
-                context.correlation_id,
-                None,
-            );
-
-            return Err(error);
+                current_pool: current_pool.clone(),
+                is_rebalanced: false,
+            });
         }
+
+        // Withdraw liquidity from current pool and swap token_1 to token_0 (base token)
+        let token_0_to_pool_amount = liquidity_service::withdraw_liquidity_from_pool_and_swap(
+            context.clone(),
+            self.get_total_shares(),
+            self.get_total_shares(),
+            current_pool.clone(),
+        ).await?;
+
+        // Add liquidity to new pool
+        let add_liquidity_response = liquidity_service::add_liquidity_to_pool(
+            context.clone(),
+            token_0_to_pool_amount.clone(),
+            max_apy_pool.clone(),
+        ).await?;
+
+        // Event: Strategy rebalance completed
+        event_record_service::create_event_record(
+            Event::strategy_rebalance_completed(
+                strategy_id,
+                Some(current_pool.get_id()),
+                Some(max_apy_pool.get_id()),
+            ),
+            context.correlation_id,
+            None,
+        );
+
+        // Update current pool
+        self.set_current_pool(Some(max_apy_pool));
+
+        // Update position id
+        self.set_position_id(Some(add_liquidity_response.position_id));
+
+        Ok(StrategyRebalanceResponse {
+            previous_pool: current_pool.clone(),
+            current_pool: self.get_current_pool().unwrap(),
+            is_rebalanced: true,
+        })
     }
 
     fn update_user_shares(&mut self, user: Principal, shares: Nat) {

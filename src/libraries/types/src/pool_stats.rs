@@ -24,6 +24,7 @@ pub struct PositionData {
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug, PartialEq, Eq, Hash)]
 pub struct PoolData {
     pub tvl: Nat,
+    // TODO: add volume
     // pub balance0: Nat,
     // pub balance1: Nat,
     // pub lp_fee_0: Nat,

@@ -35,6 +35,7 @@ members = [
     "src/libraries/validation",
     "src/libraries/service_resolver",
     "src/libraries/yield_calculator",
+    "src/libraries/smart_rebalance",
 ]
 
 
