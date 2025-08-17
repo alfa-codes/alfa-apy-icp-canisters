@@ -674,6 +674,7 @@
                 })
                 .then(text => {
                     console.log('Document loaded successfully, length:', text.length);
+                    console.log('Document content preview:', text.substring(0, 500));
                     const html = convertMarkdownToHtml(text);
                     content.innerHTML = html;
                     content.classList.add('fade-in');
