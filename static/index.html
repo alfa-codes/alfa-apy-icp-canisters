@@ -17,6 +17,7 @@
             --accent-green: #22c55e;
             --accent-green-bright: #22ff88;
             --accent-green-dark: #16a34a;
+            --accent-red: #ef4444;
             --text-primary: #ffffff;
             --text-secondary: #e5e7eb;
             --text-muted: #9ca3af;
@@ -378,11 +379,26 @@
             border: 2px solid var(--border-color);
             box-shadow: var(--shadow-purple);
             transition: all 0.3s ease;
+            opacity: 0;
+            animation: imageFadeIn 0.5s ease-in forwards;
+            margin: 20px 0;
+            display: block;
         }
 
         .markdown-body img:hover {
             transform: scale(1.02);
             box-shadow: var(--shadow-purple), 0 8px 25px rgba(168, 85, 247, 0.4);
+            border-color: var(--accent-purple);
+        }
+
+        .markdown-body img.error {
+            border-color: var(--accent-red);
+            opacity: 0.5;
+        }
+
+        @keyframes imageFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .markdown-body table {
@@ -681,6 +697,23 @@
             document.querySelectorAll('pre').forEach(pre => {
                 pre.style.boxShadow = '0 0 30px rgba(168, 85, 247, 0.3)';
             });
+
+            // Handle images with cosmic effects
+            document.querySelectorAll('img').forEach(img => {
+                // Add error handling
+                img.onerror = function() {
+                    this.classList.add('error');
+                    this.style.borderColor = '#ef4444';
+                    this.style.opacity = '0.5';
+                    console.error('Failed to load image:', this.src);
+                };
+                
+                // Add success handling
+                img.onload = function() {
+                    this.style.opacity = '1';
+                    this.style.animation = 'imageFadeIn 0.5s ease-in forwards';
+                };
+            });
         }
 
         function convertMarkdownToHtml(markdown) {
@@ -701,8 +734,18 @@
                 // Links
                 .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
                 
-                // Images
-                .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width: 100%; height: auto;">')
+                // Images - handle both relative and absolute paths
+                .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, function(match, alt, src) {
+                    // If src starts with ./readme/, remove the ./ prefix
+                    if (src.startsWith('./readme/')) {
+                        src = src.substring(2); // Remove './'
+                    }
+                    // If src starts with readme/, keep it as is
+                    if (src.startsWith('readme/')) {
+                        src = src; // Keep as is
+                    }
+                    return `<img src="${src}" alt="${alt}" style="max-width: 100%; height: auto; border-radius: 8px; border: 2px solid var(--border-color); box-shadow: var(--shadow-purple); transition: all 0.3s ease;" onload="this.style.opacity='1'" onerror="this.style.display='none'; console.error('Failed to load image:', src);">`;
+                })
                 
                 // Lists
                 .replace(/^\* (.*$)/gim, '<li>$1</li>')
