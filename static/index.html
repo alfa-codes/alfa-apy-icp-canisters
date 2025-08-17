@@ -662,9 +662,18 @@
             const content = document.getElementById('content');
             content.style.opacity = '0';
             
+            console.log('Loading document:', filename);
+            
             fetch(filename)
-                .then(response => response.text())
+                .then(response => {
+                    console.log('Response status:', response.status, 'for file:', filename);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.text();
+                })
                 .then(text => {
+                    console.log('Document loaded successfully, length:', text.length);
                     const html = convertMarkdownToHtml(text);
                     content.innerHTML = html;
                     content.classList.add('fade-in');
@@ -679,7 +688,7 @@
                 })
                 .catch(error => {
                     console.error('Error loading document:', error);
-                    content.innerHTML = '<div class="welcome-message"><h2>⚠️ Error Loading Document</h2><p>Please try again or contact support.</p></div>';
+                    content.innerHTML = `<div class="welcome-message"><h2>⚠️ Error Loading Document</h2><p>Failed to load: ${filename}</p><p>Error: ${error.message}</p></div>`;
                 });
             
             setTimeout(() => {
@@ -700,6 +709,8 @@
 
             // Handle images with cosmic effects
             document.querySelectorAll('img').forEach(img => {
+                console.log('Processing image element:', img.src, 'alt:', img.alt);
+                
                 // Add error handling
                 img.onerror = function() {
                     this.classList.add('error');
@@ -712,6 +723,7 @@
                 img.onload = function() {
                     this.style.opacity = '1';
                     this.style.animation = 'imageFadeIn 0.5s ease-in forwards';
+                    console.log('Image loaded successfully:', this.src);
                 };
             });
         }
@@ -734,17 +746,27 @@
                 // Links
                 .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
                 
-                // Images - handle both relative and absolute paths
+                // Images - handle GitHub Pages paths correctly
                 .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, function(match, alt, src) {
-                    // If src starts with ./readme/, remove the ./ prefix
-                    if (src.startsWith('./readme/')) {
-                        src = src.substring(2); // Remove './'
+                    // Handle different image path formats for GitHub Pages
+                    let finalSrc = src;
+                    
+                    // Remove ./ prefix if present
+                    if (src.startsWith('./')) {
+                        finalSrc = src.substring(2);
                     }
-                    // If src starts with readme/, keep it as is
-                    if (src.startsWith('readme/')) {
-                        src = src; // Keep as is
+                    
+                    // Ensure readme/ prefix is present for images
+                    if (!finalSrc.startsWith('readme/') && !finalSrc.startsWith('http') && !finalSrc.startsWith('data:')) {
+                        // If it's just a filename, assume it's in readme folder
+                        if (finalSrc.match(/\.(jpg|jpeg|png|gif|svg|webp)$/i)) {
+                            finalSrc = 'readme/' + finalSrc;
+                        }
                     }
-                    return `<img src="${src}" alt="${alt}" style="max-width: 100%; height: auto; border-radius: 8px; border: 2px solid var(--border-color); box-shadow: var(--shadow-purple); transition: all 0.3s ease;" onload="this.style.opacity='1'" onerror="this.style.display='none'; console.error('Failed to load image:', src);">`;
+                    
+                    console.log('Processing image:', src, '->', finalSrc);
+                    
+                    return `<img src="${finalSrc}" alt="${alt}" style="max-width: 100%; height: auto; border-radius: 8px; border: 2px solid var(--border-color); box-shadow: var(--shadow-purple); transition: all 0.3s ease;" onload="this.style.opacity='1'" onerror="this.style.display='none'; console.error('Failed to load image:', finalSrc);">`;
                 })
                 
                 // Lists
