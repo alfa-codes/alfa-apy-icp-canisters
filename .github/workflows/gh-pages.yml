@@ -1,0 +1,313 @@
+name: Deploy Documentation to GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - 'readme/**'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - 'readme/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create documentation site
+        run: |
+          mkdir -p docs-site
+          cp -r docs/* docs-site/
+          cp -r readme/* docs-site/
+          cp README.md docs-site/index.md
+          
+          # Create a comprehensive HTML documentation site
+          cat > docs-site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Alfa APY Documentation</title>
+              <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.2.0/github-markdown.min.css">
+              <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+              <style>
+                  body {
+                      margin: 0;
+                      padding: 0;
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+                  }
+                  .container {
+                      display: flex;
+                      min-height: 100vh;
+                  }
+                  .sidebar {
+                      width: 280px;
+                      background: #f6f8fa;
+                      border-right: 1px solid #e1e4e8;
+                      padding: 20px;
+                      overflow-y: auto;
+                      position: fixed;
+                      height: 100vh;
+                  }
+                  .sidebar h3 {
+                      margin-top: 0;
+                      color: #24292e;
+                      font-size: 16px;
+                      font-weight: 600;
+                  }
+                  .sidebar ul {
+                      list-style: none;
+                      padding: 0;
+                      margin: 0;
+                  }
+                  .sidebar li {
+                      margin: 8px 0;
+                  }
+                  .sidebar a {
+                      color: #586069;
+                      text-decoration: none;
+                      font-size: 14px;
+                      display: block;
+                      padding: 4px 8px;
+                      border-radius: 3px;
+                      transition: background-color 0.2s;
+                  }
+                  .sidebar a:hover {
+                      background-color: #e1e4e8;
+                      color: #24292e;
+                  }
+                  .sidebar a.active {
+                      background-color: #0366d6;
+                      color: white;
+                  }
+                  .content {
+                      flex: 1;
+                      margin-left: 280px;
+                      padding: 40px;
+                  }
+                  .markdown-body {
+                      box-sizing: border-box;
+                      min-width: 200px;
+                      max-width: 980px;
+                      margin: 0 auto;
+                  }
+                  .nav-header {
+                      background: #24292e;
+                      color: white;
+                      padding: 1rem;
+                      margin: -40px -40px 40px -40px;
+                      border-bottom: 1px solid #e1e4e8;
+                  }
+                  .nav-header h1 {
+                      margin: 0;
+                      font-size: 24px;
+                      font-weight: 600;
+                  }
+                  .nav-header p {
+                      margin: 8px 0 0 0;
+                      opacity: 0.8;
+                  }
+                  @media (max-width: 768px) {
+                      .sidebar {
+                          display: none;
+                      }
+                      .content {
+                          margin-left: 0;
+                          padding: 20px;
+                      }
+                      .nav-header {
+                          margin: -20px -20px 20px -20px;
+                      }
+                  }
+                  .mobile-menu-toggle {
+                      display: none;
+                      background: #0366d6;
+                      color: white;
+                      border: none;
+                      padding: 10px 15px;
+                      border-radius: 4px;
+                      cursor: pointer;
+                      margin-bottom: 20px;
+                  }
+                  @media (max-width: 768px) {
+                      .mobile-menu-toggle {
+                          display: block;
+                      }
+                      .sidebar.mobile-open {
+                          display: block;
+                          position: fixed;
+                          top: 0;
+                          left: 0;
+                          width: 100%;
+                          height: 100%;
+                          z-index: 1000;
+                          background: white;
+                      }
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="sidebar" id="sidebar">
+                      <h3>Documentation</h3>
+                      <ul>
+                          <li><a href="#" data-file="index.md" class="nav-link active">README</a></li>
+                          <li><a href="#" data-file="main_doc_draft.md" class="nav-link">Main Documentation</a></li>
+                          <li><a href="#" data-file="liquidity_pools_calculation_flow.md" class="nav-link">Liquidity Pools Calculation</a></li>
+                          <li><a href="#" data-file="smart_rebalance.md" class="nav-link">Smart Rebalance</a></li>
+                          <li><a href="#" data-file="icp_swap.md" class="nav-link">ICP Swap</a></li>
+                          <li><a href="#" data-file="kong_swap_provider_flow.md" class="nav-link">Kong Swap Provider</a></li>
+                          <li><a href="#" data-file="error_codes.md" class="nav-link">Error Codes</a></li>
+                      </ul>
+                  </div>
+                  
+                  <div class="content">
+                      <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰ Menu</button>
+                      
+                      <div class="nav-header">
+                          <h1>Alfa APY Documentation</h1>
+                          <p>Comprehensive documentation for the Alfa APY yield optimization protocol</p>
+                      </div>
+                      
+                      <div class="markdown-body" id="content">
+                          <div style="text-align: center; padding: 40px;">
+                              <h2>Welcome to Alfa APY Documentation</h2>
+                              <p>Select a document from the sidebar to get started.</p>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+              <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+              <script>
+                  // Navigation functionality
+                  document.querySelectorAll('.nav-link').forEach(link => {
+                      link.addEventListener('click', function(e) {
+                          e.preventDefault();
+                          
+                          // Remove active class from all links
+                          document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                          
+                          // Add active class to clicked link
+                          this.classList.add('active');
+                          
+                          // Load content
+                          const file = this.getAttribute('data-file');
+                          loadDocument(file);
+                      });
+                  });
+
+                  function loadDocument(filename) {
+                      fetch(filename)
+                          .then(response => response.text())
+                          .then(text => {
+                              const html = convertMarkdownToHtml(text);
+                              document.getElementById('content').innerHTML = html;
+                              
+                              // Highlight code blocks
+                              if (window.Prism) {
+                                  Prism.highlightAll();
+                              }
+                          })
+                          .catch(error => {
+                              console.error('Error loading document:', error);
+                              document.getElementById('content').innerHTML = '<p>Error loading document. Please try again.</p>';
+                          });
+                  }
+
+                  function convertMarkdownToHtml(markdown) {
+                      return markdown
+                          // Headers
+                          .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                          .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                          .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                          
+                          // Bold and italic
+                          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                          
+                          // Code blocks
+                          .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>')
+                          .replace(/`([^`]+)`/g, '<code>$1</code>')
+                          
+                          // Links
+                          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                          
+                          // Images
+                          .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width: 100%; height: auto;">')
+                          
+                          // Lists
+                          .replace(/^\* (.*$)/gim, '<li>$1</li>')
+                          .replace(/^- (.*$)/gim, '<li>$1</li>')
+                          .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+                          
+                          // Line breaks
+                          .replace(/\n\n/g, '</p><p>')
+                          .replace(/^(.+)$/gm, '<p>$1</p>')
+                          
+                          // Clean up empty paragraphs
+                          .replace(/<p><\/p>/g, '')
+                          .replace(/<p><p>/g, '<p>')
+                          .replace(/<\/p><\/p>/g, '</p>');
+                  }
+
+                  function toggleMobileMenu() {
+                      const sidebar = document.getElementById('sidebar');
+                      sidebar.classList.toggle('mobile-open');
+                  }
+
+                  // Load README by default
+                  loadDocument('index.md');
+              </script>
+          </body>
+          </html>
+          EOF
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs-site'
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
