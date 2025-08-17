@@ -1,166 +1,63 @@
-<div style="display:flex;flex-direction:row;gap:20px;">
-  <a href="https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/" target="_blank" rel="noopener noreferrer">
-    <img src="./readme/alfaWolf.png" role="presentation" alt="image" width="250" height="auto"/>
-  </a>
-  <a href="https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/" target="_blank" rel="noopener noreferrer">
-    <img src="./readme/alfaWolf.png" role="presentation" alt="image" width="250" height="auto"/>
-  </a>
-  <a href="https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/" target="_blank" rel="noopener noreferrer">
-    <img src="./readme/alfaWolf.png" role="presentation" alt="image" width="250" height="auto"/>
-  </a>
+<div align="center" style="margin: 40px 0;">
+  <img src="./readme/alfaWolf.png" alt="ALFA Wolf" width="300" height="auto" style="border-radius: 16px; box-shadow: 0 8px 32px rgba(168, 85, 247, 0.3);"/>
 </div>
 
-# Alfa APY
+# ALFA APY
 
-**Introduction**: https://youtu.be/ldqRNLbQflI
-**Current progress**: https://www.youtube.com/watch?v=Vb0YfFJg770
-
-The [AlfaAPY](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/) is the first yield optimization DeFi protocol built on the Internet Computer Protocol (ICP) utilizing **ckBTC**, similar to Yearn Finance on Ethereum. The protocol automatically maximizes returns for users by finding the highest-yielding liquidity pools and dynamically reallocating assets to optimize yield.
-
-## Description
-
-The [AlfaAPY](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/) is designed to solve the challenge of finding and utilizing the best yield opportunities in the ICP ecosystem. The protocol continuously monitors APY across various liquidity pools from different DeFi providers like KongSwap, ICPSwap, and others. When a higher-yielding opportunity is detected, it automatically rebalances funds to maximize returns.
-
-With an easy-to-use interface for managing investments and tracking performance, users can effortlessly monitor their yield optimization strategies while leveraging the power of ckBTC for efficient cross-chain transactions and yield generation.
-
-
-### Interface
-
-The [AlfaAPY](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/) interface provides an intuitive and user-friendly experience for managing your yield optimization strategies.
-
-<div style="display:flex;flex-direction:row;gap:20px;">
-  <a href="https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/" target="_blank" rel="noopener noreferrer">
-    <img src="./readme/alfa_apy2.jpg" role="presentation" alt="image" width="400" height="auto"/>
-  </a>
-  <a href="https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/" target="_blank" rel="noopener noreferrer">
-    <img src="./readme/alfa_apy1.jpg" role="presentation" alt="image" width="400" height="auto"/>
-  </a>
+<div align="center" style="margin: 30px 0; padding: 30px; background: linear-gradient(135deg, #a855f7 0%, #22c55e 100%); border-radius: 16px; border: 3px solid #8b5cf6; box-shadow: 0 12px 40px rgba(168, 85, 247, 0.4);">
+  <h2 style="margin: 0 0 20px 0; color: white; font-size: 32px; font-weight: 800;">🚀 The First Yield Optimization DeFi Protocol on ICP</h2>
+  <p style="margin: 0 0 25px 0; color: #e5e7eb; font-size: 18px; line-height: 1.6;">Automatically maximize returns by finding the highest-yielding liquidity pools and dynamically reallocating assets to optimize yield.</p>
+  
+  <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+    <a href="https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/" target="_blank" style="display: inline-block; background: #22ff88; color: #0f0f0f; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 18px; transition: all 0.3s ease; box-shadow: 0 6px 20px rgba(34, 255, 136, 0.4);">
+      🌟 Live Application 🌟
+    </a>
+    <a href="https://alfa-codes.github.io/alfa-apy-icp-canisters/" target="_blank" style="display: inline-block; background: #a855f7; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 18px; transition: all 0.3s ease; box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);">
+      📚 Documentation 📚
+    </a>
+  </div>
 </div>
 
-### How It Works
+## Quick Links
 
-1. **Deposit**: Users deposit assets (ckBTC, ICP, etc.) into their chosen strategy.
-2. **Monitoring**: Protocol tracks APY across various liquidity pools.
-3. **Rebalancing**: Funds automatically move to higher-yielding pools.
-4. **Withdrawal**: Users can withdraw assets with accumulated yield anytime.
+- **🎯 [Live Application](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/)** - Try ALFA APY now
+- **📖 [Documentation](https://alfa-codes.github.io/alfa-apy-icp-canisters/)** - Complete guides and API reference
+- **🎥 [Introduction Video](https://youtu.be/ldqRNLbQflI)** - Learn about ALFA APY
+- **📈 [Progress Update](https://www.youtube.com/watch?v=Vb0YfFJg770)** - Latest development status
 
-## Features
+## What is ALFA APY?
 
-- **Automated Yield Optimization**: Automatically moves assets between liquidity pools and providers to maximize APY.
-- **Multiple Asset Strategies**: Supports various assets including ckBTC, ICP, and stablecoin pairs.
-- **Multiple Providers**: Integrates with various DeFi providers on ICP, including Kongswap and ICPSwap.
-- **Non-custodial**: Users maintain control of their assets while benefiting from optimization.
-- **Secure and Transparent**: Built on the secure and transparent infrastructure of ICP.
-- **Low Fees**: Minimal fees compared to manual rebalancing due to efficient ckBTC transactions.
+ALFA APY is the first yield optimization DeFi protocol built on the Internet Computer Protocol (ICP) utilizing **ckBTC**, similar to Yearn Finance on Ethereum. The protocol automatically maximizes returns for users by finding the highest-yielding liquidity pools and dynamically reallocating assets to optimize yield.
 
-## Architecture
+### Key Features
 
-[AlfaAPY](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/) is built on a modular architecture with the following components:
+- **🚀 Automated Yield Optimization** - Automatically moves assets between liquidity pools to maximize APY
+- **💎 Multiple Asset Strategies** - Supports ckBTC, ICP, and stablecoin pairs
+- **🌊 Multi-Provider Integration** - Works with KongSwap, ICPSwap, and other DeFi providers
+- **🔒 Non-custodial** - Users maintain full control of their assets
+- **⚡ Smart Rebalancing** - Dynamic allocation based on real-time APY data
+- **💰 Low Fees** - Minimal costs compared to manual rebalancing
 
-### Core Components
+## Technology Stack
 
-- **Vault**: Main entry point for user deposits and withdrawals.
-- **Strategies**: Asset-specific implementations for yield optimization.
-- **Liquidity Service**: Handles interactions with liquidity pools.
-- **Swap Service**: Manages token swaps between different assets.
-- **Repository**: Manages persistent state and strategy data.
-
-### Documentation
-
-- [Calculator Functions Documentation](docs/liquidity_pools_calculation_flow.md) - Detailed documentation of share calculation and liquidity distribution functions.
-- [Kong Swap Provider Documentation](docs/kong_swap_provider_flow.md) - Documentation for working with Kong Swap pools and APY calculations.
-- [Smart Rebalance Documentation](docs/smart_rebalance.md) - Smart rebalancing strategies and algorithms.
-- [ICP Swap Documentation](docs/icp_swap.md) - ICP swap operations and integrations.
-- [Error Codes Reference](docs/error_codes.md) - Comprehensive error code documentation.
-
-> 📚 **Live Documentation**: [View our beautiful cosmic DeFi documentation site](https://[username].github.io/[repository-name]/) with responsive navigation, syntax highlighting, and all documentation files from the `docs/` folder.
-
-## Technologies
-
-### Backend
-
-- **Rust**: Primary programming language
-- **Internet Computer Protocol (ICP)**: Blockchain platform
-- **Candid**: Interface description language for ICP
-- **ICRC-1/ICRC-2**: Token standards for asset handling
-- **KongSwap/ICPSwap**: DEX integrations for liquidity provision and swaps
-
-### Frontend
-
-- **TypeScript**: Frontend programming language
-- **Vite**: Build tool and development server
-- **React**: UI framework
-- **@dfinity packages**: Internet Computer SDK
-- **@nfid/identitykit**: Authentication integration
-- **@reduxjs/toolkit**: State management
-- **TailwindCSS**: Utility-first CSS framework
+- **Backend**: Rust + Internet Computer Protocol (ICP)
+- **Frontend**: TypeScript + React + Vite
+- **Blockchain**: ICP with ICRC-1/ICRC-2 token standards
+- **DEX Integration**: KongSwap, ICPSwap
 
 ## Getting Started
 
-### Prerequisites
+For detailed setup instructions, development guides, and API documentation, visit our comprehensive documentation site:
 
-Ensure you have the following tools installed before diving into development:
+**[📚 ALFA APY Documentation](https://alfa-codes.github.io/alfa-apy-icp-canisters/)**
 
-- **Rustup** `^v1.27.1`
-- **DFX** `^v0.24.0`
-- **jq** `^1.6`
+## Source Code
 
-> ⚠️ Note: These versions are specific for compatibility with the Internet Computer SDK.
+- **Backend**: [https://github.com/olsemeno/alfaAPY](https://github.com/olsemeno/alfaAPY)
+- **Frontend**: [https://github.com/olsemeno/Alfa_APY_FE](https://github.com/olsemeno/Alfa_APY_FE)
 
----
+## Community & Support
 
-### Launch Local DFX
-
-Begin by starting a local DFX instance:
-
-```bash
-dfx start --background --clean
-```
-
-### Deploy Vault
-
-To deploy the vault canister with the specified ID, run:
-
-```bash
-dfx deploy vault --no-wallet --specified-id "ownab-uaaaa-aaaap-qp2na-cai"
-```
-
-## Unit Tests
-
-### Run Unit Tests
-
-```bash
-cargo test --lib
-```
-
-## Integration Tests
-
-### Prerequisites
-
-Install these dependencies before testing:
-
-- **NodeJS** `^v20.16.0`
-- **Yarn** `^v1.22.22`
-
-### Run Integration Tests
-
-To run the integration tests, use:
-
-```bash
-npm i && npm run test
-```
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Source code
-
-- [Backend](https://github.com/olsemeno/alfaAPY)
-- [Frontend](https://github.com/olsemeno/Alfa_APY_FE)
-
-## Links
-
-- [Application Website](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/)
-- [Internet Computer](https://internetcomputer.org)
-- [DFINITY Foundation](https://dfinity.org)
+- **Website**: [https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/)
+- **Internet Computer**: [https://internetcomputer.org](https://internetcomputer.org)
+- **DFINITY Foundation**: [https://dfinity.org](https://dfinity.org)

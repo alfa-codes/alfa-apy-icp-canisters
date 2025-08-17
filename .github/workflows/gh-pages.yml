@@ -51,7 +51,6 @@ jobs:
           # Copy documentation files
           cp -r docs/* docs-site/
           cp -r readme docs-site/
-          cp README.md docs-site/index.md
           
           # Copy static HTML template
           cp static/index.html docs-site/
