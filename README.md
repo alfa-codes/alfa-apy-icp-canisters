@@ -14,9 +14,9 @@
 
 ## 🚀 The First Yield Optimization DeFi Protocol on ICP
 
-<font size="5">Automatically maximize returns by finding the highest-yielding liquidity pools and dynamically reallocating assets to optimize yield.</font>
+### Automatically maximize returns by finding the highest-yielding liquidity pools and dynamically reallocating assets to optimize yield.
 
-<font size="6">**🌟 [Live Application](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/)** | **📚 [Documentation](https://alfa-codes.github.io/alfa-apy-icp-canisters/)**</font>
+## 🌟 [Live Application](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/) | 📚 [Documentation](https://alfa-codes.github.io/alfa-apy-icp-canisters/)
 
 ## 🚀 Quick Links
 
