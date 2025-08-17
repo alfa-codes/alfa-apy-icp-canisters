@@ -65,10 +65,15 @@ The [AlfaAPY](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/) interface provides a
 - **Swap Service**: Manages token swaps between different assets.
 - **Repository**: Manages persistent state and strategy data.
 
-### Documentations
+### Documentation
 
 - [Calculator Functions Documentation](docs/liquidity_pools_calculation_flow.md) - Detailed documentation of share calculation and liquidity distribution functions.
 - [Kong Swap Provider Documentation](docs/kong_swap_provider_flow.md) - Documentation for working with Kong Swap pools and APY calculations.
+- [Smart Rebalance Documentation](docs/smart_rebalance.md) - Smart rebalancing strategies and algorithms.
+- [ICP Swap Documentation](docs/icp_swap.md) - ICP swap operations and integrations.
+- [Error Codes Reference](docs/error_codes.md) - Comprehensive error code documentation.
+
+> 📚 **Live Documentation**: [View our beautiful cosmic DeFi documentation site](https://[username].github.io/[repository-name]/) with responsive navigation, syntax highlighting, and all documentation files from the `docs/` folder.
 
 ## Technologies
 
