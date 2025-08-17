@@ -757,11 +757,11 @@
                         finalSrc = src.substring(2);
                     }
                     
-                    // Ensure readme/ prefix is present for images
-                    if (!finalSrc.startsWith('readme/') && !finalSrc.startsWith('http') && !finalSrc.startsWith('data:')) {
-                        // If it's just a filename, assume it's in readme folder
+                    // Ensure static/ prefix is present for images
+                    if (!finalSrc.startsWith('static/') && !finalSrc.startsWith('http') && !finalSrc.startsWith('data:')) {
+                        // If it's just a filename, assume it's in static folder
                         if (finalSrc.match(/\.(jpg|jpeg|png|gif|svg|webp)$/i)) {
-                            finalSrc = 'readme/' + finalSrc;
+                            finalSrc = 'static/' + finalSrc;
                         }
                     }
                     

@@ -1,5 +1,5 @@
 <div align="center" style="margin: 40px 0;">
-  <img src="./wolf.png" alt="ALFA Wolf" width="300" height="auto" style="border-radius: 16px; box-shadow: 0 8px 32px rgba(168, 85, 247, 0.3);"/>
+  <img src="./static/wolf.png" alt="ALFA Wolf" width="100%" height="auto" style="border-radius: 16px; box-shadow: 0 8px 32px rgba(168, 85, 247, 0.3); max-width: 800px;"/>
   
   <div style="margin-top: 20px; padding: 15px; background: rgba(168, 85, 247, 0.1); border-radius: 10px; border: 1px solid #a855f7; max-width: 500px;">
     <p style="margin: 0; color: #a855f7; font-size: 16px; font-weight: 500;">

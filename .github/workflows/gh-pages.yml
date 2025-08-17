@@ -50,16 +50,13 @@ jobs:
           
           # Copy documentation files
           cp -r docs/* docs-site/
-          cp -r readme docs-site/
-          
-          # Copy static HTML template
-          cp static/index.html docs-site/
+          cp -r static docs-site/
           
           # List contents for debugging
           echo "=== Build directory contents ==="
           ls -la docs-site/
-          echo "=== Readme folder contents ==="
-          ls -la docs-site/readme/
+          echo "=== Static folder contents ==="
+          ls -la docs-site/static/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
