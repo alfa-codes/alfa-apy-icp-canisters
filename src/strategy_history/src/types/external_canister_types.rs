@@ -2,9 +2,9 @@ use candid::{CandidType, Deserialize, Nat, Principal};
 use std::collections::HashMap;
 use serde::Serialize;
 
-use crate::strategy_snapshot::strategy_snapshot::Pool;
+use types::strategies::StrategyId;
 
-pub type StrategyId = u16;
+use crate::strategy_snapshot::strategy_snapshot::Pool;
 
 // Types must exactly mirror the vault.did to ensure on-wire compatibility
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]

@@ -24,6 +24,7 @@ pub async fn add_liquidity_to_pool(
         Event::add_liquidity_to_pool_started(pool.id.clone(), Some(amount.clone()), None),
         context.correlation_id.clone(),
         Some(user),
+        None,
     );
 
     let liquidity_client = liquidity_client(pool.clone()).await;
@@ -37,6 +38,7 @@ pub async fn add_liquidity_to_pool(
                 Event::add_liquidity_to_pool_failed(pool.id.clone(), Some(amount.clone()), error.clone()),
                 context.correlation_id.clone(),
                 context.user.clone(),
+                None,
             );
 
             error
@@ -47,12 +49,16 @@ pub async fn add_liquidity_to_pool(
         Event::add_liquidity_to_pool_completed(pool.id, Some(amount), None),
         context.correlation_id.clone(),
         Some(user),
+        None,
     );
 
     Ok(add_liquidity_response)
 }
 
-pub async fn withdraw_liquidity_from_pool(context: Context, pool: Pool) -> Result<WithdrawLiquidityResponse, InternalError> {
+pub async fn withdraw_liquidity_from_pool(
+    context: Context,
+    pool: Pool
+) -> Result<WithdrawLiquidityResponse, InternalError> {
     let user = context.user.clone().unwrap();
     // Remove 100% liquidity from pool
     let total_shares = Nat::from(1 as u8);
@@ -63,6 +69,7 @@ pub async fn withdraw_liquidity_from_pool(context: Context, pool: Pool) -> Resul
         Event::withdraw_liquidity_from_pool_started(pool.id.clone(), total_shares.clone(), shares.clone()),
         context.correlation_id.clone(),
         Some(user),
+        None,
     );
 
     let liquidity_client = liquidity_client(pool.clone()).await;
@@ -82,6 +89,7 @@ pub async fn withdraw_liquidity_from_pool(context: Context, pool: Pool) -> Resul
                 ),
                 context.correlation_id.clone(),
                 Some(user),
+                None,
             );
 
             error
@@ -98,6 +106,7 @@ pub async fn withdraw_liquidity_from_pool(context: Context, pool: Pool) -> Resul
         ),
         context.correlation_id.clone(),
         Some(user),
+        None,
     );
 
     Ok(withdraw_liquidity_response)

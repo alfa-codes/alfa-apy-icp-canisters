@@ -116,7 +116,7 @@ async fn get_event_records(request: ListItemsPaginationRequest) -> GetEventRecor
 
 #[update]
 async fn deposit(args: StrategyDepositArgs) -> StrategyDepositResult {
-    let context = Context::generate(Some(caller()));
+    let context = Context::generate(Some(caller()), Some(args.strategy_id));
 
     let result = service::deposit(context, args).await
         .map_err(|error| ResponseError::from_internal_error(error));
@@ -126,7 +126,7 @@ async fn deposit(args: StrategyDepositArgs) -> StrategyDepositResult {
 
 #[update]
 async fn withdraw(args: StrategyWithdrawArgs) -> StrategyWithdrawResult {
-    let context = Context::generate(Some(caller()));
+    let context = Context::generate(Some(caller()), Some(args.strategy_id));
 
     let result = service::withdraw(context, args).await
         .map_err(|error| ResponseError::from_internal_error(error));

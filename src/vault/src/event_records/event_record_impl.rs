@@ -2,6 +2,7 @@ use candid::Principal;
 use ic_cdk::api::time;
 
 use event_records::generic_event_record::GenericEventRecord;
+use types::strategies::StrategyId;
 
 use crate::event_records::event_record::{EventRecord, Event};
 use crate::repository::event_records_repo;
@@ -13,6 +14,7 @@ impl EventRecord {
         event: Event,
         timestamp: u64,
         user: Option<Principal>,
+        strategy_id: Option<StrategyId>,
     ) -> Self {
         Self(GenericEventRecord {
             id,
@@ -20,6 +22,7 @@ impl EventRecord {
             timestamp,
             correlation_id,
             user,
+            strategy_id,
         })
     }
 
@@ -28,6 +31,7 @@ impl EventRecord {
         correlation_id: String,
         event: Event,
         user: Option<Principal>,
+        strategy_id: Option<StrategyId>,
     ) -> Self {
         Self::new(
             id,
@@ -35,6 +39,7 @@ impl EventRecord {
             event,
             time(),
             user,
+            strategy_id,
         )
     }
 

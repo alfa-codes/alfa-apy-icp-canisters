@@ -1,10 +1,10 @@
 use candid::{CandidType, Deserialize, Nat};
 use serde::Serialize;
 
+use types::strategies::StrategyId;
 use errors::{internal_error::error::InternalError, response_error::error::ResponseError};
 
 use crate::strategy_snapshot::strategy_snapshot::StrategySnapshot;
-use crate::types::external_canister_types::StrategyId;
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
 pub struct SaveStrategySnapshotResult(pub Result<(), ResponseError>);

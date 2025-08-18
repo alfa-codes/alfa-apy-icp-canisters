@@ -6,8 +6,8 @@ use types::exchange_id::ExchangeId;
 use types::CanisterId;
 use validation::validation::Validation;
 use validation::fields_validator::FieldsValidator;
+use types::strategies::StrategyId;
 
-use crate::types::external_canister_types::StrategyId;
 use crate::repository::snapshots_repo;
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug, PartialEq)]

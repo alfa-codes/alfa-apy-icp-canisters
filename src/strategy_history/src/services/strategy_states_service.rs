@@ -5,6 +5,7 @@ use ::utils::constants::{ICP_TOKEN_CANISTER_ID, VAULT_PRINCIPAL_DEV};
 use ::utils::util::{nat_to_f64, current_timestamp_secs};
 use swap::swap_service;
 use errors::internal_error::error::{InternalError, build_error_code};
+use types::strategies::StrategyId;
 
 use crate::repository::strategy_states_repo;
 use crate::vault::vault_service;
@@ -12,7 +13,6 @@ use crate::utils::service_resolver;
 use crate::strategy_snapshot::strategy_snapshot::Pool;
 use crate::types::types::{StrategyState, InitializeStrategyStatesResponse, TestLiquidityData};
 use crate::types::external_canister_types::{
-    StrategyId,
     StrategyDepositArgs,
     StrategyDepositResponse,
     VaultStrategyResponse,

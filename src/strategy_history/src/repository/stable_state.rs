@@ -2,10 +2,11 @@ use candid::{CandidType, Deserialize};
 use ic_cdk::storage;
 use serde::Serialize;
 
+use types::strategies::StrategyId;
+
 use crate::repository::runtime_config_repo::{self, RuntimeConfig};
 use crate::strategy_snapshot::strategy_snapshot::StrategySnapshot;
 use crate::repository::{snapshots_repo, strategy_states_repo};
-use crate::types::external_canister_types::StrategyId;
 use crate::types::types::StrategyState;
 
 #[derive(Clone, Debug, CandidType, Serialize, Deserialize)]

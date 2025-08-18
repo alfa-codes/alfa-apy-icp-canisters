@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use candid::{Nat, Principal};
-use crate::types::types::StrategyId;
+
+use types::strategies::StrategyId;
+
 use crate::pools::pool::Pool;
 
 pub trait BasicStrategy {

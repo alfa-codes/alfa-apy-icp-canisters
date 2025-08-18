@@ -4,11 +4,12 @@ use std::ops::{Div, Mul};
 use errors::internal_error::error::{InternalError, build_error_code};
 use validation::validation::Validation;
 use ::utils::util::current_timestamp_secs;
+use types::strategies::StrategyId;
 
 use crate::repository::snapshots_repo;
 use crate::strategy_snapshot::strategy_snapshot::StrategySnapshot;
 use crate::types::types::{StrategyState, CreateStrategiesSnapshotsResponse};
-use crate::types::external_canister_types::{StrategyId, VaultStrategyResponse};
+use crate::types::external_canister_types::VaultStrategyResponse;
 use crate::services::strategy_yield_service;
 
 pub fn save_strategy_snapshot(snapshot: StrategySnapshot) -> Result<(), InternalError> {

@@ -46,6 +46,7 @@ pub async fn add_liquidity_to_pool(
         Event::add_liquidity_to_pool_started(pool.id.clone(), Some(amount.clone()), None),
         context.correlation_id.clone(),
         Some(user),
+        context.strategy_id,
     );
 
     let service_resolver = get_service_resolver();
@@ -71,6 +72,7 @@ pub async fn add_liquidity_to_pool(
                 ),
                 context.correlation_id.clone(),
                 Some(user),
+                context.strategy_id,
             );
             error
         })?;
@@ -84,6 +86,7 @@ pub async fn add_liquidity_to_pool(
         ),
         context.correlation_id.clone(),
         Some(user),
+        context.strategy_id,
     );
 
     Ok(add_liquidity_response)
@@ -106,6 +109,7 @@ pub async fn withdraw_liquidity_from_pool(
         ),
         context.correlation_id.clone(),
         Some(user),
+        context.strategy_id,
     );
 
     let service_resolver = get_service_resolver();
@@ -134,6 +138,7 @@ pub async fn withdraw_liquidity_from_pool(
                     ),
                     context.correlation_id.clone(),
                     Some(user),
+                    context.strategy_id,
                 );
                 error
             })?;
@@ -149,6 +154,7 @@ pub async fn withdraw_liquidity_from_pool(
         ),
         context.correlation_id.clone(),
         Some(user),
+        context.strategy_id,
     );
 
     Ok(withdraw_liquidity_response)
@@ -203,6 +209,7 @@ pub async fn withdraw_liquidity_from_pool_and_swap(
         ),
         context.correlation_id.clone(),
         Some(user),
+        context.strategy_id,
     );
 
     // Swap withdrawn token_1 to token_0 (base token)
@@ -225,6 +232,7 @@ pub async fn withdraw_liquidity_from_pool_and_swap(
                 ),
                 context.correlation_id.clone(),
                 Some(user),
+                context.strategy_id,
             );
 
             error
@@ -241,6 +249,7 @@ pub async fn withdraw_liquidity_from_pool_and_swap(
         ),
         context.correlation_id.clone(),
         Some(user),
+        context.strategy_id,
     );
 
     amount_0_to_withdraw = amount_0_to_withdraw + swap_response.amount_out;

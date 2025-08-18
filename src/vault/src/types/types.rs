@@ -3,6 +3,7 @@ use candid::{CandidType, Deserialize, Nat, Principal};
 use serde::Serialize;
 
 use types::CanisterId;
+use types::strategies::StrategyId;
 use errors::response_error::error::ResponseError;
 
 use crate::pools::pool::Pool;
@@ -83,8 +84,6 @@ pub struct SupportedStandard {
     pub url: String,
     pub name: String,
 }
-
-pub type StrategyId = u16;
 
 #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
 pub struct StrategyDepositResult(pub Result<StrategyDepositResponse, ResponseError>);

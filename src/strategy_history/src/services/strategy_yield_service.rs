@@ -1,7 +1,7 @@
 use yield_calculator::{YieldSnapshot, TimePeriod};
+use types::strategies::StrategyId;
 
 use crate::strategy_snapshot::strategy_snapshot::StrategySnapshot;
-use crate::types::external_canister_types::StrategyId;
 use crate::repository::snapshots_repo;
 
 impl YieldSnapshot for StrategySnapshot {

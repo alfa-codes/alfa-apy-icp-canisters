@@ -48,7 +48,7 @@ pub fn stop_pool_snapshots_timer() {
 }
 
 pub async fn create_all_pool_snapshots() {
-    let context = Context::generate(None);
+    let context = Context::generate(None, None);
 
     let pools = pools_repo::get_pools();
 

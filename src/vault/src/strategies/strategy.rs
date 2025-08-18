@@ -60,16 +60,17 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
     async fn deposit(
         &mut self,
         context: Context,
-        investor: Principal,
         amount: Nat,
     ) -> Result<StrategyDepositResponse, InternalError> {
         let strategy_id = self.get_id().to_string();
+        let investor = context.user.unwrap();
 
         // Event: Strategy deposit started
         event_record_service::create_event_record(
             Event::strategy_deposit_started(strategy_id.clone(), None, Some(amount.clone())),
             context.correlation_id.clone(),
             Some(investor),
+            context.strategy_id,
         );
 
         let mut current_pool = self.get_current_pool();
@@ -97,6 +98,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
                     ),
                     context.correlation_id,
                     Some(investor),
+                    context.strategy_id,
                 );
 
                 return Err(error);
@@ -132,6 +134,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
             ),
             context.correlation_id,
             Some(investor),
+            context.strategy_id,
         );
 
         Ok(StrategyDepositResponse {
@@ -175,6 +178,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
             Event::strategy_withdraw_started(strategy_id.clone(), None, Some(shares.clone())),
             context.correlation_id.clone(),
             Some(investor),
+            context.strategy_id,
         );
 
         let current_pool = self.get_current_pool().clone();
@@ -202,6 +206,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
                 ),
                 context.correlation_id,
                 Some(investor),
+                context.strategy_id,
             );
 
             return Err(error);
@@ -230,6 +235,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
                 ),
                 context.correlation_id,
                 Some(investor),
+                context.strategy_id,
             );
 
             return Err(error);
@@ -253,6 +259,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
                 ),
                 context.correlation_id,
                 Some(investor),
+                context.strategy_id,
             );
 
             return Err(error);
@@ -288,6 +295,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
                     ),
                     context.correlation_id.clone(),
                     Some(investor),
+                    context.strategy_id,
                 );
 
                 error
@@ -308,6 +316,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
             ),
             context.correlation_id,
             Some(investor),
+            context.strategy_id,
         );
 
         Ok(StrategyWithdrawResponse {
@@ -334,14 +343,19 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
     ///   * `pool` - The pool being used after rebalancing
     ///
     async fn rebalance(&mut self) -> Result<StrategyRebalanceResponse, InternalError> {
-        let context = Context::generate(None);
+        let context = Context::generate(
+            None,
+            Some(self.get_id())
+        );
+
         let strategy_id = self.get_id().to_string();
 
         // Event: Strategy rebalance started
         event_record_service::create_event_record(
             Event::strategy_rebalance_started(strategy_id.clone(), None),
             context.correlation_id.clone(),
-            None,
+            context.user,
+            context.strategy_id,
         );
 
         let current_pool = self.get_current_pool();
@@ -357,7 +371,8 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
             event_record_service::create_event_record(
                 Event::strategy_rebalance_failed(strategy_id, None, None, error.clone()),
                 context.correlation_id,
-                None,
+                context.user,
+                context.strategy_id,
             );
 
             return Err(error);
@@ -403,6 +418,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
                 ),
                 context.correlation_id,
                 None,
+                context.strategy_id,
             );
 
             return Ok(StrategyRebalanceResponse {
@@ -435,7 +451,8 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
                 Some(max_apy_pool.get_id()),
             ),
             context.correlation_id,
-            None,
+            context.user,
+            context.strategy_id,
         );
 
         // Update current pool

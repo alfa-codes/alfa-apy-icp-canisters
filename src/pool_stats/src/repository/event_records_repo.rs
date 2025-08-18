@@ -32,6 +32,7 @@ mod tests {
     use candid::Nat;
 
     use event_records::generic_event_record::GenericEventRecord;
+    use types::strategies::StrategyId;
 
     use crate::event_records::event_record::Event;
 
@@ -40,6 +41,7 @@ mod tests {
         correlation_id: String,
         event: Event,
         caller: Option<candid::Principal>,
+        strategy_id: Option<StrategyId>,
     ) -> EventRecord {
         EventRecord(GenericEventRecord {
             id,
@@ -47,6 +49,7 @@ mod tests {
             timestamp: 1000 + id, // mock timestamp that increases with id
             correlation_id,
             user: caller,
+            strategy_id,
         })
     }
 
@@ -66,6 +69,7 @@ mod tests {
                 0,
                 "corr-1".to_string(),
                 event,
+                None,
                 None,
             );
 
@@ -99,6 +103,7 @@ mod tests {
                 "corr-1".to_string(),
                 event,
                 None,
+                None,
             );
             save_event_record(event_record);
 
@@ -123,6 +128,7 @@ mod tests {
                     i,
                     format!("corr-{}", i),
                     event,
+                    None,
                     None,
                 );
                 save_event_record(event_record);

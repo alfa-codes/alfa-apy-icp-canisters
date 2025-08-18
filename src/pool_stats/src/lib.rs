@@ -129,7 +129,7 @@ pub struct TestCreatePoolSnapshotResult(pub Result<PoolSnapshot, ResponseError>)
 
 #[update]
 pub async fn test_create_pool_snapshot(pool_id: String) -> TestCreatePoolSnapshotResult {
-    let context = Context::generate(None);
+    let context = Context::generate(None, None);
 
     let pool = pools_repo::get_pool_by_id(pool_id.clone());
 
@@ -244,7 +244,7 @@ pub async fn withdraw_liquidity_from_pool(pool_id: String) -> WithdrawLiquidityR
 }
 
 fn generate_context() -> Context {
-    Context::generate(Some(caller()))
+    Context::generate(Some(caller()), None)
 }
 
 // ========================== Event records ==========================

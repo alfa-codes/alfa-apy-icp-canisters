@@ -96,6 +96,7 @@ mod tests {
             event,
             correlation_id: "".to_string(),
             user: None,
+            strategy_id: None,
         })
     }
 

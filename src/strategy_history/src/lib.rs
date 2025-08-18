@@ -12,7 +12,6 @@ use ic_cdk_timers::TimerId;
 
 use errors::response_error::error::ResponseError;
 
-
 use crate::repository::stable_state;
 use crate::services::strategy_history_service;
 use crate::services::strategy_states_service;

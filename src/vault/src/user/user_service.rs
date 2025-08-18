@@ -7,8 +7,8 @@ use types::CanisterId;
 use types::context::Context;
 use errors::internal_error::error::InternalError;
 use ::utils::util::nat_to_u64;
+use types::strategies::StrategyId;
 
-use crate::types::types::StrategyId;
 use crate::utils::service_resolver::get_service_resolver;
 
 thread_local! {
@@ -33,9 +33,7 @@ pub async fn accept_deposit(
     context: Context,
     amount: Nat,
     ledger: Principal,
-    strategy_id: StrategyId
 ) -> Result<(), InternalError> {
-
     let service_resolver = get_service_resolver();
     let icrc_ledger_client = service_resolver.icrc_ledger_client();
 
@@ -47,7 +45,7 @@ pub async fn accept_deposit(
 
     let deposit = UserDeposit {
         amount,
-        strategy: strategy_id,
+        strategy: context.strategy_id.unwrap(),
         ledger: ledger.into(),
         block_index: nat_to_u64(&block_index),
         timestamp: time()

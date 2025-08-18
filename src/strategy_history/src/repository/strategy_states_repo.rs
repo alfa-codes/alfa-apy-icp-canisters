@@ -1,7 +1,8 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-use crate::types::external_canister_types::StrategyId;
+use types::strategies::StrategyId;
+
 use crate::types::types::StrategyState;
 
 thread_local! {

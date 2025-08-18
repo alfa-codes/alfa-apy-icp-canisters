@@ -11,7 +11,6 @@ use crate::types::types::*;
 use crate::event_records::event_record::EventRecord;
 use crate::event_records::event_record_service;
 
-
 /// Accepts an investment into a specified strategy.
 ///
 /// # Arguments
@@ -26,22 +25,25 @@ use crate::event_records::event_record_service;
 /// # Errors
 ///
 /// Returns a `InternalError` if the strategy is not found or if the deposit operation fails.
-pub async fn deposit(context: Context, args: StrategyDepositArgs) -> Result<StrategyDepositResponse, InternalError> {
-    let mut strategy = get_strategy_by_id(args.strategy_id.clone())
+pub async fn deposit(
+    context: Context,
+    args: StrategyDepositArgs
+) -> Result<StrategyDepositResponse, InternalError> {
+    let strategy_id = context.strategy_id.unwrap();
+    let mut strategy = get_strategy_by_id(strategy_id)
         .ok_or_else(|| {
             InternalError::not_found(
                 build_error_code(3000, 1, 1), // 3000 01 01
                 "service::deposit".to_string(),
                 "Strategy not found".to_string(),
                 Some(HashMap::from([
-                    ("strategy_id".to_string(), args.strategy_id.to_string())
+                    ("strategy_id".to_string(), strategy_id.to_string())
                 ]))
             )
         })?;
 
-    user_service::accept_deposit(context.clone(), args.amount.clone(), args.ledger, args.strategy_id).await?;
-
-    strategy.deposit(context.clone(), context.user.unwrap(), args.amount.clone()).await
+    user_service::accept_deposit(context.clone(), args.amount.clone(), args.ledger).await?;
+    strategy.deposit(context.clone(), args.amount.clone()).await
 }
 
 /// Withdraws an amount from a specified strategy.
@@ -58,15 +60,19 @@ pub async fn deposit(context: Context, args: StrategyDepositArgs) -> Result<Stra
 /// # Errors
 ///
 /// Returns a `InternalError` if the strategy is not found or if the withdrawal operation fails.
-pub async fn withdraw(context: Context, args: StrategyWithdrawArgs) -> Result<StrategyWithdrawResponse, InternalError> {
-    let mut strategy = get_strategy_by_id(args.strategy_id.clone())
+pub async fn withdraw(
+    context: Context,
+    args: StrategyWithdrawArgs
+) -> Result<StrategyWithdrawResponse, InternalError> {
+    let strategy_id = context.strategy_id.unwrap();
+    let mut strategy = get_strategy_by_id(strategy_id)
         .ok_or_else(|| {
             InternalError::not_found(
                 build_error_code(3100, 1, 2), // 3100 01 02
                 "service::withdraw".to_string(),
                 "Strategy not found".to_string(),
                 Some(HashMap::from([
-                    ("strategy_id".to_string(), args.strategy_id.to_string()),
+                    ("strategy_id".to_string(), strategy_id.to_string()),
                 ]))
             )
         })?;
@@ -76,7 +82,9 @@ pub async fn withdraw(context: Context, args: StrategyWithdrawArgs) -> Result<St
 
 // ========================== Event records ==========================
 
-pub fn get_event_records(request: ListItemsPaginationRequest) -> Result<ListItemsPaginationResponse<EventRecord>, InternalError> {
+pub fn get_event_records(
+    request: ListItemsPaginationRequest
+) -> Result<ListItemsPaginationResponse<EventRecord>, InternalError> {
     let event_records = event_record_service::get_event_records(request.clone());
 
     Ok(ListItemsPaginationResponse {
