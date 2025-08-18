@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alfa APY Documentation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.2.0/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #262626;
+            --accent-purple: #a855f7;
+            --accent-purple-dark: #8b5cf6;
+            --accent-green: #22c55e;
+            --accent-green-bright: #22ff88;
+            --accent-green-dark: #16a34a;
+            --accent-red: #ef4444;
+            --text-primary: #ffffff;
+            --text-secondary: #e5e7eb;
+            --text-muted: #9ca3af;
+            --text-muted-dark: #6b7280;
+            --border-color: #374151;
+            --border-hover: #a855f7;
+            --shadow-purple: 0 0 20px rgba(168, 85, 247, 0.3);
+            --shadow-green: 0 0 20px rgba(34, 197, 94, 0.3);
+            --gradient-purple: linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%);
+            --gradient-green: linear-gradient(135deg, #22c55e 0%, #22ff88 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Cosmic background with subtle grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(34, 197, 94, 0.1) 0%, transparent 50%),
+                linear-gradient(90deg, var(--bg-primary) 1px, transparent 1px),
+                linear-gradient(0deg, var(--bg-primary) 1px, transparent 1px);
+            background-size: 100px 100px, 150px 150px, 50px 50px, 50px 50px;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 300px;
+            background: var(--bg-secondary);
+            border-right: 2px solid var(--border-color);
+            padding: 0;
+            overflow-y: auto;
+            position: fixed;
+            height: 100vh;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-purple);
+        }
+
+        .sidebar-header {
+            background: var(--gradient-purple);
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--accent-purple);
+        }
+
+        .sidebar-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: 1px;
+        }
+
+        .sidebar-header .subtitle {
+            margin: 8px 0 0 0;
+            font-size: 12px;
+            color: var(--accent-green-bright);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sidebar-nav {
+            padding: 20px;
+        }
+
+        .sidebar h3 {
+            margin: 0 0 20px 0;
+            color: var(--accent-purple);
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar li {
+            margin: 8px 0;
+        }
+
+        .sidebar a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            display: block;
+            padding: 12px 16px;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-purple);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .sidebar a:hover {
+            color: var(--text-primary);
+            border-color: var(--accent-purple);
+            box-shadow: var(--shadow-purple);
+            transform: translateX(5px);
+        }
+
+        .sidebar a:hover::before {
+            left: 0;
+        }
+
+        .sidebar a.active {
+            background: var(--gradient-purple);
+            color: var(--text-primary);
+            border-color: var(--accent-purple);
+            box-shadow: var(--shadow-purple);
+            font-weight: 600;
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            margin-left: 300px;
+            padding: 0;
+            background: var(--bg-primary);
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            background: var(--gradient-purple);
+            color: var(--text-primary);
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 20px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: var(--shadow-purple);
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-purple), 0 8px 25px rgba(168, 85, 247, 0.4);
+        }
+
+        /* Navigation Header */
+        .nav-header {
+            background: var(--gradient-purple);
+            color: var(--text-primary);
+            padding: 40px;
+            margin: 0;
+            border-bottom: 3px solid var(--accent-green);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .nav-header h1 {
+            margin: 0;
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-header p {
+            margin: 16px 0 0 0;
+            font-size: 18px;
+            color: var(--accent-green-bright);
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Markdown Content Styling */
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            margin: 40px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .markdown-body h1,
+        .markdown-body h2,
+        .markdown-body h3,
+        .markdown-body h4,
+        .markdown-body h5,
+        .markdown-body h6 {
+            color: var(--accent-purple);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .markdown-body h1 {
+            font-size: 36px;
+            background: var(--gradient-purple);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .markdown-body h2 {
+            font-size: 28px;
+            color: var(--accent-green);
+        }
+
+        .markdown-body h3 {
+            font-size: 24px;
+            color: var(--accent-purple);
+        }
+
+        .markdown-body p {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .markdown-body strong {
+            color: var(--accent-green-bright);
+            font-weight: 600;
+        }
+
+        .markdown-body em {
+            color: var(--accent-purple);
+            font-style: italic;
+        }
+
+        .markdown-body code {
+            background: var(--bg-tertiary);
+            color: var(--accent-green-bright);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+        }
+
+        .markdown-body pre {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            box-shadow: var(--shadow-purple);
+            margin: 20px 0;
+        }
+
+        .markdown-body pre code {
+            background: transparent;
+            border: none;
+            padding: 0;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .markdown-body blockquote {
+            border-left: 4px solid var(--accent-purple);
+            background: var(--bg-tertiary);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .markdown-body ul,
+        .markdown-body ol {
+            color: var(--text-secondary);
+            padding-left: 20px;
+        }
+
+        .markdown-body li {
+            margin: 8px 0;
+            color: var(--text-secondary);
+        }
+
+        .markdown-body a {
+            color: var(--accent-green);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .markdown-body a:hover {
+            color: var(--accent-green-bright);
+            border-bottom-color: var(--accent-green);
+        }
+
+        .markdown-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            box-shadow: var(--shadow-purple);
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: imageFadeIn 0.5s ease-in forwards;
+            margin: 20px 0;
+            display: block;
+        }
+
+        .markdown-body img:hover {
+            transform: scale(1.02);
+            box-shadow: var(--shadow-purple), 0 8px 25px rgba(168, 85, 247, 0.4);
+            border-color: var(--accent-purple);
+        }
+
+        .markdown-body img.error {
+            border-color: var(--accent-red);
+            opacity: 0.5;
+        }
+
+        @keyframes imageFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .markdown-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow-purple);
+        }
+
+        .markdown-body th,
+        .markdown-body td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .markdown-body th {
+            background: var(--accent-purple);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .markdown-body tr:hover {
+            background: rgba(168, 85, 247, 0.1);
+        }
+
+        /* Welcome Message */
+        .welcome-message {
+            text-align: center;
+            padding: 60px 40px;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            margin: 40px;
+            border: 2px solid var(--border-color);
+            box-shadow: var(--shadow-purple);
+        }
+
+        .welcome-message h2 {
+            color: var(--accent-purple);
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .welcome-message p {
+            color: var(--text-secondary);
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        .welcome-message .cta-button {
+            display: inline-block;
+            background: var(--gradient-green);
+            color: var(--bg-primary);
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-green);
+            border: none;
+            cursor: pointer;
+        }
+
+        .welcome-message .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-green), 0 12px 30px rgba(34, 197, 94, 0.4);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 280px;
+            }
+            .content {
+                margin-left: 280px;
+            }
+            .markdown-body {
+                margin: 20px;
+                padding: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+                width: 100%;
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 1000;
+                background: var(--bg-secondary);
+            }
+            .sidebar.mobile-open {
+                display: block;
+            }
+            .content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            .nav-header {
+                padding: 30px 20px;
+                margin: 0;
+            }
+            .nav-header h1 {
+                font-size: 32px;
+            }
+            .nav-header p {
+                font-size: 16px;
+            }
+            .markdown-body {
+                margin: 20px 10px;
+                padding: 20px;
+            }
+            .welcome-message {
+                margin: 20px 10px;
+                padding: 40px 20px;
+            }
+            .welcome-message h2 {
+                font-size: 24px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border-color);
+            border-radius: 50%;
+            border-top-color: var(--accent-purple);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-purple);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-purple-dark);
+        }
+
+        /* Fade in animation */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>ALFA APY</h1>
+                <div class="subtitle">DeFi Protocol</div>
+            </div>
+            <div class="sidebar-nav">
+                <h3>Documentation</h3>
+                                          <ul>
+                              <li><a href="#" data-file="docs/README.md" class="nav-link active">🚀 README</a></li>
+                              <li><a href="#" data-file="docs/main_doc_draft.md" class="nav-link">📚 Main Documentation</a></li>
+                              <li><a href="#" data-file="docs/liquidity_pools_calculation_flow.md" class="nav-link">💧 Liquidity Pools</a></li>
+                              <li><a href="#" data-file="docs/smart_rebalance.md" class="nav-link">⚡ Smart Rebalance</a></li>
+                              <li><a href="#" data-file="docs/icp_swap.md" class="nav-link">🔄 ICP Swap</a></li>
+                              <li><a href="#" data-file="docs/kong_swap_provider_flow.md" class="nav-link">🌊 Kong Swap</a></li>
+                              <li><a href="#" data-file="docs/error_codes.md" class="nav-link">⚠️ Error Codes</a></li>
+                          </ul>
+            </div>
+        </div>
+        
+        <div class="content">
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰ ALFA APY Docs</button>
+            
+            <div class="nav-header">
+                <h1>Alfa APY Documentation</h1>
+                <p>Cosmic DeFi Protocol on Internet Computer Protocol</p>
+            </div>
+            
+            <div class="markdown-body" id="content">
+                                          <div class="welcome-message">
+                              <h2>🚀 Welcome to ALFA APY</h2>
+                              <p>The first yield optimization DeFi protocol built on the Internet Computer Protocol (ICP)</p>
+                              <a href="#" class="cta-button" onclick="loadDocument('docs/README.md')">Get Started</a>
+                          </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script>
+        // Navigation functionality with cosmic effects
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                
+                // Add active class to clicked link
+                this.classList.add('active');
+                
+                // Load content with cosmic animation
+                const file = this.getAttribute('data-file');
+                loadDocument(file);
+                
+                // Add cosmic particle effect
+                createCosmicEffect(this);
+            });
+        });
+
+        function createCosmicEffect(element) {
+            const rect = element.getBoundingClientRect();
+            for (let i = 0; i < 5; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.left = rect.left + rect.width / 2 + 'px';
+                particle.style.top = rect.top + rect.height / 2 + 'px';
+                particle.style.width = '4px';
+                particle.style.height = '4px';
+                particle.style.background = '#a855f7';
+                particle.style.borderRadius = '50%';
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '1000';
+                particle.style.animation = `particleFloat 1s ease-out forwards`;
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => {
+                    document.body.removeChild(particle);
+                }, 1000);
+            }
+        }
+
+        function loadDocument(filename) {
+            const content = document.getElementById('content');
+            content.style.opacity = '0';
+            
+            console.log('Loading document:', filename);
+            
+            // Try to load the document
+            const tryLoadDocument = (path) => {
+                return fetch(path)
+                    .then(response => {
+                        console.log('Response status:', response.status, 'for file:', path);
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        return response.text();
+                    });
+            };
+            
+            // Try multiple possible paths for GitHub Pages compatibility
+            const pathsToTry = [
+                filename,
+                filename.replace('docs/', ''),
+                filename.replace('docs/', './'),
+                `./${filename}`
+            ];
+            
+            let currentPathIndex = 0;
+            
+            const attemptLoad = () => {
+                if (currentPathIndex >= pathsToTry.length) {
+                    // All paths failed
+                    console.error('All paths failed for document:', filename);
+                    content.innerHTML = `<div class="welcome-message"><h2>⚠️ Error Loading Document</h2><p>Failed to load: ${filename}</p><p>Tried paths: ${pathsToTry.join(', ')}</p></div>`;
+                    setTimeout(() => {
+                        content.style.opacity = '1';
+                    }, 300);
+                    return;
+                }
+                
+                const currentPath = pathsToTry[currentPathIndex];
+                console.log('Trying path:', currentPath);
+                
+                tryLoadDocument(currentPath)
+                    .then(text => {
+                        console.log('Document loaded successfully from:', currentPath, 'length:', text.length);
+                        console.log('Document content preview:', text.substring(0, 500));
+                        const html = convertMarkdownToHtml(text);
+                        content.innerHTML = html;
+                        content.classList.add('fade-in');
+                        
+                        // Highlight code blocks
+                        if (window.Prism) {
+                            Prism.highlightAll();
+                        }
+                        
+                        // Add cosmic styling to elements
+                        addCosmicStyling();
+                        
+                        setTimeout(() => {
+                            content.style.opacity = '1';
+                        }, 300);
+                    })
+                    .catch(error => {
+                        console.error('Failed to load from path:', currentPath, error);
+                        currentPathIndex++;
+                        attemptLoad();
+                    });
+            };
+            
+            attemptLoad();
+        }
+
+        function addCosmicStyling() {
+            // Add cosmic effects to headings
+            document.querySelectorAll('h1, h2, h3').forEach(heading => {
+                heading.style.textShadow = '0 0 20px rgba(168, 85, 247, 0.5)';
+            });
+            
+            // Add cosmic effects to code blocks
+            document.querySelectorAll('pre').forEach(pre => {
+                pre.style.boxShadow = '0 0 30px rgba(168, 85, 247, 0.3)';
+            });
+
+            // Handle images with cosmic effects
+            document.querySelectorAll('img').forEach(img => {
+                console.log('Processing image element:', img.src, 'alt:', img.alt);
+                
+                // Add error handling
+                img.onerror = function() {
+                    this.classList.add('error');
+                    this.style.borderColor = '#ef4444';
+                    this.style.opacity = '0.5';
+                    console.error('Failed to load image:', this.src);
+                };
+                
+                // Add success handling
+                img.onload = function() {
+                    this.style.opacity = '1';
+                    this.style.animation = 'imageFadeIn 0.5s ease-in forwards';
+                    console.log('Image loaded successfully:', this.src);
+                };
+            });
+        }
+
+        function convertMarkdownToHtml(markdown) {
+            return markdown
+                // Headers
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                
+                // Bold and italic
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                
+                // Code blocks
+                .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                
+                // Links
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                
+                // Images - handle GitHub Pages paths correctly
+                .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, function(match, alt, src) {
+                    // Handle different image path formats for GitHub Pages
+                    let finalSrc = src;
+                    
+                    // Remove ./ prefix if present
+                    if (src.startsWith('./')) {
+                        finalSrc = src.substring(2);
+                    }
+                    
+                    // Ensure static/ prefix is present for images
+                    if (!finalSrc.startsWith('static/') && !finalSrc.startsWith('http') && !finalSrc.startsWith('data:')) {
+                        // If it's just a filename, assume it's in static folder
+                        if (finalSrc.match(/\.(jpg|jpeg|png|gif|svg|webp)$/i)) {
+                            finalSrc = 'static/' + finalSrc;
+                        }
+                    }
+                    
+                    // For GitHub Pages, if the path starts with static/, keep it as is
+                    // If it's a relative path like ../static/, convert to static/
+                    if (finalSrc.startsWith('../static/')) {
+                        finalSrc = finalSrc.replace('../static/', 'static/');
+                    }
+                    
+                    console.log('Processing image:', src, '->', finalSrc);
+                    
+                    return `<img src="${finalSrc}" alt="${alt}" style="max-width: 100%; height: auto; border-radius: 8px; border: 2px solid var(--border-color); box-shadow: var(--shadow-purple); transition: all 0.3s ease;" onload="this.style.opacity='1'" onerror="this.style.display='none'; console.error('Failed to load image:', finalSrc);">`;
+                })
+                
+                // Lists
+                .replace(/^\* (.*$)/gim, '<li>$1</li>')
+                .replace(/^- (.*$)/gim, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+                
+                // Line breaks
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/^(.+)$/gm, '<p>$1</p>')
+                
+                // Clean up empty paragraphs
+                .replace(/<p><\/p>/g, '')
+                .replace(/<p><p>/g, '<p>')
+                .replace(/<\/p><\/p>/g, '</p>');
+        }
+
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('mobile-open');
+        }
+
+        // Add cosmic particle animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes particleFloat {
+                0% {
+                    transform: translate(0, 0) scale(1);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) scale(0);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Load README by default with cosmic effect
+        setTimeout(() => {
+            loadDocument('docs/README.md');
+        }, 500);
+    </script>
+</body>
+</html>
