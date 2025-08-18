@@ -583,13 +583,13 @@
             <div class="sidebar-nav">
                 <h3>Documentation</h3>
                                           <ul>
-                              <li><a href="#" data-file="README.md" class="nav-link active">🚀 README</a></li>
-                              <li><a href="#" data-file="main_doc_draft.md" class="nav-link">📚 Main Documentation</a></li>
-                              <li><a href="#" data-file="liquidity_pools_calculation_flow.md" class="nav-link">💧 Liquidity Pools</a></li>
-                              <li><a href="#" data-file="smart_rebalance.md" class="nav-link">⚡ Smart Rebalance</a></li>
-                              <li><a href="#" data-file="icp_swap.md" class="nav-link">🔄 ICP Swap</a></li>
-                              <li><a href="#" data-file="kong_swap_provider_flow.md" class="nav-link">🌊 Kong Swap</a></li>
-                              <li><a href="#" data-file="error_codes.md" class="nav-link">⚠️ Error Codes</a></li>
+                              <li><a href="#" data-file="docs/README.md" class="nav-link active">🚀 README</a></li>
+                              <li><a href="#" data-file="docs/main_doc_draft.md" class="nav-link">📚 Main Documentation</a></li>
+                              <li><a href="#" data-file="docs/liquidity_pools_calculation_flow.md" class="nav-link">💧 Liquidity Pools</a></li>
+                              <li><a href="#" data-file="docs/smart_rebalance.md" class="nav-link">⚡ Smart Rebalance</a></li>
+                              <li><a href="#" data-file="docs/icp_swap.md" class="nav-link">🔄 ICP Swap</a></li>
+                              <li><a href="#" data-file="docs/kong_swap_provider_flow.md" class="nav-link">🌊 Kong Swap</a></li>
+                              <li><a href="#" data-file="docs/error_codes.md" class="nav-link">⚠️ Error Codes</a></li>
                           </ul>
             </div>
         </div>
@@ -606,7 +606,7 @@
                                           <div class="welcome-message">
                               <h2>🚀 Welcome to ALFA APY</h2>
                               <p>The first yield optimization DeFi protocol built on the Internet Computer Protocol (ICP)</p>
-                              <a href="#" class="cta-button" onclick="loadDocument('README.md')">Get Started</a>
+                              <a href="#" class="cta-button" onclick="loadDocument('docs/README.md')">Get Started</a>
                           </div>
             </div>
         </div>
@@ -664,37 +664,70 @@
             
             console.log('Loading document:', filename);
             
-            fetch(filename)
-                .then(response => {
-                    console.log('Response status:', response.status, 'for file:', filename);
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    return response.text();
-                })
-                .then(text => {
-                    console.log('Document loaded successfully, length:', text.length);
-                    console.log('Document content preview:', text.substring(0, 500));
-                    const html = convertMarkdownToHtml(text);
-                    content.innerHTML = html;
-                    content.classList.add('fade-in');
-                    
-                    // Highlight code blocks
-                    if (window.Prism) {
-                        Prism.highlightAll();
-                    }
-                    
-                    // Add cosmic styling to elements
-                    addCosmicStyling();
-                })
-                .catch(error => {
-                    console.error('Error loading document:', error);
-                    content.innerHTML = `<div class="welcome-message"><h2>⚠️ Error Loading Document</h2><p>Failed to load: ${filename}</p><p>Error: ${error.message}</p></div>`;
-                });
+            // Try to load the document
+            const tryLoadDocument = (path) => {
+                return fetch(path)
+                    .then(response => {
+                        console.log('Response status:', response.status, 'for file:', path);
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        return response.text();
+                    });
+            };
             
-            setTimeout(() => {
-                content.style.opacity = '1';
-            }, 300);
+            // Try multiple possible paths for GitHub Pages compatibility
+            const pathsToTry = [
+                filename,
+                filename.replace('docs/', ''),
+                filename.replace('docs/', './'),
+                `./${filename}`
+            ];
+            
+            let currentPathIndex = 0;
+            
+            const attemptLoad = () => {
+                if (currentPathIndex >= pathsToTry.length) {
+                    // All paths failed
+                    console.error('All paths failed for document:', filename);
+                    content.innerHTML = `<div class="welcome-message"><h2>⚠️ Error Loading Document</h2><p>Failed to load: ${filename}</p><p>Tried paths: ${pathsToTry.join(', ')}</p></div>`;
+                    setTimeout(() => {
+                        content.style.opacity = '1';
+                    }, 300);
+                    return;
+                }
+                
+                const currentPath = pathsToTry[currentPathIndex];
+                console.log('Trying path:', currentPath);
+                
+                tryLoadDocument(currentPath)
+                    .then(text => {
+                        console.log('Document loaded successfully from:', currentPath, 'length:', text.length);
+                        console.log('Document content preview:', text.substring(0, 500));
+                        const html = convertMarkdownToHtml(text);
+                        content.innerHTML = html;
+                        content.classList.add('fade-in');
+                        
+                        // Highlight code blocks
+                        if (window.Prism) {
+                            Prism.highlightAll();
+                        }
+                        
+                        // Add cosmic styling to elements
+                        addCosmicStyling();
+                        
+                        setTimeout(() => {
+                            content.style.opacity = '1';
+                        }, 300);
+                    })
+                    .catch(error => {
+                        console.error('Failed to load from path:', currentPath, error);
+                        currentPathIndex++;
+                        attemptLoad();
+                    });
+            };
+            
+            attemptLoad();
         }
 
         function addCosmicStyling() {
@@ -765,6 +798,12 @@
                         }
                     }
                     
+                    // For GitHub Pages, if the path starts with static/, keep it as is
+                    // If it's a relative path like ../static/, convert to static/
+                    if (finalSrc.startsWith('../static/')) {
+                        finalSrc = finalSrc.replace('../static/', 'static/');
+                    }
+                    
                     console.log('Processing image:', src, '->', finalSrc);
                     
                     return `<img src="${finalSrc}" alt="${alt}" style="max-width: 100%; height: auto; border-radius: 8px; border: 2px solid var(--border-color); box-shadow: var(--shadow-purple); transition: all 0.3s ease;" onload="this.style.opacity='1'" onerror="this.style.display='none'; console.error('Failed to load image:', finalSrc);">`;
@@ -808,7 +847,7 @@
 
         // Load README by default with cosmic effect
         setTimeout(() => {
-            loadDocument('README.md');
+            loadDocument('docs/README.md');
         }, 500);
     </script>
 </body>
