@@ -1,4 +1,9 @@
-use errors::internal_error::error::{InternalError, build_error_code};
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    canisters as canister_area,
+    canisters::domains::strategy_history as strategy_history_domain,
+    canisters::domains::strategy_history::components as strategy_history_domain_components,
+};
 
 use crate::repository::strategy_states_repo;
 use crate::repository::snapshots_repo;
@@ -10,16 +15,24 @@ use crate::types::types::{
     StrategyHistory,
 };
 
+// Module code: "03-03-01"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    canister_area::AREA_CODE,                    // Area code: "03"
+    strategy_history_domain::DOMAIN_CODE,        // Domain code: "03"
+    strategy_history_domain_components::CORE     // Component code: "01"
+);
+
 pub async fn initialize_strategy_states_and_create_snapshots() -> Result<InitializeStrategyStatesAndCreateSnapshotsResponse, InternalError> {
     // Get strategies data from vault
     let vault_strategies = vault_service::get_vault_actor().await?
         .get_strategies().await
         .map_err(|e| {
             InternalError::business_logic(
-                build_error_code(0000, 0, 0),
-                    "strategy_history_service::initialize_strategy_states_and_create_snapshots".to_string(),
-                    format!("Failed to fetch strategies from vault: {:?}", e),
-                    None,
+                build_error_code(InternalErrorKind::BusinessLogic, 1), // Error code: "03-03-01 03 01"
+                "strategy_history_service::initialize_strategy_states_and_create_snapshots".to_string(),
+                format!("Failed to fetch strategies from vault: {:?}", e),
+                None,
             )
         })?;
 
@@ -59,7 +72,7 @@ pub async fn initialize_strategy_states_and_create_snapshots() -> Result<Initial
         );
 
         return Err(InternalError::business_logic(
-            build_error_code(0000, 0, 0),
+            build_error_code(InternalErrorKind::BusinessLogic, 2), // Error code: "03-03-01 03 02"
             "strategy_history_service::initialize_and_snapshot_strategies".to_string(),
             error_message,
             None,
@@ -84,7 +97,7 @@ pub async fn get_strategies_history(
 
     if from_timestamp > to_timestamp {
         return Err(InternalError::business_logic(
-            build_error_code(0000, 0, 0),
+            build_error_code(InternalErrorKind::BusinessLogic, 3), // Error code: "03-03-01 03 03"
             "strategy_history_service::get_strategies_history".to_string(),
             "from_timestamp cannot be greater than to_timestamp".to_string(),
             None,

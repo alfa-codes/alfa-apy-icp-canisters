@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use async_trait::async_trait;
 use candid::Nat;
-use std::collections::HashMap;
 use std::sync::Arc;
 
 use types::CanisterId;
@@ -10,13 +9,25 @@ use icpswap_swap_factory_canister::ICPSwapPool;
 use icpswap_swap_pool_canister::getTokenMeta::TokenMeta;
 use types::liquidity::TokensFee;
 use utils::util::nat_to_u128;
-use errors::internal_error::error::InternalError;
-use errors::internal_error::error::build_error_code;
 use icrc_ledger_client::ICRCLedgerClient;
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    libraries as library_area,
+    libraries::domains::swap as swap_domain,
+    libraries::domains::swap::components as swap_domain_components,
+};
 
 use crate::token_swaps::swap_client::{SwapClient, SwapSuccess, QuoteSuccess};
 
 pub const SLIPPAGE_TOLERANCE_POINTS: u128 = 50; // 50 slippage tolerance points == 5%
+
+// Module code: "02-01-03"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    library_area::AREA_CODE,         // Area code: "02"
+    swap_domain::DOMAIN_CODE,        // Domain code: "01"
+    swap_domain_components::ICP_SWAP // Component code: "03"
+);
 
 pub struct ICPSwapSwapClient {
     provider_impl: Arc<dyn ICPSwapProvider + Send + Sync>,
@@ -68,15 +79,15 @@ impl ICPSwapSwapClient {
             (t0, t1) if t0 == token0_str && t1 == token1_str => Ok(true),
             (t0, t1) if t0 == token1_str && t1 == token0_str => Ok(false),
             (t0, t1) => Err(InternalError::business_logic(
-                build_error_code(2002, 3, 1), // 2002 03 01
+                build_error_code(InternalErrorKind::BusinessLogic, 1), // Error code: "02-01-03 03 01"
                 "ICPSwapSwapClient::is_zero_for_one_swap_direction".to_string(),
                 "Invalid token configuration for ICPSwap pool".to_string(),
-                Some(HashMap::from([
-                    ("token0".to_string(), self.token0.to_text()),
-                    ("token1".to_string(), self.token1.to_text()),
-                    ("t0".to_string(), t0.to_string()),
-                    ("t1".to_string(), t1.to_string()),
-                ])),
+                errors::error_extra! {
+                    "token0" => self.token0,
+                    "token1" => self.token1,
+                    "t0" => t0,
+                    "t1" => t1,
+                },
             )),
         }
     }
@@ -97,15 +108,15 @@ impl ICPSwapSwapClient {
                 token1_fee: token_meta.token0Fee.clone(),
             }),
             (t0, t1) => Err(InternalError::business_logic(
-                build_error_code(2002, 3, 2), // 2002 03 02
+                build_error_code(InternalErrorKind::BusinessLogic, 2), // Error code: "02-01-03 03 02"
                 "ICPSwapSwapClient::get_tokens_fee".to_string(),
                 "Invalid token configuration for ICPSwap pool".to_string(),
-                Some(HashMap::from([
-                    ("token0".to_string(), self.token0.to_text()),
-                    ("token1".to_string(), self.token1.to_text()),
-                    ("t0".to_string(), t0.to_string()),
-                    ("t1".to_string(), t1.to_string()),
-                ])),
+                errors::error_extra! {
+                    "token0" => self.token0,
+                    "token1" => self.token1,
+                    "t0" => t0,
+                    "t1" => t1,
+                },
             )),
         }
     }

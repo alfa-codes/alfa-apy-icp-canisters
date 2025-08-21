@@ -7,8 +7,12 @@ use types::liquidity::{AddLiquidityResponse, WithdrawLiquidityResponse};
 use types::context::Context;
 use types::CanisterId;
 use types::pool::PoolTrait;
-use errors::internal_error::error::InternalError;
-use errors::internal_error::error::build_error_code;
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    canisters as canister_area,
+    canisters::domains::pool_stats as pool_stats_domain,
+    canisters::domains::pool_stats::components as pool_stats_domain_components,
+};
 
 use crate::pool_snapshots::pool_snapshot_service;
 use crate::pool_snapshots::pool_snapshot::PoolSnapshot;
@@ -21,9 +25,21 @@ use crate::repository::event_records_repo;
 use crate::event_records::event_record::EventRecord;
 use crate::utils::service_resolver::get_service_resolver;
 
+// Module code: "03-02-01"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    canister_area::AREA_CODE,          // Area code: "03"
+    pool_stats_domain::DOMAIN_CODE,    // Domain code: "02"
+    pool_stats_domain_components::CORE // Component code: "01"
+);
+
 // ========================== Pools management ==========================
 
-pub fn add_pool(token0: CanisterId, token1: CanisterId, provider: ExchangeId) -> Result<String, InternalError> {
+pub fn add_pool(
+    token0: CanisterId,
+    token1: CanisterId,
+    provider: ExchangeId
+) -> Result<String, InternalError> {
     let pool = Pool::build(token0, token1, provider);
     pool.save();
     Ok(pool.id)
@@ -36,12 +52,12 @@ pub fn delete_pool(id: String) -> Result<(), InternalError> {
             Ok(())
         })
         .unwrap_or(Err(InternalError::not_found(
-            build_error_code(4000, 1, 1), // 4000 01 01
+                            build_error_code(InternalErrorKind::NotFound, 1), // Error code: "03-02-01 01 01"
             "service::delete_pool".to_string(),
             "Pool not found".to_string(),
-            Some(HashMap::from([
-                ("id".to_string(), id.clone())
-            ]))
+            errors::error_extra! {
+                "id" => id,
+            },
         )))
 }
 
@@ -52,12 +68,12 @@ pub fn get_pools() -> Result<Vec<Pool>, InternalError> {
 pub fn get_pool_by_id(id: String) -> Result<Pool, InternalError> {
     pools_repo::get_pool_by_id(id.clone())
         .ok_or_else(|| InternalError::not_found(
-            build_error_code(4000, 1, 2), // 4000 01 02
+                            build_error_code(InternalErrorKind::NotFound, 2), // Error code: "03-02-01 01 02"
             "service::get_pool_by_id".to_string(),
             "Pool not found".to_string(),
-            Some(HashMap::from([
-                ("id".to_string(), id)
-            ]))
+            errors::error_extra! {
+                "id" => id,
+            },
         ))
 }
 
@@ -93,12 +109,15 @@ pub async fn add_liquidity_to_pool(
 
     if pool.is_none() {
         let error = InternalError::not_found(
-            build_error_code(4000, 1, 3), // 4000 01 03
+                            build_error_code(InternalErrorKind::NotFound, 3), // Error code: "03-02-01 01 03"
             "service::add_liquidity_to_pool".to_string(),
             "Pool not found".to_string(),
-            Some(HashMap::from([
-                ("pool_id".to_string(), pool_id.clone()),
-            ])),
+            errors::error_extra! {
+                "context" => context,
+                "ledger" => ledger,
+                "pool_id" => pool_id,
+                "amount" => amount,
+            },
         );
 
         return Err(error);
@@ -108,12 +127,15 @@ pub async fn add_liquidity_to_pool(
 
     if pool.position_id.is_some() {
         let error = InternalError::business_logic(
-            build_error_code(4000, 3, 4), // 4000 03 04
+                            build_error_code(InternalErrorKind::BusinessLogic, 4), // Error code: "03-02-01 03 04"
             "service::add_liquidity_to_pool".to_string(),
             "Pool already has liquidity".to_string(),
-            Some(HashMap::from([
-                ("pool_id".to_string(), pool_id.clone()),
-            ])),
+            errors::error_extra! {
+                "context" => context,
+                "ledger" => ledger,
+                "pool_id" => pool_id,
+                "amount" => amount,
+            },
         );
 
         return Err(error);
@@ -150,12 +172,13 @@ pub async fn withdraw_liquidity_from_pool(
 
     if pool.is_none() {
         let error = InternalError::not_found(
-            build_error_code(4000, 1, 5), // 4000 01 05
+                            build_error_code(InternalErrorKind::NotFound, 5), // Error code: "03-02-01 01 05"
             "service::withdraw_liquidity_from_pool".to_string(),
             "Pool not found".to_string(),
-            Some(HashMap::from([
-                ("pool_id".to_string(), pool_id.clone()),
-            ])),
+            errors::error_extra! {
+                "context" => context,
+                "pool_id" => pool_id,
+            },
         );
 
         return Err(error);
@@ -165,12 +188,13 @@ pub async fn withdraw_liquidity_from_pool(
 
     if pool.position_id.is_none() {
         let error = InternalError::business_logic(
-            build_error_code(4000, 3, 6), // 4000 03 06
+                            build_error_code(InternalErrorKind::BusinessLogic, 6), // Error code: "03-02-01 03 06"
             "service::withdraw_liquidity_from_pool".to_string(),
             "Pool has no liquidity".to_string(),
-            Some(HashMap::from([
-                ("pool_id".to_string(), pool_id.clone()),
-            ])),
+            errors::error_extra! {
+                "context" => context,
+                "pool_id" => pool_id,
+            },
         );
 
         return Err(error);

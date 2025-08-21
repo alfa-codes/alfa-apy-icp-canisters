@@ -1,15 +1,30 @@
 use candid::{Nat, Principal};
-use std::{collections::HashMap, convert::TryInto};
+use std::convert::TryInto;
 
 use icrc_ledger_types::icrc1::account::Account;
 use icrc_ledger_types::icrc1::transfer::TransferArg;
 use icrc_ledger_canister::updates::icrc1_transfer::Response as Icrc1TransferResponse;
 use canister_client;
-use errors::internal_error::error::InternalError;
-use errors::internal_error::error::build_error_code;
 use types::CanisterId;
 
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+
+use errors::internal_error::error_codes::module::areas::{
+    external_services as external_services_area,
+    external_services::domains::canister as canister_domain,
+    external_services::domains::canister::components as canister_domain_components,
+};
+
+
 use crate::environment::Environment;
+
+// Module code: "01-04-01"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    external_services_area::AREA_CODE, // Area code: "01"
+    canister_domain::DOMAIN_CODE,      // Domain code: "04"
+    canister_domain_components::CORE   // Component code: "01"
+);
 
 pub async fn icrc1_transfer_to_user(
     environment: &Environment,
@@ -39,26 +54,26 @@ pub async fn icrc1_transfer_to_user(
     ).await
         .map_err(|error| {
             InternalError::external_service(
-                build_error_code(1200, 4, 1), // 1200 04 01
+                build_error_code(InternalErrorKind::ExternalService, 1), // Error code: "01-04-01 04 01"
                 "Utils::icrc1_transfer_to_user".to_string(),
                 format!("IC error calling 'canister_client::make_c2c_call': {error:?}"),
-                Some(HashMap::from([
-                    ("user".to_string(), user.to_string()),
-                    ("canister_id".to_string(), canister_id.to_string()),
-                    ("amount".to_string(), amount.to_string()),
-                ])),
+                errors::error_extra! {
+                    "user" => user,
+                    "canister_id" => canister_id,
+                    "amount" => amount,
+                },
             )
         })?
         .map_err(|err| {
             InternalError::business_logic(
-                build_error_code(1200, 3, 2), // 1200 03 02
+                build_error_code(InternalErrorKind::BusinessLogic, 2), // Error code: "01-04-01 03 02"
                 "Utils::icrc1_transfer_to_user".to_string(),
                 format!("Error calling 'canister_client::make_c2c_call': {err:?}"),
-                Some(HashMap::from([
-                    ("user".to_string(), user.to_string()),
-                    ("canister_id".to_string(), canister_id.to_string()),
-                    ("amount".to_string(), amount.to_string()),
-                ])),
+                errors::error_extra! {
+                    "user" => user,
+                    "canister_id" => canister_id,
+                    "amount" => amount,
+                },
             )
         })
         .map(|response| response.0.try_into().unwrap())

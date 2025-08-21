@@ -13,9 +13,22 @@ use kongswap_canister::queries::add_liquidity_amounts::AddLiquidityAmountsReply;
 use kongswap_canister::swap_amounts::SwapAmountsReply;
 use kongswap_canister::user_balances::UserBalancesReply;
 use kongswap_canister::swap::SwapReply;
-use errors::internal_error::error::{InternalError, build_error_code};
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    libraries as library_area,
+    libraries::domains::provider as provider_domain,
+    libraries::domains::provider::components as provider_domain_components,
+};
 
 use crate::kongswap::KongSwapProvider;
+
+// Module code: "02-04-51"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    library_area::AREA_CODE,                   // Area code: "02"
+    provider_domain::DOMAIN_CODE,              // Domain code: "04"
+    provider_domain_components::MOCK_KONG_SWAP // Component code: "51"
+);
 
 // Converts Option<f64> to String for use as a HashMap key since f64 doesn't implement Hash and Eq traits.
 // We need this because floating point numbers can't be used directly as HashMap keys.
@@ -41,7 +54,7 @@ impl Default for MockKongSwapProvider {
     fn default() -> Self {
         Self {
             pools_response: Err(InternalError::not_found(
-                build_error_code(2301, 1, 8), // 2301 01 08
+                build_error_code(InternalErrorKind::NotFound, 8), // Error code: "02-04-51 01 08"
                 "mock_error".to_string(),
                 "Mock response not set for pools".to_string(),
                 None
@@ -122,7 +135,14 @@ impl MockKongSwapProvider {
         response: Result<AddLiquidityReply, InternalError>,
     ) {
         self.add_liquidity_responses.insert(
-            (token_0, amount_0.to_string(), token_1, amount_1.to_string(), ledger0.to_text(), ledger1.to_text()),
+            (
+                token_0,
+                amount_0.to_string(),
+                token_1,
+                amount_1.to_string(),
+                ledger0.to_text(),
+                ledger1.to_text()
+            ),
             response
         );
     }
@@ -178,14 +198,14 @@ impl KongSwapProvider for MockKongSwapProvider {
             .get(&(token_in.to_text(), amount.to_string(), token_out.to_text()))
             .map_or_else(
                 || Err(InternalError::not_found(
-                    build_error_code(2301, 01, 01), // 2301 01 01
+                    build_error_code(InternalErrorKind::NotFound, 1), // Error code: "02-04-51 01 01"
                     "MockKongSwapProvider::swap_amounts".to_string(),
                     "Mock response not set for swap_amounts".to_string(),
-                    Some(HashMap::from([
-                        ("token_in".to_string(), token_in.to_text()),
-                        ("amount".to_string(), amount.to_string()),
-                        ("token_out".to_string(), token_out.to_text()),
-                    ]))
+                    errors::error_extra! {
+                        "token_in" => token_in,
+                        "amount" => amount,
+                        "token_out" => token_out,
+                    }
                 )),
                 |r| r.to_owned()
             )
@@ -209,15 +229,15 @@ impl KongSwapProvider for MockKongSwapProvider {
             .get(&key)
             .map_or_else(
                 || Err(InternalError::not_found(
-                    build_error_code(2301, 01, 02), // 2301 01 02
+                    build_error_code(InternalErrorKind::NotFound, 2), // Error code: "02-04-51 01 02"
                     "MockKongSwapProvider::swap".to_string(),
                     "Mock response not set for swap".to_string(),
-                    Some(HashMap::from([
-                        ("token_in".to_string(), token_in.to_text()),
-                        ("amount".to_string(), amount.to_string()),
-                        ("token_out".to_string(), token_out.to_text()),
-                        ("max_slippage".to_string(), slippage_to_string(max_slippage)),
-                    ]))
+                    errors::error_extra! {
+                        "token_in" => token_in,
+                        "amount" => amount,
+                        "token_out" => token_out,
+                        "max_slippage" => slippage_to_string(max_slippage),
+                    }
                 )),
                 |r| r.to_owned()
             )
@@ -233,14 +253,14 @@ impl KongSwapProvider for MockKongSwapProvider {
             .get(&(token_0.clone(), amount.to_string(), token_1.clone()))
             .map_or_else(
                 || Err(InternalError::not_found(
-                    build_error_code(2301, 01, 03), // 2301 01 03
+                    build_error_code(InternalErrorKind::NotFound, 3), // Error code: "02-04-51 01 03"
                     "MockKongSwapProvider::add_liquidity_amounts".to_string(),
                     "Mock response not set for add_liquidity_amounts".to_string(),
-                    Some(HashMap::from([
-                        ("token_0".to_string(), token_0),
-                        ("amount".to_string(), amount.to_string()),
-                        ("token_1".to_string(), token_1),
-                    ]))
+                    errors::error_extra! {
+                        "token_0" => token_0,
+                        "amount" => amount,
+                        "token_1" => token_1,
+                    }
                 )),
                 |r| r.to_owned()
             )
@@ -256,20 +276,27 @@ impl KongSwapProvider for MockKongSwapProvider {
         ledger1: Principal,
     ) -> Result<AddLiquidityReply, InternalError> {
         self.add_liquidity_responses
-            .get(&(token_0.clone(), amount_0.to_string(), token_1.clone(), amount_1.to_string(), ledger0.to_text(), ledger1.to_text()))
+            .get(&(
+                token_0.clone(),
+                amount_0.to_string(),
+                token_1.clone(),
+                amount_1.to_string(),
+                ledger0.to_text(),
+                ledger1.to_text())
+            )
             .map_or_else(
                 || Err(InternalError::not_found(
-                    build_error_code(2301, 01, 04), // 2301 01 04
+                    build_error_code(InternalErrorKind::NotFound, 4), // Error code: "02-04-51 01 04"
                     "MockKongSwapProvider::add_liquidity".to_string(),
                     "Mock response not set for add_liquidity".to_string(),
-                    Some(HashMap::from([
-                        ("token_0".to_string(), token_0),
-                        ("amount_0".to_string(), amount_0.to_string()),
-                        ("token_1".to_string(), token_1),
-                        ("amount_1".to_string(), amount_1.to_string()),
-                        ("ledger0".to_string(), ledger0.to_text()),
-                        ("ledger1".to_string(), ledger1.to_text()),
-                    ]))
+                    errors::error_extra! {
+                        "token_0" => token_0,
+                        "amount_0" => amount_0,
+                        "token_1" => token_1,
+                        "amount_1" => amount_1,
+                        "ledger0" => ledger0,
+                        "ledger1" => ledger1,
+                    }
                 )),
                 |r| r.to_owned()
             )
@@ -283,12 +310,12 @@ impl KongSwapProvider for MockKongSwapProvider {
             .get(&principal_id)
             .map_or_else(
                 || Err(InternalError::not_found(
-                    build_error_code(2301, 01, 05), // 2301 01 05
+                    build_error_code(InternalErrorKind::NotFound, 5), // Error code: "02-04-51 01 05"
                     "MockKongSwapProvider::user_balances".to_string(),
                     "Mock response not set for user_balances".to_string(),
-                    Some(HashMap::from([
-                        ("principal_id".to_string(), principal_id),
-                    ]))
+                    errors::error_extra! {
+                        "principal_id" => principal_id,
+                    }
                 )),
                 |r| r.to_owned()
             )
@@ -304,14 +331,14 @@ impl KongSwapProvider for MockKongSwapProvider {
             .get(&(token_0.clone(), token_1.clone(), remove_lp_token_amount.to_string()))
             .map_or_else(
                 || Err(InternalError::not_found(
-                    build_error_code(2301, 01, 06), // 2301 01 06
+                    build_error_code(InternalErrorKind::NotFound, 6), // Error code: "02-04-51 01 06"
                     "MockKongSwapProvider::remove_liquidity_amounts".to_string(),
                     "Mock response not set for remove_liquidity_amounts".to_string(),
-                    Some(HashMap::from([
-                        ("token_0".to_string(), token_0),
-                        ("token_1".to_string(), token_1),
-                        ("remove_lp_token_amount".to_string(), remove_lp_token_amount.to_string()),
-                    ]))
+                    errors::error_extra! {
+                        "token_0" => token_0,
+                        "token_1" => token_1,
+                        "remove_lp_token_amount" => remove_lp_token_amount,
+                    }
                 )),
                 |r| r.to_owned()
             )
@@ -327,14 +354,14 @@ impl KongSwapProvider for MockKongSwapProvider {
             .get(&(token_0.clone(), token_1.clone(), remove_lp_token_amount.to_string()))
             .map_or_else(
                 || Err(InternalError::not_found(
-                    build_error_code(2301, 01, 07), // 2301 01 07
+                    build_error_code(InternalErrorKind::NotFound, 7), // Error code: "02-04-51 01 07"
                     "MockKongSwapProvider::remove_liquidity".to_string(),
                     "Mock response not set for remove_liquidity".to_string(),
-                    Some(HashMap::from([
-                        ("token_0".to_string(), token_0),
-                        ("token_1".to_string(), token_1),
-                        ("remove_lp_token_amount".to_string(), remove_lp_token_amount.to_string()),
-                    ]))
+                    errors::error_extra! {
+                        "token_0" => token_0,
+                        "token_1" => token_1,
+                        "remove_lp_token_amount" => remove_lp_token_amount,
+                    }
                 )),
                 |r| r.to_owned()
             )

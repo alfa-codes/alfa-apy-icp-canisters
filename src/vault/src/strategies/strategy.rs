@@ -8,9 +8,13 @@ use liquidity::liquidity_calculator::LiquidityCalculator;
 use types::exchange_id::ExchangeId;
 use types::pool::PoolTrait;
 use types::context::Context;
-use errors::internal_error::error::InternalError;
-use errors::internal_error::error::build_error_code;
 use utils::token_transfer::icrc1_transfer_to_user;
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    canisters as canister_area,
+    canisters::domains::vault as vault_domain,
+    canisters::domains::vault::components as vault_domain_components,
+};
 
 use crate::repository::runtime_config_repo;
 use crate::event_records::event_record::Event;
@@ -28,6 +32,14 @@ use crate::types::types::{
     StrategyResponse,
     StrategyWithdrawResponse,
 };
+
+// Module code: "03-01-02"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    canister_area::AREA_CODE,           // Area code: "03"
+    vault_domain::DOMAIN_CODE,          // Domain code: "01"
+    vault_domain_components::STRATEGIES // Component code: "02"
+);
 
 #[async_trait]
 pub trait IStrategy: Send + Sync + BasicStrategy {
@@ -82,10 +94,14 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
 
             if best_apy_pool.is_none() {
                 let error = InternalError::not_found(
-                    build_error_code(3100, 1, 1), // 3100 01 01
+                    build_error_code(InternalErrorKind::NotFound, 1), // Error code: "03-01-02 01 01"
                     "Strategy::deposit".to_string(),
                     "No pool found to deposit".to_string(),
-                    None,
+                    errors::error_extra! {
+                        "context" => context,
+                        "strategy_id" => strategy_id,
+                        "amount" => amount,
+                    },
                 );
 
                 // Event: Strategy deposit failed
@@ -167,7 +183,11 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
     /// 7. Saves updated strategy state
     ///
     /// TODO: Rename `shares` to `percentage`
-    async fn withdraw(&mut self, context: Context, percentage: Nat) -> Result<StrategyWithdrawResponse, InternalError> {
+    async fn withdraw(
+        &mut self,
+        context: Context,
+        percentage: Nat
+    ) -> Result<StrategyWithdrawResponse, InternalError> {
         let strategy_id = self.get_id().to_string();
         let investor = context.user.unwrap();
         let user_shares = self.get_user_shares_by_principal(investor.clone());
@@ -186,14 +206,16 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
 
         if user_shares == Nat::from(0u8) {
             let error = InternalError::business_logic(
-                build_error_code(3100, 3, 3), // 3100 03 03
+                build_error_code(InternalErrorKind::BusinessLogic, 3), // Error code: "03-01-02 03 03"
                 "Strategy::withdraw".to_string(),
                 "No shares found for user".to_string(),
-                Some(HashMap::from([
-                    ("percentage".to_string(), percentage.to_string()),
-                    ("user_shares".to_string(), user_shares.to_string()),
-                    ("shares".to_string(), shares.to_string()),
-                ]))
+                errors::error_extra! {
+                    "context" => context,
+                    "strategy_id" => strategy_id,
+                    "percentage" => percentage,
+                    "user_shares" => user_shares,
+                    "shares" => shares,
+                },
             );
 
             // Event: Strategy withdraw failed
@@ -215,14 +237,16 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
         // Check if user has enough shares
         if shares > user_shares {
             let error = InternalError::business_logic(
-                build_error_code(3100, 3, 4), // 3100 03 04
+                build_error_code(InternalErrorKind::BusinessLogic, 4), // Error code: "03-01-02 03 04"
                 "Strategy::withdraw".to_string(),
                 "Not sufficient shares for user".to_string(),
-                Some(HashMap::from([
-                    ("percentage".to_string(), percentage.to_string()),
-                    ("user_shares".to_string(), user_shares.to_string()),
-                    ("shares".to_string(), shares.to_string()),
-                ]))
+                errors::error_extra! {
+                    "context" => context,
+                    "strategy_id" => strategy_id,
+                    "percentage" => percentage,
+                    "user_shares" => user_shares,
+                    "shares" => shares,
+                },
             );
 
             // Event: Strategy withdraw failed
@@ -243,10 +267,16 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
 
         if current_pool.is_none() {
             let error = InternalError::not_found(
-                build_error_code(3100, 1, 5), // 3100 01 05
+                build_error_code(InternalErrorKind::NotFound, 5), // Error code: "03-01-02 01 05"
                 "Strategy::withdraw".to_string(),
                 "No current pool found in strategy".to_string(),
-                None,
+                errors::error_extra! {
+                    "context" => context,
+                    "strategy_id" => strategy_id,
+                    "percentage" => percentage,
+                    "user_shares" => user_shares,
+                    "shares" => shares,
+                },
             );
 
             // Event: Strategy withdraw failed
@@ -362,10 +392,13 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
 
         if current_pool.is_none() {
             let error = InternalError::not_found(
-                build_error_code(3100, 1, 6),
+                build_error_code(InternalErrorKind::NotFound, 6), // Error code: "03-01-02 01 06"
                 "Strategy::rebalance".to_string(),
                 "No current pool found in strategy".to_string(),
-                None,
+                errors::error_extra! {
+                    "context" => context,
+                    "strategy_id" => strategy_id,
+                },
             );
 
             event_record_service::create_event_record(

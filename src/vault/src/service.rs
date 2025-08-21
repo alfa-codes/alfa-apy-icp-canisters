@@ -1,8 +1,19 @@
-use std::collections::HashMap;
-
 use ::types::context::Context;
-use errors::internal_error::error::InternalError;
-use errors::internal_error::error::build_error_code;
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+
+use errors::internal_error::error_codes::module::areas::{
+    canisters as canister_area,
+    canisters::domains::vault as vault_domain,
+    canisters::domains::vault::components as vault_domain_components,
+};
+
+// Module code: "03-01-01"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    canister_area::AREA_CODE,     // Area code: "03"
+    vault_domain::DOMAIN_CODE,    // Domain code: "01"
+    vault_domain_components::CORE // Component code: "01"
+);
 
 use crate::repository::strategies_repo;
 use crate::user::user_service;
@@ -33,12 +44,13 @@ pub async fn deposit(
     let mut strategy = get_strategy_by_id(strategy_id)
         .ok_or_else(|| {
             InternalError::not_found(
-                build_error_code(3000, 1, 1), // 3000 01 01
+                build_error_code(InternalErrorKind::NotFound, 1), // Error code: "03-01-01 01 01"
                 "service::deposit".to_string(),
                 "Strategy not found".to_string(),
-                Some(HashMap::from([
-                    ("strategy_id".to_string(), strategy_id.to_string())
-                ]))
+                errors::error_extra! {
+                    "context" => context,
+                    "args" => args,
+                },
             )
         })?;
 
@@ -68,12 +80,13 @@ pub async fn withdraw(
     let mut strategy = get_strategy_by_id(strategy_id)
         .ok_or_else(|| {
             InternalError::not_found(
-                build_error_code(3100, 1, 2), // 3100 01 02
+                build_error_code(InternalErrorKind::NotFound, 2), // Error code: "03-01-01 01 02"
                 "service::withdraw".to_string(),
                 "Strategy not found".to_string(),
-                Some(HashMap::from([
-                    ("strategy_id".to_string(), strategy_id.to_string()),
-                ]))
+                errors::error_extra! {
+                    "context" => context,
+                    "args" => args,
+                },
             )
         })?;
 

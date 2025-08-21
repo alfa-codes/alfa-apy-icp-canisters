@@ -1,9 +1,14 @@
 use candid::{CandidType, Deserialize};
 use serde::Serialize;
-use std::collections::HashMap;
 use derive_more::Display;
 
+use crate::internal_error::error_codes::{self};
 use crate::response_error::error::{ResponseError, ResponseErrorKind};
+use crate::types::error_codes::{
+    ErrorCode,
+    ErrorKindCode,
+    ErrorExtra,
+};
 
 #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
 pub enum InternalErrorKind {
@@ -12,9 +17,41 @@ pub enum InternalErrorKind {
     BusinessLogic,
     ExternalService,
     AccessDenied,
+    Infrastructure,
     Timeout,
     Unknown,
 }
+
+impl InternalErrorKind {
+    pub fn code(&self) -> ErrorKindCode {
+        match self {
+            InternalErrorKind::NotFound => error_codes::error_kinds::NOT_FOUND.to_string(),
+            InternalErrorKind::Validation => error_codes::error_kinds::VALIDATION.to_string(),
+            InternalErrorKind::BusinessLogic => error_codes::error_kinds::BUSINESS_LOGIC.to_string(),
+            InternalErrorKind::ExternalService => error_codes::error_kinds::EXTERNAL_SERVICE.to_string(),
+            InternalErrorKind::AccessDenied => error_codes::error_kinds::ACCESS_DENIED.to_string(),
+            InternalErrorKind::Infrastructure => error_codes::error_kinds::INFRASTRUCTURE.to_string(),
+            InternalErrorKind::Timeout => error_codes::error_kinds::TIMEOUT.to_string(),
+            InternalErrorKind::Unknown => error_codes::error_kinds::UNKNOWN.to_string(),
+        }
+    }
+}
+
+impl From<ResponseErrorKind> for InternalErrorKind {
+    fn from(kind: ResponseErrorKind) -> Self {
+        match kind {
+            ResponseErrorKind::NotFound => InternalErrorKind::NotFound,
+            ResponseErrorKind::Validation => InternalErrorKind::Validation,
+            ResponseErrorKind::BusinessLogic => InternalErrorKind::BusinessLogic,
+            ResponseErrorKind::ExternalService => InternalErrorKind::ExternalService,
+            ResponseErrorKind::AccessDenied => InternalErrorKind::AccessDenied,
+            ResponseErrorKind::Infrastructure => InternalErrorKind::Infrastructure,
+            ResponseErrorKind::Timeout => InternalErrorKind::Timeout,
+            ResponseErrorKind::Unknown => InternalErrorKind::Unknown,
+        }
+    }
+}
+
 
 pub struct InternalErrors {
     pub errors: Vec<InternalError>,
@@ -23,20 +60,20 @@ pub struct InternalErrors {
 #[derive(CandidType, Deserialize, Serialize, Clone, Debug, Display)]
 #[display("{:?}: {} ({})", kind, message, context)]
 pub struct InternalError {
-    pub code: u32,
+    pub code: ErrorCode,
     pub kind: InternalErrorKind,
     pub context: String,
     pub message: String,
-    pub extra: Option<HashMap<String, String>>,
+    pub extra: ErrorExtra,
 }
 
 impl InternalError {
     pub fn new(
-        code: u32,
+        code: ErrorCode,
         kind: InternalErrorKind,
         context: String,
         message: String,
-        extra: Option<HashMap<String, String>>,
+        extra: ErrorExtra,
     ) -> Self {
         Self { code, kind, context, message, extra }
     }
@@ -52,10 +89,10 @@ impl InternalError {
     }
 
     pub fn business_logic(
-        code: u32,
+        code: ErrorCode,
         context: String,
         message: String,
-        extra: Option<HashMap<String, String>>
+        extra: ErrorExtra
     ) -> Self {
         Self::new(
             code,
@@ -67,10 +104,10 @@ impl InternalError {
     }
 
     pub fn external_service(
-        code: u32,
+        code: ErrorCode,
         context: String,
         message: String,
-        extra: Option<HashMap<String, String>>
+        extra: ErrorExtra
     ) -> Self {
         Self::new(
             code,
@@ -82,10 +119,10 @@ impl InternalError {
     }
 
     pub fn not_found(
-        code: u32,
+        code: ErrorCode,
         context: String,
         message: String,
-        extra: Option<HashMap<String, String>>
+        extra: ErrorExtra
     ) -> Self {
         Self::new(
             code,
@@ -97,10 +134,10 @@ impl InternalError {
     }
 
     pub fn validation(
-        code: u32,
+        code: ErrorCode,
         context: String,
         message: String,
-        extra: Option<HashMap<String, String>>
+        extra: ErrorExtra
     ) -> Self {
         Self::new(
             code,
@@ -112,27 +149,11 @@ impl InternalError {
     }
 }
 
-
-pub fn build_error_code(module: u16, kind: u8, number: u8) -> u32 {
-    // Format: MMMM KKK NNN
-    // MMMM: Module (4 digits)
-    // KKK: Kind (2 digits)
-    // NNN: Number (2 digits)
-    // Example: module=1001, kind=4, number=1 -> 10010401
-    (module as u32) * 10_000 + (kind as u32) * 100 + (number as u32)
-}
-
-
-impl From<ResponseErrorKind> for InternalErrorKind {
-    fn from(kind: ResponseErrorKind) -> Self {
-        match kind {
-            ResponseErrorKind::NotFound => InternalErrorKind::NotFound,
-            ResponseErrorKind::Validation => InternalErrorKind::Validation,
-            ResponseErrorKind::BusinessLogic => InternalErrorKind::BusinessLogic,
-            ResponseErrorKind::ExternalService => InternalErrorKind::ExternalService,
-            ResponseErrorKind::AccessDenied => InternalErrorKind::AccessDenied,
-            ResponseErrorKind::Timeout => InternalErrorKind::Timeout,
-            ResponseErrorKind::Unknown => InternalErrorKind::Unknown,
-        }
-    }
+#[macro_export]
+macro_rules! error_extra {
+    ( $( $k:expr => $v:expr ),* $(,)? ) => {{
+        let mut m = ::std::collections::HashMap::<String, String>::new();
+        $( m.insert($k.to_string(), format!("{:?}", $v)); )*
+        Some(m)
+    }};
 }

@@ -9,14 +9,14 @@ use errors::response_error::error::ResponseError;
 use crate::pools::pool::Pool;
 use crate::event_records::event_record::EventRecord;
 
-#[derive(CandidType, Deserialize, Clone, Serialize)]
+#[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
 pub struct StrategyDepositArgs {
     pub ledger: CanisterId,
     pub amount: Nat,
     pub strategy_id: StrategyId,
 }
 
-#[derive(CandidType, Deserialize, Clone, Serialize)]
+#[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
 pub struct StrategyWithdrawArgs {
     pub ledger: CanisterId,
     pub percentage: Nat,

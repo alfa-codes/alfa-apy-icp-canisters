@@ -1,7 +1,12 @@
 use candid::Nat;
 use std::ops::{Div, Mul};
 
-use errors::internal_error::error::{InternalError, build_error_code};
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    canisters as canister_area,
+    canisters::domains::strategy_history as strategy_history_domain,
+    canisters::domains::strategy_history::components as strategy_history_domain_components,
+};
 use validation::validation::Validation;
 use ::utils::util::current_timestamp_secs;
 use types::strategies::StrategyId;
@@ -12,6 +17,14 @@ use crate::types::types::{StrategyState, CreateStrategiesSnapshotsResponse};
 use crate::types::external_canister_types::VaultStrategyResponse;
 use crate::services::strategy_yield_service;
 
+// Module code: "03-03-01"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    canister_area::AREA_CODE,                    // Area code: "03"
+    strategy_history_domain::DOMAIN_CODE,        // Domain code: "03"
+    strategy_history_domain_components::CORE     // Component code: "01"
+);
+
 pub fn save_strategy_snapshot(snapshot: StrategySnapshot) -> Result<(), InternalError> {
     // Validate snapshot
     snapshot.define_validations().validate()
@@ -20,7 +33,7 @@ pub fn save_strategy_snapshot(snapshot: StrategySnapshot) -> Result<(), Internal
                 first_error.clone()
             } else {
                 InternalError::business_logic(
-                    build_error_code(0000, 0, 0),
+                    build_error_code(InternalErrorKind::BusinessLogic, 4), // Error code: "03-03-01 03 04"
                     "strategy_history_service::save_snapshot".to_string(),
                     "Validation failed".to_string(),
                     None

@@ -1,10 +1,22 @@
 use candid::{CandidType, Nat, Principal};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
-use errors::internal_error::error::{InternalError, build_error_code};
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    libraries as library_area,
+    libraries::domains::validation as validation_domain,
+    libraries::domains::validation::components as validation_domain_components,
+};
 
 use crate::validation_rule_type::ValidationRuleType;
+
+// Module code: "02-03-01"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    library_area::AREA_CODE,           // Area code: "02"
+    validation_domain::DOMAIN_CODE,    // Domain code: "03"
+    validation_domain_components::CORE // Component code: "01"
+);
 
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct FieldValidator {
@@ -36,12 +48,12 @@ impl FieldValidator {
         match self.validation_rule.validate(&self.field_name, value) {
             Ok(()) => Ok(()),
             Err(error_message) => Err(InternalError::validation(
-                build_error_code(2200, 2, 1), // 2200 02 01
+                build_error_code(InternalErrorKind::Validation, 1), // Error code: "02-03-01 02 01"
                 "FieldValidator::validate".to_string(),
                 error_message,
-                Some(HashMap::from([
-                    ("field_name".to_string(), self.field_name.clone()),
-                ]))
+                errors::error_extra! {
+                    "field_name" => self.field_name.clone(),
+                }
             ))
         }
     }

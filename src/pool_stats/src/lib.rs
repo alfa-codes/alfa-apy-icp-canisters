@@ -10,8 +10,12 @@ use ::types::context::Context;
 use ::types::CanisterId;
 use ::types::pool::PoolTrait;
 use errors::response_error::error::ResponseError;
-use errors::internal_error::error::InternalError;
-use errors::internal_error::error::build_error_code;
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    canisters as canister_area,
+    canisters::domains::pool_stats as pool_stats_domain,
+    canisters::domains::pool_stats::components as pool_stats_domain_components,
+};
 use ic_cdk_macros::{init, post_upgrade, pre_upgrade};
 
 use crate::pool_snapshots::pool_snapshot::PoolSnapshot;
@@ -45,6 +49,14 @@ pub mod utils;
 
 // const SNAPSHOTS_FETCHING_INTERVAL: u64 = 3600; // 1 hour
 const SNAPSHOTS_FETCHING_INTERVAL: u64 = 604_800; // 1 week
+
+// Module code: "03-02-01"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    canister_area::AREA_CODE,          // Area code: "03"
+    pool_stats_domain::DOMAIN_CODE,    // Domain code: "02"
+    pool_stats_domain_components::CORE // Component code: "01"
+);
 
 #[derive(CandidType, Debug, Clone, Deserialize)]
 pub struct CanisterIdRequest {
@@ -143,10 +155,13 @@ pub async fn test_create_pool_snapshot(pool_id: String) -> TestCreatePoolSnapsho
         TestCreatePoolSnapshotResult(result)
     } else {
         let error = InternalError::not_found(
-            build_error_code(0000, 0, 0), // 0000 00 00
+                            build_error_code(InternalErrorKind::NotFound, 0), // Error code: "03-02-01 03 00"
             "pool_stats::create_pool_snapshot".to_string(),
             format!("Pool not found: {pool_id}"),
-            None
+            errors::error_extra! {
+                "context" => context,
+                "pool_id" => pool_id,
+            },
         );
 
         TestCreatePoolSnapshotResult(Err(ResponseError::from_internal_error(error)))

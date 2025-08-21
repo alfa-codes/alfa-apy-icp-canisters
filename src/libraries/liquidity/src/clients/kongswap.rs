@@ -1,30 +1,49 @@
 use async_trait::async_trait;
 use candid::Nat;
 use std::ops::{Div, Mul};   
-use std::collections::HashMap;
 use std::sync::Arc;
 
-use types::CanisterId;
+use types::{CanisterId, exchange_id::ExchangeId};
 use service_resolver::ProviderImpls;
 use providers::kongswap::KongSwapProvider;
 use providers::icpswap::ICPSwapProvider;
 use kongswap_canister::user_balances::UserBalancesReply;
 use utils::util::{nat_to_f64, nat_to_u128};
 use swap::swap_service;
-use types::liquidity::{AddLiquidityResponse, WithdrawLiquidityResponse, GetPositionByIdResponse, GetPoolDataResponse};
-use errors::internal_error::error::InternalError;
-use errors::internal_error::error::build_error_code;
+use types::liquidity::{
+    AddLiquidityResponse,
+    WithdrawLiquidityResponse,
+    GetPositionByIdResponse,
+    GetPoolDataResponse
+};
 use icrc_ledger_client::ICRCLedgerClient;
 use utils::constants::CKUSDT_TOKEN_CANISTER_ID;
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    libraries as library_area,
+    libraries::domains::liquidity as liquidity_domain,
+    libraries::domains::liquidity::components as liquidity_domain_components,
+};
+
 
 use crate::liquidity_client::LiquidityClient;
 use crate::liquidity_calculator::LiquidityCalculator;
+
+pub const PROVIDER: ExchangeId = ExchangeId::KongSwap;
+
+// Module code: "02-02-02"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    library_area::AREA_CODE,                      // Area code: "02"
+    liquidity_domain::DOMAIN_CODE,                // Domain code: "02"
+    liquidity_domain_components::KONG_SWAP_CLIENT // Component code: "02"
+);
 
 pub struct KongSwapLiquidityClient {
     provider_impls: ProviderImpls,
     icrc_ledger_client: Arc<dyn ICRCLedgerClient>,
     canister_id: CanisterId,
-    // TODO: change to Pool
+    // TODO: change to token0 and token1 to Pool
     token0: CanisterId,
     token1: CanisterId,
 }
@@ -71,10 +90,10 @@ impl LiquidityClient for KongSwapLiquidityClient {
     ) -> Result<AddLiquidityResponse, InternalError> {
         let provider_add_liquidity_amounts =
             self.kongswap_provider().add_liquidity_amounts(
-            self.token_kongswap_format(self.token0.clone()),
-            amount.clone(),
-            self.token_kongswap_format(self.token1.clone()),
-        ).await?;
+                self.token_kongswap_format(self.token0.clone()),
+                amount.clone(),
+                self.token_kongswap_format(self.token1.clone()),
+            ).await?;
 
         let provider_suggested_token0_for_pool = provider_add_liquidity_amounts.amount_0;
         let provider_suggested_token1_for_pool = provider_add_liquidity_amounts.amount_1;
@@ -206,10 +225,14 @@ impl LiquidityClient for KongSwapLiquidityClient {
         // Guard against zero amounts
         if token0_amount_for_pool_u128 == 0 || token1_amount_for_pool_u128 == 0 {
             return Err(InternalError::business_logic(
-                build_error_code(0000, 0, 0),
+                build_error_code(InternalErrorKind::BusinessLogic, 4), // Error code: "02-02-02 03 04"
                 "KongSwapLiquidityClient::add_liquidity_to_pool".to_string(),
                 "Insufficient amounts after swap/fees to add liquidity".to_string(),
-                None,
+                errors::error_extra! {
+                    "provider" => PROVIDER,
+                    "token0_amount_for_pool_u128" => token0_amount_for_pool_u128,
+                    "token1_amount_for_pool_u128" => token1_amount_for_pool_u128,
+                },
             ));
         }
 
@@ -274,15 +297,16 @@ impl LiquidityClient for KongSwapLiquidityClient {
             .map(|balance_reply| balance_reply.balance)
             .ok_or_else(|| {
                 InternalError::business_logic(
-                    build_error_code(2101, 3, 1), // 2101 03 01
+                    build_error_code(InternalErrorKind::BusinessLogic, 1), // Error code: "02-02-02 03 01"
                     "KongSwapLiquidityClient::withdraw_liquidity_from_pool".to_string(),
                     "No user LP balance".to_string(),
-                    Some(HashMap::from([
-                        ("token0".to_string(), self.token0.to_text()),
-                        ("token1".to_string(), self.token1.to_text()),
-                        ("total_shares".to_string(), total_shares.to_string()),
-                        ("shares".to_string(), shares.to_string()),
-                    ]))
+                    errors::error_extra! {
+                        "provider" => PROVIDER,
+                        "token0" => self.token0,
+                        "token1" => self.token1,
+                        "total_shares" => total_shares,
+                        "shares" => shares,
+                    },
                 )
             })?;
 
@@ -295,10 +319,10 @@ impl LiquidityClient for KongSwapLiquidityClient {
         // Remove liquidity from pool
         let remove_liquidity_response = self.kongswap_provider()
             .remove_liquidity(
-            self.token_kongswap_format(self.token0.clone()),
-            self.token_kongswap_format(self.token1.clone()),
-            Nat::from(lp_tokens_to_withdraw.round() as u128),
-        ).await?;
+                self.token_kongswap_format(self.token0.clone()),
+                self.token_kongswap_format(self.token1.clone()),
+                Nat::from(lp_tokens_to_withdraw.round() as u128),
+            ).await?;
 
         Ok(WithdrawLiquidityResponse {
             token_0_amount: remove_liquidity_response.amount_0,
@@ -328,14 +352,15 @@ impl LiquidityClient for KongSwapLiquidityClient {
                 (balance.address_0 == self.token1.to_text() && balance.address_1 == self.token0.to_text())
             )
             .ok_or_else(|| InternalError::business_logic(
-                build_error_code(2101, 3, 2), // 2101 03 02
+                build_error_code(InternalErrorKind::BusinessLogic, 2), // Error code: "02-02-02 03 02"
                 "KongSwapLiquidityClient::get_position_by_id".to_string(),
                 "No user LP balance".to_string(),
-                Some(HashMap::from([
-                    ("token0".to_string(), self.token0.to_text()),
-                    ("token1".to_string(), self.token1.to_text()),
-                    ("position_id".to_string(), position_id.to_string()),
-                ]))
+                errors::error_extra! {
+                    "provider" => PROVIDER,
+                    "token0" => self.token0,
+                    "token1" => self.token1,
+                    "position_id" => position_id,
+                },
             ))?;
 
         let token0_decimals = self.icrc_ledger_client.icrc1_decimals(self.token0.clone()).await?;
@@ -375,13 +400,14 @@ impl LiquidityClient for KongSwapLiquidityClient {
                 (pool.address_0 == self.token1.to_text() && pool.address_1 == self.token0.to_text())
             )
             .ok_or_else(|| InternalError::business_logic(
-                build_error_code(2101, 3, 3), // 2101 03 03
+                build_error_code(InternalErrorKind::BusinessLogic, 3), // Error code: "02-02-02 03 03"
                 "KongSwapLiquidityClient::get_pool_data".to_string(),
                 "No pool data".to_string(),
-                Some(HashMap::from([
-                    ("token0".to_string(), self.token0.to_text()),
-                    ("token1".to_string(), self.token1.to_text()),
-                ]))
+                errors::error_extra! {
+                    "provider" => PROVIDER,
+                    "token0" => self.token0,
+                    "token1" => self.token1,
+                },
             ))?;
 
         let token0_balance = pool_data.balance_0.clone() + pool_data.lp_fee_0.clone();
@@ -434,3 +460,4 @@ impl LiquidityClient for KongSwapLiquidityClient {
         })
     }
 }
+

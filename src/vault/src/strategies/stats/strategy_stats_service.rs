@@ -4,16 +4,29 @@ use candid::Nat;
 use std::collections::HashMap;
 use std::cell::RefCell;
 
-use errors::internal_error::error::{InternalError, build_error_code};
 use types::exchange_id::ExchangeId;
 use liquidity::liquidity_router;
 use swap::swap_service;
 use utils::util::current_timestamp_secs;
 use utils::constants::CKUSDT_TOKEN_CANISTER_ID;
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    canisters as canister_area,
+    canisters::domains::vault as vault_domain,
+    canisters::domains::vault::components as vault_domain_components,
+};
 
 use crate::repository::strategies_repo;
 use crate::strategies::strategy::IStrategy;
 use crate::utils::service_resolver::get_service_resolver;
+
+// Module code: "03-01-01"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    canister_area::AREA_CODE,     // Area code: "03"
+    vault_domain::DOMAIN_CODE,    // Domain code: "01"
+    vault_domain_components::CORE // Component code: "01"
+);
 
 thread_local! {
     static STRATEGY_STATS_TIMER_ID: RefCell<Option<TimerId>> = RefCell::new(None);
@@ -57,7 +70,9 @@ pub async fn update_all_strategy_liquidity() {
     }
 }
 
-pub async fn update_strategy_liquidity(mut strategy: Box<dyn IStrategy>) -> Result<(), InternalError> {
+pub async fn update_strategy_liquidity(
+    mut strategy: Box<dyn IStrategy>
+) -> Result<(), InternalError> {
     let liquidity_amount = get_strategy_current_liquidity(strategy.as_ref()).await?;
     
     strategy.set_current_liquidity(Some(liquidity_amount));
@@ -74,18 +89,20 @@ pub fn spawn_update_strategy_liquidity(strategy: Box<dyn IStrategy>) -> () {
     });
 }
 
-pub async fn get_strategy_current_liquidity(strategy: &dyn IStrategy) -> Result<Nat, InternalError> {
+pub async fn get_strategy_current_liquidity(
+    strategy: &dyn IStrategy
+) -> Result<Nat, InternalError> {
     let strategy_id = strategy.get_id();
     let current_pool = strategy.get_current_pool();
 
     if current_pool.is_none() {
         return Err(InternalError::business_logic(
-            build_error_code(3100, 3, 7), // 3100 03 07
+                            build_error_code(InternalErrorKind::BusinessLogic, 5), // Error code: "03-01-01 03 05"
             "strategy_stats_service::get_strategy_current_liquidity".to_string(),
             "Strategy has no current pool".to_string(),
-            Some(HashMap::from([
-                ("strategy_id".to_string(), strategy_id.to_string()),
-            ]))
+            errors::error_extra! {
+                "strategy_id" => strategy_id,
+            },
         ));
     }
 
@@ -104,16 +121,18 @@ pub async fn get_strategy_current_liquidity(strategy: &dyn IStrategy) -> Result<
     let position_id = strategy.get_position_id()
         .ok_or_else(|| {
             InternalError::business_logic(
-                build_error_code(3100, 3, 8), // 3100 03 08
+                build_error_code(InternalErrorKind::BusinessLogic, 6), // Error code: "03-01-01 03 06"
                 "strategy_stats_service::get_strategy_current_liquidity".to_string(),
                 "Strategy has no position id".to_string(),
-                Some(HashMap::from([
-                    ("strategy_id".to_string(), strategy_id.to_string()),
-                ]))
+                errors::error_extra! {
+                    "strategy_id" => strategy_id,
+                },
             )
         })?;
 
-    let position_response = liquidity_client.get_position_by_id(position_id).await?;
+    let position_response = liquidity_client
+        .get_position_by_id(position_id)
+        .await?;
 
     let quote_response = swap_service::quote_swap_icrc2(
         service_resolver.provider_impls(),
@@ -129,17 +148,19 @@ pub async fn get_strategy_current_liquidity(strategy: &dyn IStrategy) -> Result<
     Ok(base_token_amount)
 }
 
-pub async fn get_strategy_current_liquidity_usd(strategy: Box<dyn IStrategy>) -> Result<f64, InternalError> {
+pub async fn get_strategy_current_liquidity_usd(
+    strategy: Box<dyn IStrategy>
+) -> Result<f64, InternalError> {
     let current_liquidity_base = get_strategy_current_liquidity(strategy.as_ref()).await?;
 
     let pool = strategy.get_current_pool().ok_or_else(|| {
         InternalError::business_logic(
-            build_error_code(3100, 3, 9), // 3100 03 09
+                            build_error_code(InternalErrorKind::BusinessLogic, 7), // Error code: "03-01-01 03 07"
             "strategy_stats_service::get_strategy_current_liquidity_usd".to_string(),
             "Strategy has no current pool".to_string(),
-            Some(HashMap::from([
-                ("strategy_id".to_string(), strategy.get_id().to_string()),
-            ]))
+            errors::error_extra! {
+                "strategy_id" => strategy.get_id(),
+            },
         )
     })?;
 

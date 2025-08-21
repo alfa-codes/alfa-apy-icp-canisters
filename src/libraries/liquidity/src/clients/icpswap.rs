@@ -2,11 +2,10 @@ use async_trait::async_trait;
 use candid::{Nat, Int, Principal};
 use std::ops::{Div, Mul};
 use num_traits::ToPrimitive;
-use std::collections::HashMap;
 use std::sync::Arc;
 
 use utils::util::{nat_to_u64, int_to_nat, nat_to_f64};
-use types::CanisterId;
+use types::{CanisterId, exchange_id::ExchangeId};
 use service_resolver::ProviderImpls;
 use providers::icpswap::ICPSwapProvider;
 use icpswap_swap_pool_canister::getTokenMeta::TokenMetadataValue;
@@ -21,7 +20,6 @@ use icpswap_swap_calculator_canister::getTokenAmountByLiquidity::GetTokenAmountB
 use icpswap_node_index_canister::getAllTokens::TokenData;
 use icpswap_tvl_storage_canister::getPoolChartTvl::PoolChartTvl;
 use swap::token_swaps::icpswap::SLIPPAGE_TOLERANCE_POINTS;
-use errors::internal_error::error::{InternalError, build_error_code};
 use utils::constants::CKUSDT_TOKEN_CANISTER_ID;
 use icrc_ledger_client::ICRCLedgerClient;
 use types::liquidity::{
@@ -31,13 +29,30 @@ use types::liquidity::{
     GetPositionByIdResponse,
     GetPoolDataResponse,
 };
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    libraries as library_area,
+    libraries::domains::liquidity as liquidity_domain,
+    libraries::domains::liquidity::components as liquidity_domain_components,
+};
 
 use crate::liquidity_calculator::LiquidityCalculator;
 use crate::liquidity_client::LiquidityClient;
 
+// Module code: "02-02-03"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    library_area::AREA_CODE,                     // Area code: "02"
+    liquidity_domain::DOMAIN_CODE,               // Domain code: "02"
+    liquidity_domain_components::ICP_SWAP_CLIENT // Component code: "03"
+);
+
+
 // Use full range of prices for liquidity in the pool
 const TICK_LOWER: i32 = -887220;
 const TICK_UPPER: i32 = 887220;
+
+const PROVIDER: ExchangeId = ExchangeId::ICPSwap;
 
 pub struct ICPSwapLiquidityClient {
     provider_impls: ProviderImpls,
@@ -109,15 +124,16 @@ impl ICPSwapLiquidityClient {
                 token1_fee: token_meta.token0Fee.clone(),
             }),
             (t0, t1) => Err(InternalError::business_logic(
-                build_error_code(2102, 3, 1), // 2102 03 01
+                build_error_code(InternalErrorKind::BusinessLogic, 1), // Error code: "02-02-03 03 01"
                 "ICPSwapLiquidityClient::get_tokens_fee".to_string(),
                 "Invalid token configuration for ICPSwap pool".to_string(),
-                Some(HashMap::from([
-                    ("token0".to_string(), self.token0.to_text()),
-                    ("token1".to_string(), self.token1.to_text()),
-                    ("t0".to_string(), t0.to_string()),
-                    ("t1".to_string(), t1.to_string()),
-                ])),
+                errors::error_extra! {
+                    "provider" => PROVIDER,
+                    "token0" => self.token0,
+                    "token1" => self.token1,
+                    "t0" => t0,
+                    "t1" => t1,
+                },
             )),
         }
     }
@@ -132,15 +148,16 @@ impl ICPSwapLiquidityClient {
             (t0, t1) if t0 == token_in_str && t1 == token_out_str => Ok(true),
             (t0, t1) if t0 == token_out_str && t1 == token_in_str => Ok(false),
             (t0, t1) => Err(InternalError::business_logic(
-                build_error_code(2102, 3, 2), // 2102 03 02
+                build_error_code(InternalErrorKind::BusinessLogic, 2), // Error code: "02-02-03 03 02"
                 "ICPSwapLiquidityClient::is_zero_for_one_swap_direction".to_string(),
                 "Invalid token configuration for ICPSwap pool".to_string(),
-                Some(HashMap::from([
-                    ("token0".to_string(), self.token0.to_text()),
-                    ("token1".to_string(), self.token1.to_text()),
-                    ("t0".to_string(), t0.to_string()),
-                    ("t1".to_string(), t1.to_string()),
-                ])),
+                errors::error_extra! {
+                    "provider" => PROVIDER,
+                    "token0" => self.token0,
+                    "token1" => self.token1,
+                    "t0" => t0,
+                    "t1" => t1,
+                },
             )),
         }
     }
@@ -540,15 +557,16 @@ impl LiquidityClient for ICPSwapLiquidityClient {
             }
             _ => {
                 return Err(InternalError::business_logic(
-                    build_error_code(2102, 3, 3), // 2102 03 03
+                    build_error_code(InternalErrorKind::BusinessLogic, 3), // Error code: "02-02-03 03 03"
                     error_context.clone(),
                     "Token order does not match pool metadata".to_string(),
-                    Some(HashMap::from([
-                        ("token0".to_string(), self.token0.to_text()),
-                        ("token1".to_string(), self.token1.to_text()),
-                        ("metadata_token0".to_string(), metadata.token0.address),
-                        ("metadata_token1".to_string(), metadata.token1.address),
-                    ])),
+                    errors::error_extra! {
+                        "provider" => PROVIDER,
+                        "token0" => self.token0,
+                        "token1" => self.token1,
+                        "metadata_token0" => metadata.token0.address,
+                        "metadata_token1" => metadata.token1.address,
+                    },
                 ));
             }
         };
@@ -619,7 +637,7 @@ impl LiquidityClient for ICPSwapLiquidityClient {
 
         if user_position_ids.is_empty() {
             return Err(InternalError::business_logic(
-                build_error_code(2102, 3, 4), // 2102 03 04
+                build_error_code(InternalErrorKind::BusinessLogic, 4), // Error code: "02-02-03 03 04"
                 error_context.clone(),
                 "No position ids found for user".to_string(),
                 None,
@@ -664,15 +682,16 @@ impl LiquidityClient for ICPSwapLiquidityClient {
             ),
             _ => {
                 return Err(InternalError::business_logic(
-                    build_error_code(2102, 3, 5), // 2102 03 05
+                    build_error_code(InternalErrorKind::BusinessLogic, 5), // Error code: "02-02-03 03 05"
                     error_context.clone(),
                     "Token order does not match pool metadata".to_string(),
-                    Some(HashMap::from([
-                        ("token0".to_string(), self.token0.to_text()),
-                        ("token1".to_string(), self.token1.to_text()),
-                        ("metadata_token0".to_string(), metadata.token0.address),
-                        ("metadata_token1".to_string(), metadata.token1.address),
-                    ])),
+                    errors::error_extra! {
+                        "provider" => PROVIDER,
+                        "token0" => self.token0,
+                        "token1" => self.token1,
+                        "metadata_token0" => metadata.token0.address,
+                        "metadata_token1" => metadata.token1.address,
+                    },
                 ));
             }
         };

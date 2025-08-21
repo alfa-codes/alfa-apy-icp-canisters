@@ -6,15 +6,28 @@ use types::swap_tokens::{SwapResponse, QuoteResponse};
 use types::exchange_id::ExchangeId;
 use utils::constants::KONGSWAP_CANISTER_ID;
 use types::CanisterId;
-use errors::internal_error::error::{InternalError, build_error_code};
 use icrc_ledger_client::ICRCLedgerClient;
 use providers::kongswap::KongSwapProvider;
 use providers::icpswap::ICPSwapProvider;
 use service_resolver::ProviderImpls;
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    libraries as library_area,
+    libraries::domains::swap as swap_domain,
+    libraries::domains::swap::components as swap_domain_components,
+};
 
 use crate::token_swaps::kongswap::KongSwapSwapClient;
 use crate::token_swaps::icpswap::ICPSwapSwapClient;
 use crate::token_swaps::swap_client::SwapClient;
+
+// Module code: "02-01-01"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    library_area::AREA_CODE,             // Area code: "02"
+    swap_domain::DOMAIN_CODE,            // Domain code: "01"
+    swap_domain_components::SWAP_SERVICE // Component code: "01"
+);
 
 pub async fn swap_icrc2_optimal(
     provider_impls: ProviderImpls,
@@ -69,15 +82,15 @@ pub async fn swap_icrc2(
             ).await
         }
         _ => Err(InternalError::business_logic(
-            build_error_code(2000, 3, 1),
+            build_error_code(InternalErrorKind::BusinessLogic, 1), // Error code: "02-01-01 03 01"
             "swap_service::swap_icrc2".to_string(),
             "Invalid provider".to_string(),
-            Some(HashMap::from([
-                ("input_token".to_string(), input_token.to_text()),
-                ("output_token".to_string(), output_token.to_text()),
-                ("amount".to_string(), amount.to_string()),
-                ("provider".to_string(), provider.to_string()),
-            ])),
+            errors::error_extra! {
+                "input_token" => input_token,
+                "output_token" => output_token,
+                "amount" => amount,
+                "provider" => provider,
+            },
         )),
     }
 }
@@ -141,15 +154,15 @@ pub async fn quote_swap_icrc2(
             ).await
         }
         _ => Err(InternalError::business_logic(
-            build_error_code(2000, 3, 2),
+            build_error_code(InternalErrorKind::BusinessLogic, 2), // Error code: "02-01-01 03 02"
             "swap_service::quote_swap_icrc2".to_string(),
             "Invalid provider".to_string(),
-            Some(HashMap::from([
-                ("input_token".to_string(), input_token.to_text()),
-                ("output_token".to_string(), output_token.to_text()),
-                ("amount".to_string(), amount.to_string()),
-                ("provider".to_string(), provider.to_string()),
-            ])),
+            errors::error_extra! {
+                "input_token" => input_token,
+                "output_token" => output_token,
+                "amount" => amount,
+                "provider" => provider,
+            },
         )),
     }
 }

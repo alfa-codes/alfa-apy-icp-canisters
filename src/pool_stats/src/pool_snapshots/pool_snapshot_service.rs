@@ -1,13 +1,16 @@
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::time::Duration;
 use ic_cdk_timers::TimerId;
 
 use liquidity::liquidity_router;
 use liquidity::liquidity_client::LiquidityClient;
 use types::context::Context;
-use errors::internal_error::error::InternalError;
-use errors::internal_error::error::build_error_code;
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    canisters as canister_area,
+    canisters::domains::pool_stats as pool_stats_domain,
+    canisters::domains::pool_stats::components as pool_stats_domain_components,
+};
 
 use crate::pools::pool::Pool;
 use crate::pool_snapshots::pool_snapshot::PoolSnapshot;
@@ -15,6 +18,14 @@ use crate::pool_snapshots::position_data::position_data::PositionData;
 use crate::pool_snapshots::pool_data::pool_data::PoolData;
 use crate::repository::pools_repo;
 use crate::utils::service_resolver::get_service_resolver;
+
+// Module code: "03-02-01"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    canister_area::AREA_CODE,          // Area code: "03"
+    pool_stats_domain::DOMAIN_CODE,    // Domain code: "02"
+    pool_stats_domain_components::CORE // Component code: "01"
+);
 
 thread_local! {
     static POOL_SNAPSHOT_TIMER_ID: RefCell<Option<TimerId>> = RefCell::new(None);
@@ -55,7 +66,7 @@ pub async fn create_all_pool_snapshots() {
     for pool in pools.into_iter().filter(|p| p.position_id.is_some()) {
         create_pool_snapshot(context.clone(), &pool)
             .await
-            .map_err(|error| {
+            .map_err(|_error| {
                 // TODO: add event logging
             });
     }
@@ -64,12 +75,13 @@ pub async fn create_all_pool_snapshots() {
 pub async fn create_pool_snapshot(context: Context, pool: &Pool) -> Result<PoolSnapshot, InternalError> {
     if pool.position_id.is_none() {
         return Err(InternalError::business_logic(
-            build_error_code(4100, 3, 1), // 4100 03 01
+            build_error_code(InternalErrorKind::BusinessLogic, 1), // Error code: "03-02-01 03 01"
             "pool_snapshot_service::create_pool_snapshot".to_string(),
             "Pool has no position_id".to_string(),
-            Some(HashMap::from([
-                ("pool_id".to_string(), pool.id.to_string()),
-            ])),
+            errors::error_extra! {
+                "context" => context,
+                "pool_id" => pool.id,
+            },
         ));
     }
 

@@ -4,11 +4,24 @@ use candid::Nat;
 use std::sync::Arc;
 
 use super::swap_client::{SwapClient, SwapSuccess, QuoteSuccess};
-use errors::internal_error::error::InternalError;
 use providers::kongswap::KongSwapProvider;
 use utils::util::nat_to_u128;
+use errors::internal_error::error::{InternalError};
+use errors::internal_error::error_codes::module::areas::{
+    libraries as library_area,
+    libraries::domains::swap as swap_domain,
+    libraries::domains::swap::components as swap_domain_components,
+};
 
 const SLIPPAGE_PERCENTAGE: f64 = 40.0; // TODO: Improve slippage settings
+
+// Module code: "02-01-02"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    library_area::AREA_CODE,          // Area code: "02"
+    swap_domain::DOMAIN_CODE,         // Domain code: "01"
+    swap_domain_components::KONG_SWAP // Component code: "02"
+);
 
 pub struct KongSwapSwapClient {
     provider_impl: Arc<dyn KongSwapProvider + Send + Sync>,

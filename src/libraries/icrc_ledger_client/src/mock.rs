@@ -1,11 +1,24 @@
-use candid::{Nat, Principal};
-use errors::internal_error::error::{InternalError, build_error_code};
+use candid::{Nat, Principal, CandidType};
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
-use candid::CandidType;
 
 use ::types::CanisterId;
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    external_services as external_services_area,
+    external_services::domains::icrc_ledger as icrc_ledger_domain,
+    external_services::domains::icrc_ledger::components as icrc_ledger_domain_components,
+};
+
 use crate::ICRCLedgerClient;
+
+// Module code: "01-03-51"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    external_services_area::AREA_CODE,       // Area code: "01"
+    icrc_ledger_domain::DOMAIN_CODE,         // Domain code: "03"
+    icrc_ledger_domain_components::MOCK_CORE // Component code: "51"
+);
 
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct MockICRCLedgerClient {
@@ -71,43 +84,55 @@ impl ICRCLedgerClient for MockICRCLedgerClient {
     async fn icrc1_decimals(&self, canister_id: CanisterId) -> Result<u8, InternalError> {
         self.decimals_responses.get(&canister_id).cloned().unwrap_or_else(|| {
             Err(InternalError::not_found(
-                build_error_code(2400, 1, 1), // 2400 01 01
+                build_error_code(InternalErrorKind::NotFound, 1), // Error code: "01-03-51 01 01"
                 "MockICRCLedgerClient::icrc1_decimals".to_string(),
                 "Mock response not set for decimals".to_string(),
-                Some(HashMap::from([("canister_id".to_string(), canister_id.to_text())]))
+                errors::error_extra! {
+                    "canister_id" => canister_id,
+                }
             ))
         })
     }
 
-    async fn icrc2_approve(&self, spender: Principal, canister_id: CanisterId, amount: Nat) -> Result<Nat, InternalError> {
+    async fn icrc2_approve(
+        &self,
+        spender: Principal,
+        canister_id: CanisterId,
+        amount: Nat
+    ) -> Result<Nat, InternalError> {
         self.approve_responses
             .get(&(spender.to_text(), canister_id.to_text(), amount.to_string()))
             .map_or_else(
                 || Err(InternalError::not_found(
-                    build_error_code(2400, 1, 2), // 2400 01 02
+                    build_error_code(InternalErrorKind::NotFound, 2), // Error code: "01-03-51 01 02"
                     "MockICRCLedgerClient::icrc2_approve".to_string(),
                     "Mock response not set for approve".to_string(),
-                    Some(HashMap::from([
-                        ("spender".to_string(), spender.to_text()),
-                        ("amount".to_string(), amount.to_string()),
-                    ]))
+                    errors::error_extra! {
+                        "spender" => spender,
+                        "amount" => amount,
+                    }
                 )),
                 |r| r.to_owned()
             )
     }
 
-    async fn icrc2_transfer_from(&self, from: Principal, canister_id: CanisterId, amount: Nat) -> Result<Nat, InternalError> {
+    async fn icrc2_transfer_from(
+        &self,
+        from: Principal,
+        canister_id: CanisterId,
+        amount: Nat
+    ) -> Result<Nat, InternalError> {
         self.transfer_from_responses
             .get(&(from.to_text(), canister_id.to_text(), amount.to_string()))
             .map_or_else(
                 || Err(InternalError::not_found(
-                    build_error_code(2400, 1, 3), // 2400 01 03
+                    build_error_code(InternalErrorKind::NotFound, 3), // Error code: "01-03-51 01 03"
                     "MockICRCLedgerClient::icrc2_transfer_from".to_string(),
                     "Mock response not set for transfer_from".to_string(),
-                    Some(HashMap::from([
-                        ("from".to_string(), from.to_text()),
-                        ("amount".to_string(), amount.to_string()),
-                    ]))
+                    errors::error_extra! {
+                        "from" => from,
+                        "amount" => amount,
+                    }
                 )),
                 |r| r.to_owned()
             )
@@ -116,10 +141,12 @@ impl ICRCLedgerClient for MockICRCLedgerClient {
     async fn icrc1_fee(&self, canister_id: CanisterId) -> Result<Nat, InternalError> {
         self.fee_responses.get(&canister_id).cloned().unwrap_or_else(|| {
             Err(InternalError::not_found(
-                build_error_code(2400, 1, 4), // 2400 01 04
+                build_error_code(InternalErrorKind::NotFound, 4), // Error code: "01-03-51 01 04"
                 "MockICRCLedgerClient::icrc1_fee".to_string(),
                 "Mock response not set for fee".to_string(),
-                Some(HashMap::from([("canister_id".to_string(), canister_id.to_text())]))
+                errors::error_extra! {
+                    "canister_id" => canister_id,
+                }
             ))
         })
     }

@@ -59,10 +59,18 @@ mod tests {
     use std::time::{SystemTime, UNIX_EPOCH};
 
     use event_records::generic_event_record::GenericEventRecord;
-    use errors::internal_error::error::{InternalError, build_error_code};
+    use errors::internal_error::error::{InternalError, InternalErrorKind};
 
     use crate::types::types::{ListItemsPaginationRequest, SortOrder};
     use crate::event_records::event_record::{EventRecord, Event};
+
+    // Module code: "00-00-00"
+    errors::define_error_code_builder_fn!(
+        build_error_code,
+        "00", // Area code: "00"
+        "00", // Domain code: "00"
+        "00"  // Component code: "00"
+    );
 
     fn mock_event_with_type(event_type: &str, timestamp: u64) -> EventRecord {
         let event = match event_type {
@@ -78,14 +86,19 @@ mod tests {
             ),
             _ => Event::swap_token_failed(
                 "poolX".to_string(),
-                CanisterId::from_text("aaaaa-aa").unwrap(),
-                CanisterId::from_text("bbbbb-bb").unwrap(),
+                CanisterId::from_text("aaaaa-aaaaa-aaaaa-aaaaa").unwrap(),
+                CanisterId::from_text("bbbbb-bbbbbb-bbbbbb-bbbbbb").unwrap(),
                 Some(Nat::from(1000_u64)),
                 InternalError::not_found(
-                    build_error_code(0000, 00, 00),
+                    build_error_code(InternalErrorKind::NotFound, 0),
                     "test".to_string(),
                     "fail".to_string(),
-                    None,
+                    errors::error_extra! {
+                        "pool_id" => "poolX",
+                        "token0" => CanisterId::from_text("aaaaa-aaaaa-aaaaa-aaaaa").unwrap(),
+                        "token1" => CanisterId::from_text("bbbbb-bbbbbb-bbbbbb-bbbbbb").unwrap(),
+                        "amount" => Nat::from(1000_u64),
+                    },
                 ),
             ),
         };

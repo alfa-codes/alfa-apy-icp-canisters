@@ -2,7 +2,12 @@ use candid::Principal;
 use ic_cdk::api::call::CallResult;
 
 use utils::constants::VAULT_PRINCIPAL_DEV;
-use errors::internal_error::error::{InternalError, build_error_code};
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    canisters as canister_area,
+    canisters::domains::strategy_history as strategy_history_domain,
+    canisters::domains::strategy_history::components as strategy_history_components,
+};
 
 use crate::types::external_canister_types::{
     StrategyDepositArgs,
@@ -10,6 +15,14 @@ use crate::types::external_canister_types::{
     StrategyDepositResult,
     VaultStrategyResponse,
 };
+
+// Module code: "03-03-01"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    canister_area::AREA_CODE,             // Area code: "03"
+    strategy_history_domain::DOMAIN_CODE, // Domain code: "03"
+    strategy_history_components::CORE     // Component code: "01"
+);
 
 pub struct VaultActor {
     principal: Principal,
@@ -30,7 +43,7 @@ impl VaultActor {
         let (result,): (StrategyDepositResult,) =
             ic_cdk::call(self.principal, "deposit", (args,)).await
                 .map_err(|e| InternalError::external_service(
-                    build_error_code(0000, 4, 0),
+                    build_error_code(InternalErrorKind::ExternalService, 9), // Error code: "03-03-01 04 09"
                     "vault_service::deposit call".to_string(),
                     format!("IC error: {:?}", e),
                     None,
@@ -39,7 +52,7 @@ impl VaultActor {
         match result.0 {
             Ok(response) => Ok(response),
             Err(err) => Err(InternalError::business_logic(
-                build_error_code(0000, 3, 0),
+                build_error_code(InternalErrorKind::BusinessLogic, 10), // Error code: "03-03-01 03 10"
                 "vault_service::deposit".to_string(),
                 format!("Vault returned error: {}", err.message),
                 None,

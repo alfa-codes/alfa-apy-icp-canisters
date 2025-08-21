@@ -4,7 +4,12 @@ use candid::Principal;
 use ::utils::constants::{ICP_TOKEN_CANISTER_ID, VAULT_PRINCIPAL_DEV};
 use ::utils::util::{nat_to_f64, current_timestamp_secs};
 use swap::swap_service;
-use errors::internal_error::error::{InternalError, build_error_code};
+use errors::internal_error::error::{InternalError, InternalErrorKind};
+use errors::internal_error::error_codes::module::areas::{
+    canisters as canister_area,
+    canisters::domains::strategy_history as strategy_history_domain,
+    canisters::domains::strategy_history::components as strategy_history_domain_components,
+};
 use types::strategies::StrategyId;
 
 use crate::repository::strategy_states_repo;
@@ -17,6 +22,14 @@ use crate::types::external_canister_types::{
     StrategyDepositResponse,
     VaultStrategyResponse,
 };
+
+// Module code: "03-03-01"
+errors::define_error_code_builder_fn!(
+    build_error_code,
+    canister_area::AREA_CODE,                    // Area code: "03"
+    strategy_history_domain::DOMAIN_CODE,        // Domain code: "03"
+    strategy_history_domain_components::CORE     // Component code: "01"
+);
 
 pub fn get_strategy_state(strategy_id: StrategyId) -> Option<StrategyState> {
     strategy_states_repo::get_strategy_state(strategy_id)
@@ -110,7 +123,7 @@ async fn deposit_test_liquidity_to_strategy(
         Some(amount) => amount,
         None => {
             return Err(InternalError::business_logic(
-                build_error_code(0000, 0, 0),
+                build_error_code(InternalErrorKind::BusinessLogic, 5), // Error code: "03-03-01 03 05"
                 "strategy_history_service::deposit_test_liquidity_to_strategy".to_string(),
                 "Failed to compute minimal deposit".to_string(),
                 None,
@@ -151,7 +164,7 @@ async fn deposit_test_liquidity_to_strategy(
         Ok(response) => Ok(response),
         Err(err) => {
             return Err(InternalError::business_logic(
-                build_error_code(0000, 0, 0),
+                build_error_code(InternalErrorKind::BusinessLogic, 6), // Error code: "03-03-01 03 06"
                 "strategy_history_service::deposit_test_liquidity_to_strategy".to_string(),
                 format!("Deposit call failed: {:?}", err),
                 None,
@@ -208,8 +221,8 @@ async fn swap_icp_to_target_token_for_amount(
     )
     .await
     .map_err(|e| InternalError::business_logic(
-        build_error_code(0000, 0, 0),
-        "strategy_history_service::swap_icp_to_target_for_amount: quote ICP->target".to_string(),
+                        build_error_code(InternalErrorKind::BusinessLogic, 7), // Error code: "03-03-01 03 07"
+        "strategy_history_service::swap_icp_to_target_for_amount".to_string(),
         format!("Quote failed: {:?}", e),
         None,
     ))?;
@@ -231,8 +244,8 @@ async fn swap_icp_to_target_token_for_amount(
     )
     .await
     .map_err(|e| InternalError::business_logic(
-        build_error_code(0000, 0, 0),
-        "strategy_history_service::swap_icp_to_target_for_amount: swap ICP->target".to_string(),
+        build_error_code(InternalErrorKind::BusinessLogic, 8), // Error code: "03-03-01 03 08"
+        "strategy_history_service::swap_icp_to_target_for_amount".to_string(),
         format!("Swap failed: {:?}", e),
         None,
     ))?;
