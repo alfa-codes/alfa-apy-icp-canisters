@@ -1,8 +1,6 @@
-use candid::{Nat, Principal};
+use candid::{Nat, Principal, CandidType};
 use types::CanisterId;
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use candid::CandidType;
 use std::sync::Arc;
 
 use kongswap_canister::add_liquidity::{Args as AddLiquidityArgs, AddLiquidityReply};

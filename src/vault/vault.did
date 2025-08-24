@@ -314,6 +314,7 @@ service : (opt Conf, opt RuntimeConfig) -> {
   test_icpswap_withdraw : (principal, nat, nat) -> (nat);
   test_reset_strategy : (nat16) -> ();
   test_update_strategy_stats : () -> ();
+  test_set_strategy_test : (nat16, bool) -> ();
   user_strategies : (principal) -> (vec UserStrategyResponse);
   withdraw : (StrategyWithdrawArgs) -> (StrategyWithdrawResult);
 };

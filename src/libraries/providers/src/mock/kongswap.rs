@@ -1,9 +1,8 @@
 use std::collections::HashMap;
-use candid::{Nat, Principal};
+use candid::{Nat, Principal, CandidType};
 use types::CanisterId;
 use async_trait::async_trait;
 use serde::{Serialize, Deserialize};
-use candid::CandidType;
 
 use kongswap_canister::add_liquidity::AddLiquidityReply;
 use kongswap_canister::remove_liquidity::RemoveLiquidityReply;

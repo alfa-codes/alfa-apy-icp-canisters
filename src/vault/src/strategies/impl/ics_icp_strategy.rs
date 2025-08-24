@@ -41,7 +41,7 @@ impl IcsStrategy {
             initial_deposit: HashMap::new(),
             current_liquidity: None,
             current_liquidity_updated_at: None,
-            test: false,
+            test: true,
         }
     }
 }

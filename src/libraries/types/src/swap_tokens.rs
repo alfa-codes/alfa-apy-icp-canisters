@@ -1,5 +1,6 @@
 use candid::CandidType;
 use serde::{Deserialize, Serialize};
+
 use crate::{CanisterId, Milliseconds};
 use crate::exchange_id::ExchangeId;
 use crate::pin_number::PinNumberWrapper;

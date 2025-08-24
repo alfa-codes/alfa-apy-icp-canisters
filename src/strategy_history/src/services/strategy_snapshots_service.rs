@@ -9,7 +9,7 @@ use errors::internal_error::error_codes::module::areas::{
 };
 use validation::validation::Validation;
 use ::utils::util::current_timestamp_secs;
-use types::strategies::StrategyId;
+use ::types::strategies::StrategyId;
 
 use crate::repository::snapshots_repo;
 use crate::strategy_snapshot::strategy_snapshot::StrategySnapshot;
@@ -34,7 +34,7 @@ pub fn save_strategy_snapshot(snapshot: StrategySnapshot) -> Result<(), Internal
             } else {
                 InternalError::business_logic(
                     build_error_code(InternalErrorKind::BusinessLogic, 4), // Error code: "03-03-01 03 04"
-                    "strategy_history_service::save_snapshot".to_string(),
+                    "strategy_snapshots_service::save_snapshot".to_string(),
                     "Validation failed".to_string(),
                     None
                 )
@@ -45,7 +45,7 @@ pub fn save_strategy_snapshot(snapshot: StrategySnapshot) -> Result<(), Internal
     Ok(())
 }
 
-pub fn get_strategy_snapshots_count(strategy_id: u16) -> u64 {
+pub fn get_strategy_snapshots_count(strategy_id: StrategyId) -> u64 {
     snapshots_repo::get_snapshots_count_by_strategy_id(strategy_id)
 }
 
@@ -58,16 +58,28 @@ pub fn create_strategies_snapshots(
 
     for (strategy_id, _) in strategy_states {
         let vault_strategy = vault_strategies.iter()
-            .find(|s| s.id == *strategy_id)
-            .unwrap();
+            .find(|s| s.id == *strategy_id);
 
-        let snapshot = build_strategy_snapshot(vault_strategy)?;
+        match vault_strategy {
+            Some(vault_strategy) => {
+                let snapshot = build_strategy_snapshot(vault_strategy)?;
 
-        match save_strategy_snapshot(snapshot.clone()) {
-            Ok(_) => {
-                success_count += 1;
+                match save_strategy_snapshot(snapshot.clone()) {
+                    Ok(_) => {
+                        success_count += 1;
+                    }
+                    Err(error) => {
+                        errors.push(error);
+                    }
+                }
             }
-            Err(error) => {
+            None => {
+                let error = InternalError::business_logic(
+                    build_error_code(InternalErrorKind::BusinessLogic, 11), // Error code: "03-03-01 03 11"
+                    "strategy_snapshots_service::create_strategies_snapshots".to_string(),
+                    format!("Vault strategy not found for strategy ID: {}", strategy_id),
+                    None
+                );
                 errors.push(error);
             }
         }

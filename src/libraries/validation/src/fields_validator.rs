@@ -1,6 +1,5 @@
-use candid::Nat;
+use candid::{Nat, CandidType};
 use serde::{Deserialize, Serialize};
-use candid::CandidType;
 
 use errors::internal_error::error::InternalError;
 

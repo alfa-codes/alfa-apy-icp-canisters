@@ -86,6 +86,7 @@ pub mod module {
                     pub const DOMAIN_CODE: &str = "03";
                     pub mod components {
                         pub const CORE: &str = "01";
+                        pub const TEST_SNAPSHOTS_SERVICE: &str = "02";
                     }
                 }
             }

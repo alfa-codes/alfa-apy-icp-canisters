@@ -176,6 +176,13 @@ async fn user_strategies(user: Principal) -> Vec<UserStrategyResponse> {
     user_strategies
 }
 
+#[update]
+async fn test_set_strategy_test(strategy_id: u16, test: bool) {
+    let mut strategy = strategies_repo::get_strategy_by_id(strategy_id).unwrap();
+    strategy.set_test(test);
+    strategies_repo::save_strategy(strategy);
+}
+
 #[query]
 fn get_strategies() -> Vec<StrategyResponse> {
     strategy_service::get_actual_strategies()

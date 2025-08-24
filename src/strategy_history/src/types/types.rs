@@ -82,3 +82,26 @@ pub struct TestLiquidityData {
     pub tx_id: u64,
     pub position_id: u64,
 }
+
+#[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
+pub struct CreateTestSnapshotsRequest {
+    pub strategy_id: StrategyId,
+    pub from_timestamp: u64,
+    pub min_apy: f64,
+    pub max_apy: f64,
+    pub snapshot_interval_secs: u64,
+}
+
+#[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
+pub struct CreateTestSnapshotsResult(pub Result<CreateTestSnapshotsResponse, ResponseError>);
+
+#[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
+pub struct CreateTestSnapshotsResponse {
+    pub strategy_id: StrategyId,
+    pub snapshots_created: u64,
+    pub from_timestamp: u64,
+    pub to_timestamp: u64,
+    pub min_apy: f64,
+    pub max_apy: f64,
+    pub actual_apy_range: (f64, f64), // Actual APY range
+}

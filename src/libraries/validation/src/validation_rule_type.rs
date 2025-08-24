@@ -1,5 +1,4 @@
-use candid::Nat;
-use candid::CandidType;
+use candid::{Nat, CandidType};
 use serde::{Deserialize, Serialize};
 
 use crate::validation_rules::greater_than::GreaterThan;

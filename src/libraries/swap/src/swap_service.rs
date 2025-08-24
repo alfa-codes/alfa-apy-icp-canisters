@@ -1,5 +1,4 @@
 use candid::Nat;
-use std::collections::HashMap;
 use std::sync::Arc;
 
 use types::swap_tokens::{SwapResponse, QuoteResponse};

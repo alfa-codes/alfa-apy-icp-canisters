@@ -1,8 +1,9 @@
-use crate::TimestampMillis;
 use candid::CandidType;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Formatter};
 use std::ops::Deref;
+
+use crate::TimestampMillis;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct PinNumberSettings {

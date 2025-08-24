@@ -49,6 +49,16 @@ pub fn get_all_initialized_strategy_states() -> Vec<(StrategyId, StrategyState)>
     })
 }
 
+pub fn get_all_initialized_strategy_states_by_ids(strategy_ids: Vec<StrategyId>) -> Vec<(StrategyId, StrategyState)> {
+    STRATEGY_STATES.with(|states| {
+        states.borrow()
+            .iter()
+            .filter(|(k, _)| strategy_ids.contains(k))
+            .map(|(k, v)| (*k, v.clone()))
+            .collect()
+    })
+}
+
 pub fn delete_strategy_state(strategy_id: StrategyId) {
     STRATEGY_STATES.with(|states| {
         states.borrow_mut().remove(&strategy_id);

@@ -18,7 +18,7 @@ fn set_timer_interval(
 pub fn start_fetching_timer(interval: u64) {
     let timer_id = set_timer_interval(Duration::from_secs(interval), || {
         ic_cdk::spawn(async {
-            let _ = initialize_strategy_states_and_create_snapshots().await;
+            let _ = initialize_strategy_states_and_create_snapshots(None).await;
         });
     });
 

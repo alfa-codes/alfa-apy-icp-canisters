@@ -159,6 +159,7 @@ mod tests {
         fn set_position_id(&mut self, _id: Option<u64>) {}
         fn set_current_liquidity(&mut self, _liq: Option<Nat>) {}
         fn set_current_liquidity_updated_at(&mut self, _ts: Option<u64>) {}
+        fn set_test(&mut self, _test: bool) {}
     }
 
     #[async_trait::async_trait]

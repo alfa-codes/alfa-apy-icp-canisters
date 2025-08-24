@@ -1,7 +1,6 @@
 use std::time::Duration;
 use ic_cdk_timers::TimerId;
 use candid::Nat;
-use std::collections::HashMap;
 use std::cell::RefCell;
 
 use types::exchange_id::ExchangeId;

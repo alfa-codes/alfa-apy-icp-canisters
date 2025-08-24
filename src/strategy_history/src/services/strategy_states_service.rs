@@ -10,7 +10,7 @@ use errors::internal_error::error_codes::module::areas::{
     canisters::domains::strategy_history as strategy_history_domain,
     canisters::domains::strategy_history::components as strategy_history_domain_components,
 };
-use types::strategies::StrategyId;
+use ::types::strategies::StrategyId;
 
 use crate::repository::strategy_states_repo;
 use crate::vault::vault_service;
@@ -221,7 +221,7 @@ async fn swap_icp_to_target_token_for_amount(
     )
     .await
     .map_err(|e| InternalError::business_logic(
-                        build_error_code(InternalErrorKind::BusinessLogic, 7), // Error code: "03-03-01 03 07"
+        build_error_code(InternalErrorKind::BusinessLogic, 7), // Error code: "03-03-01 03 07"
         "strategy_history_service::swap_icp_to_target_for_amount".to_string(),
         format!("Quote failed: {:?}", e),
         None,

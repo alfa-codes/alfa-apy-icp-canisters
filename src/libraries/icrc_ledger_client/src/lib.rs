@@ -1,8 +1,7 @@
-use candid::{Principal, Nat};
+use candid::{Principal, Nat, CandidType};
 use ic_cdk::id;
 use std::fmt::Debug;
 use serde::{Serialize, Deserialize};
-use candid::CandidType;
 
 use ::types::CanisterId;
 use errors::internal_error::error::{InternalError, InternalErrorKind};

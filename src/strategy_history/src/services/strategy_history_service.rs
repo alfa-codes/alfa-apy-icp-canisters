@@ -1,3 +1,4 @@
+use ::types::strategies::StrategyId;
 use errors::internal_error::error::{InternalError, InternalErrorKind};
 use errors::internal_error::error_codes::module::areas::{
     canisters as canister_area,
@@ -23,9 +24,11 @@ errors::define_error_code_builder_fn!(
     strategy_history_domain_components::CORE     // Component code: "01"
 );
 
-pub async fn initialize_strategy_states_and_create_snapshots() -> Result<InitializeStrategyStatesAndCreateSnapshotsResponse, InternalError> {
+pub async fn initialize_strategy_states_and_create_snapshots(
+    strategy_ids: Option<Vec<StrategyId>>
+) -> Result<InitializeStrategyStatesAndCreateSnapshotsResponse, InternalError> {
     // Get strategies data from vault
-    let vault_strategies = vault_service::get_vault_actor().await?
+    let mut vault_strategies = vault_service::get_vault_actor().await?
         .get_strategies().await
         .map_err(|e| {
             InternalError::business_logic(
@@ -36,8 +39,16 @@ pub async fn initialize_strategy_states_and_create_snapshots() -> Result<Initial
             )
         })?;
 
+    // If strategy_ids are provided, filter vault_strategies to only include those strategies
+    if let Some(strategy_ids) = strategy_ids {
+        vault_strategies = vault_strategies.iter()
+            .filter(|s| strategy_ids.contains(&s.id))
+            .cloned()
+            .collect::<Vec<_>>();
+    }
+
     // Filter test strategies for now
-    let vault_strategies = vault_strategies.iter()
+    vault_strategies = vault_strategies.iter()
         .filter(|s| s.test)
         .cloned()
         .collect::<Vec<_>>();
@@ -50,7 +61,9 @@ pub async fn initialize_strategy_states_and_create_snapshots() -> Result<Initial
         ).await?;
 
     let initialized_strategy_states = 
-        strategy_states_repo::get_all_initialized_strategy_states();
+        strategy_states_repo::get_all_initialized_strategy_states_by_ids(
+            vault_strategies.iter().map(|s| s.id).collect()
+        );
 
     // Save snapshots for each strategy (only when initialized and with liquidity)
     let create_strategies_snapshots_response = 
@@ -86,7 +99,7 @@ pub async fn initialize_strategy_states_and_create_snapshots() -> Result<Initial
 }
 
 pub async fn get_strategies_history(
-    strategy_ids: Option<Vec<u16>>,
+    strategy_ids: Option<Vec<StrategyId>>,
     from_timestamp: Option<u64>,
     to_timestamp: Option<u64>,
 ) -> Result<Vec<StrategyHistory>, InternalError> {

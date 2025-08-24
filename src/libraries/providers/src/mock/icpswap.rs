@@ -1,8 +1,7 @@
 use std::collections::HashMap;
-use candid::{Nat, Principal, Int};
+use candid::{Nat, Principal, Int, CandidType};
 use types::CanisterId;
 use serde::{Serialize, Deserialize};
-use candid::CandidType;
 
 use icpswap_swap_factory_canister::ICPSwapPool;
 use icpswap_swap_pool_canister::getTokenMeta::TokenMeta;

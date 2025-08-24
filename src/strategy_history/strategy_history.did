@@ -1,3 +1,26 @@
+type CreateTestSnapshotsRequest = record {
+  from_timestamp : nat64;
+  min_apy : float64;
+  strategy_id : nat16;
+  max_apy : float64;
+  snapshot_interval_secs : nat64;
+};
+
+type CreateTestSnapshotsResponse = record {
+  from_timestamp : nat64;
+  snapshots_created : nat64;
+  min_apy : float64;
+  actual_apy_range : record { float64; float64 };
+  strategy_id : nat16;
+  to_timestamp : nat64;
+  max_apy : float64;
+};
+
+type CreateTestSnapshotsResult = variant {
+  Ok : CreateTestSnapshotsResponse;
+  Err : ResponseError;
+};
+
 type ExchangeId = variant { Sonic; KongSwap; ICPSwap };
 
 type GetStrategiesHistoryRequest = record {
@@ -23,7 +46,7 @@ type InitializeStrategyStatesAndCreateSnapshotsResult = variant {
 
 type InternalError = record {
   context : text;
-  code : nat32;
+  code : nat64;
   kind : ResponseErrorKind;
   extra : opt vec record { text; text };
   message : text;
@@ -37,7 +60,7 @@ type Pool = record {
 };
 
 type ResponseError = record {
-  code : nat32;
+  code : nat64;
   kind : ResponseErrorKind;
   message : text;
   details : opt vec record { text; text };
@@ -45,6 +68,7 @@ type ResponseError = record {
 
 type ResponseErrorKind = variant {
   AccessDenied;
+  Infrastructure;
   NotFound;
   Timeout;
   Unknown;
@@ -54,13 +78,6 @@ type ResponseErrorKind = variant {
 };
 
 type SaveStrategySnapshotResult = variant { Ok; Err : ResponseError };
-
-type TestLiquidityData = record {
-  tx_id : nat64;
-  shares : nat;
-  amount : nat;
-  position_id : nat64;
-};
 
 type StrategyHistory = record {
   snapshots : vec StrategySnapshot;
@@ -91,19 +108,29 @@ type StrategyState = record {
   last_snapshot_at : opt nat64;
 };
 
+type TestLiquidityData = record {
+  tx_id : nat64;
+  shares : nat;
+  amount : nat;
+  position_id : nat64;
+};
+
 service : () -> {
   get_all_strategy_states : () -> (vec record { nat16; StrategyState }) query;
   get_strategies_history : (GetStrategiesHistoryRequest) -> (
-    GetStrategiesHistoryResult,
-  ) query;
+      GetStrategiesHistoryResult,
+    ) query;
   get_strategy_snapshots_count : (nat16) -> (nat64) query;
   get_strategy_state : (nat16) -> (opt StrategyState) query;
+  test_create_snapshots : (CreateTestSnapshotsRequest) -> (
+      CreateTestSnapshotsResult,
+    );
   test_delete_all_snapshots : () -> ();
   test_delete_strategy_state : (nat16) -> ();
-  test_initialize_strategy_states_and_create_snapshots : () -> (
-    InitializeStrategyStatesAndCreateSnapshotsResult,
-  );
+  test_initialize_strategy_states_and_create_snapshots : (opt vec nat16) -> (
+      InitializeStrategyStatesAndCreateSnapshotsResult,
+    );
   test_save_strategy_snapshot : (StrategySnapshot) -> (
-    SaveStrategySnapshotResult,
-  );
+      SaveStrategySnapshotResult,
+    );
 };

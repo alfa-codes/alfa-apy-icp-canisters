@@ -1,6 +1,5 @@
-use candid::CandidType;
+use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
-use candid::Principal;
 
 use crate::strategies::StrategyId;
 

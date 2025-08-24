@@ -11,12 +11,14 @@ use std::cell::RefCell;
 use ic_cdk_timers::TimerId;
 
 use errors::response_error::error::ResponseError;
+use ::types::strategies::StrategyId;
 
 use crate::repository::stable_state;
 use crate::services::strategy_history_service;
 use crate::services::strategy_states_service;
 use crate::services::scheduler_service;
 use crate::services::strategy_snapshots_service;
+use crate::services::test_snapshots_service;
 use crate::strategy_snapshot::strategy_snapshot::StrategySnapshot;
 use crate::types::types::{
     SaveStrategySnapshotResult,
@@ -25,6 +27,8 @@ use crate::types::types::{
     GetStrategiesHistoryResult,
     StrategyState,
     GetAllStrategyStatesResult,
+    CreateTestSnapshotsRequest,
+    CreateTestSnapshotsResult,
 };
 
 const STRATEGY_HISTORY_FETCHING_INTERVAL: u64 = 1800; // 30 minutes
@@ -67,7 +71,7 @@ async fn get_strategies_history(arg: GetStrategiesHistoryRequest) -> GetStrategi
 
 /// Get the count of snapshots for a strategy
 #[query]
-fn get_strategy_snapshots_count(strategy_id: u16) -> u64 {
+fn get_strategy_snapshots_count(strategy_id: StrategyId) -> u64 {
     strategy_snapshots_service::get_strategy_snapshots_count(strategy_id)
 }
 
@@ -79,15 +83,15 @@ fn get_all_strategy_states() -> GetAllStrategyStatesResult {
 }
 
 #[query]
-fn get_strategy_state(strategy_id: u16) -> Option<StrategyState> {
+fn get_strategy_state(strategy_id: StrategyId) -> Option<StrategyState> {
     strategy_states_service::get_strategy_state(strategy_id)
 }
 
 /// Fetch and save current strategies from vault
 #[update]
-async fn test_initialize_strategy_states_and_create_snapshots() -> InitializeStrategyStatesAndCreateSnapshotsResult {
+async fn test_initialize_strategy_states_and_create_snapshots(strategy_ids: Option<Vec<StrategyId>>) -> InitializeStrategyStatesAndCreateSnapshotsResult {
     let result =
-        strategy_history_service::initialize_strategy_states_and_create_snapshots()
+        strategy_history_service::initialize_strategy_states_and_create_snapshots(strategy_ids)
             .await
             .map_err(|e| ResponseError::from_internal_error(e));
 
@@ -104,8 +108,19 @@ async fn test_save_strategy_snapshot(snapshot: StrategySnapshot) -> SaveStrategy
     SaveStrategySnapshotResult(result)
 }
 
+/// Create test snapshots for a strategy with controlled APY
 #[update]
-fn test_delete_strategy_state(strategy_id: u16) {
+async fn test_create_snapshots(request: CreateTestSnapshotsRequest) -> CreateTestSnapshotsResult {
+    let result =
+        test_snapshots_service::create_test_snapshots(request)
+            .await
+            .map_err(|e| ResponseError::from_internal_error(e));
+
+    CreateTestSnapshotsResult(result)
+}
+
+#[update]
+fn test_delete_strategy_state(strategy_id: StrategyId) {
     strategy_states_service::delete_strategy_state(strategy_id);
 }
 
