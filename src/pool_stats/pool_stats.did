@@ -34,7 +34,7 @@ type ApyValue = record { tokens_apy : float64; usd_apy : float64 };
 
 type DeletePoolResult = variant { Ok; Err : ResponseError };
 
-type Environment = variant { Production; Test };
+type Environment = variant { Dev; Production; Test; Staging };
 
 type Event = variant {
   AddLiquidityToPoolFailed : AddLiquidityToPoolFailed;

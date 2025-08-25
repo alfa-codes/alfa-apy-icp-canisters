@@ -48,6 +48,7 @@ pub struct StrategyRebalanceResponse {
 pub struct StrategyResponse {
     pub name: String,
     pub id: StrategyId,
+    pub base_token: CanisterId,
     pub description: String,
     pub pools: Vec<Pool>,
     pub current_pool: Option<Pool>,

@@ -3,7 +3,9 @@ use candid::{CandidType, Deserialize, Nat, Principal};
 use serde::Serialize;
 use std::collections::HashMap;
 
+use types::CanisterId;
 use types::strategies::StrategyId;
+use utils::constants::PANDA_TOKEN_CANISTER_ID;
 
 use crate::impl_strategy_methods;
 use crate::strategies::basic_strategy::BasicStrategy;
@@ -17,6 +19,7 @@ impl_strategy_methods!(PandaTestStrategy);
 #[allow(non_camel_case_types)]
 pub struct PandaTestStrategy {
     id: StrategyId,
+    base_token: CanisterId,
     current_pool: Option<Pool>,
     position_id: Option<u64>,
     total_balance: Nat,
@@ -33,6 +36,7 @@ impl PandaTestStrategy {
         //TODO move to config
         PandaTestStrategy {
             id: 4,
+            base_token: *PANDA_TOKEN_CANISTER_ID,
             current_pool: None,
             position_id: None,
             total_balance: Nat::from(0u64),

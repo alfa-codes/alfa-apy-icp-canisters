@@ -6,6 +6,15 @@ use providers::kongswap::{KongSwapProvider, DefaultKongSwapProvider};
 use providers::mock::{icpswap::MockICPSwapProvider, kongswap::MockKongSwapProvider};
 use icrc_ledger_client::{ICRCLedgerClient, DefaultICRCLedgerClient};
 use icrc_ledger_client::mock::MockICRCLedgerClient;
+use types::CanisterId;
+use utils::constants::{
+    VAULT_CANISTER_ID_STAGING,
+    VAULT_CANISTER_ID_DEV,
+    VAULT_CANISTER_ID_PRODUCTION,
+    POOL_STATS_CANISTER_ID_STAGING,
+    POOL_STATS_CANISTER_ID_DEV,
+    POOL_STATS_CANISTER_ID_PRODUCTION
+};
 
 pub struct ServiceResolver {
     environment: Environment,
@@ -20,6 +29,24 @@ pub struct ProviderImpls {
 impl ServiceResolver {
     pub fn new(environment: Environment) -> Self {
         Self { environment }
+    }
+
+    pub fn vault_canister_id(&self) -> Option<CanisterId> {
+        match self.environment {
+            Environment::Staging => Some(*VAULT_CANISTER_ID_STAGING),
+            Environment::Production => Some(*VAULT_CANISTER_ID_PRODUCTION),
+            Environment::Dev => Some(*VAULT_CANISTER_ID_DEV),
+            Environment::Test => None,
+        }
+    }
+
+    pub fn pool_stats_canister_id(&self) -> Option<CanisterId> {
+        match self.environment {
+            Environment::Staging => Some(*POOL_STATS_CANISTER_ID_STAGING),
+            Environment::Production => Some(*POOL_STATS_CANISTER_ID_PRODUCTION),
+            Environment::Dev => Some(*POOL_STATS_CANISTER_ID_DEV),
+            Environment::Test => None,
+        }
     }
 
     pub fn icrc_ledger_client(&self) -> Arc<dyn ICRCLedgerClient> {

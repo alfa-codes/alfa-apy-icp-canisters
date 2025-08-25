@@ -8,10 +8,17 @@ use crate::util::principal_to_canister_id;
 // POOL STATS PRINCIPAL
 pub const POOL_STATS_PRINCIPAL_STAGING: &str = "oxawg-7aaaa-aaaag-aub6q-cai";
 pub const POOL_STATS_PRINCIPAL_DEV: &str = "tvneh-raaaa-aaaao-a4opq-cai";
+pub const POOL_STATS_PRINCIPAL_PRODUCTION: &str = "";
 
 // VAULT PRINCIPAL
 pub const VAULT_PRINCIPAL_STAGING: &str = "ownab-uaaaa-aaaap-qp2na-cai";
 pub const VAULT_PRINCIPAL_DEV: &str = "wsic7-jiaaa-aaaad-qhocq-cai";
+pub const VAULT_PRINCIPAL_PRODUCTION: &str = "";
+
+// STRATEGY HISTORY PRINCIPAL
+pub const STRATEGY_HISTORY_PRINCIPAL_STAGING: &str = "cfd5a-6aaaa-aaaac-a374q-cai";
+pub const STRATEGY_HISTORY_PRINCIPAL_DEV: &str = "wcqxd-aaaaa-aaaah-qqe3a-cai";
+pub const STRATEGY_HISTORY_PRINCIPAL_PRODUCTION: &str = "";
 
 // TOKEN PRINCIPALS
 pub const ICP_TOKEN_PRINCIPAL: &str = "ryjl3-tyaaa-aaaaa-aaaba-cai";
@@ -38,12 +45,24 @@ pub static POOL_STATS_CANISTER_ID_STAGING: Lazy<CanisterId> =
     Lazy::new(|| principal_to_canister_id(POOL_STATS_PRINCIPAL_STAGING));
 pub static POOL_STATS_CANISTER_ID_DEV: Lazy<CanisterId> =
     Lazy::new(|| principal_to_canister_id(POOL_STATS_PRINCIPAL_DEV));
+pub static POOL_STATS_CANISTER_ID_PRODUCTION: Lazy<CanisterId> =
+    Lazy::new(|| principal_to_canister_id(POOL_STATS_PRINCIPAL_PRODUCTION));
 
 // VAULT CANISTER ID
 pub static VAULT_CANISTER_ID_STAGING: Lazy<CanisterId> =
     Lazy::new(|| principal_to_canister_id(VAULT_PRINCIPAL_STAGING));
 pub static VAULT_CANISTER_ID_DEV: Lazy<CanisterId> =
     Lazy::new(|| principal_to_canister_id(VAULT_PRINCIPAL_DEV));
+pub static VAULT_CANISTER_ID_PRODUCTION: Lazy<CanisterId> =
+    Lazy::new(|| principal_to_canister_id(VAULT_PRINCIPAL_PRODUCTION));
+
+// STRATEGY HISTORY CANISTER ID
+pub static STRATEGY_HISTORY_CANISTER_ID_STAGING: Lazy<CanisterId> =
+    Lazy::new(|| principal_to_canister_id(STRATEGY_HISTORY_PRINCIPAL_STAGING));
+pub static STRATEGY_HISTORY_CANISTER_ID_DEV: Lazy<CanisterId> =
+    Lazy::new(|| principal_to_canister_id(STRATEGY_HISTORY_PRINCIPAL_DEV));
+pub static STRATEGY_HISTORY_CANISTER_ID_PRODUCTION: Lazy<CanisterId> =
+    Lazy::new(|| principal_to_canister_id(STRATEGY_HISTORY_PRINCIPAL_PRODUCTION));
 
 // TOKEN CANISTER IDS
 pub static ICP_TOKEN_CANISTER_ID: Lazy<CanisterId> =

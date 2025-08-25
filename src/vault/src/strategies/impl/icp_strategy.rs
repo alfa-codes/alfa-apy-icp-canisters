@@ -3,7 +3,9 @@ use candid::{CandidType, Deserialize, Nat, Principal};
 use serde::Serialize;
 use std::collections::HashMap;
 
+use types::CanisterId;
 use types::strategies::StrategyId;
+use utils::constants::ICP_TOKEN_CANISTER_ID;
 
 use crate::impl_strategy_methods;
 use crate::strategies::basic_strategy::BasicStrategy;
@@ -16,6 +18,7 @@ impl_strategy_methods!(ICPStrategy);
 #[derive(Clone, Debug, CandidType, Serialize, Deserialize)]
 pub struct ICPStrategy {
     id: StrategyId,
+    base_token: CanisterId,
     current_pool: Option<Pool>,
     position_id: Option<u64>,
     total_balance: Nat,
@@ -32,6 +35,7 @@ impl ICPStrategy {
         //TODO move to config
         ICPStrategy {
             id: 2,
+            base_token: *ICP_TOKEN_CANISTER_ID,
             current_pool: None,
             position_id: None,
             total_balance: Nat::from(0u64),

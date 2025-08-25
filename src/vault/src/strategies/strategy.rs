@@ -696,6 +696,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
         StrategyResponse {
             name: self.get_name(),
             id: self.get_id(),
+            base_token: self.get_base_token(),
             description: self.get_description(),
             pools: self.get_pools(),
             current_pool: self.get_current_pool(),

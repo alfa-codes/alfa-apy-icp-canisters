@@ -44,7 +44,10 @@ pub fn get_strategy_by_id(id: u16) -> Option<Box<dyn IStrategy>> {
 pub fn add_or_update_strategy(strategy: Box<dyn IStrategy>) {
     STRATEGIES.with(|strategies| {
         let mut strategies = strategies.borrow_mut();
-        let index = strategies.iter().position(|s| s.get_id() == strategy.get_id());
+        let index = strategies
+            .iter()
+            .position(|s| s.get_id() == strategy.get_id());
+
         if let Some(index) = index {
             strategies[index] = strategy;
         } else {
@@ -56,7 +59,10 @@ pub fn add_or_update_strategy(strategy: Box<dyn IStrategy>) {
 pub fn add_if_not_exists(strategy: Box<dyn IStrategy>) {
     STRATEGIES.with(|strategies| {
         let mut strategies = strategies.borrow_mut();
-        let index = strategies.iter().position(|s| s.get_id() == strategy.get_id());
+        let index = strategies
+            .iter()
+            .position(|s| s.get_id() == strategy.get_id());
+
         if index.is_none() {
             strategies.push(strategy);
         }
@@ -66,7 +72,10 @@ pub fn add_if_not_exists(strategy: Box<dyn IStrategy>) {
 pub fn save_strategy(strategy: Box<dyn IStrategy>) {
     STRATEGIES.with(|strategies| {
         let mut strategies = strategies.borrow_mut();
-        let index = strategies.iter().position(|s| s.get_id() == strategy.get_id());
+        let index = strategies
+            .iter()
+            .position(|s| s.get_id() == strategy.get_id());
+
         if let Some(index) = index {
             strategies[index] = strategy;
         }
@@ -78,6 +87,7 @@ mod tests {
     use super::*;
     use std::collections::HashMap;
     use candid::{Nat, Principal};
+    use types::CanisterId;
 
     use crate::strategies::basic_strategy::BasicStrategy;
     use crate::pools::pool::Pool;
@@ -126,6 +136,10 @@ mod tests {
 
         fn get_description(&self) -> String {
             "mock-desc".to_string()
+        }
+
+        fn get_base_token(&self) -> CanisterId {
+            CanisterId::from_text("mock-base-token").unwrap()
         }
 
         fn get_pools(&self) -> Vec<Pool> {

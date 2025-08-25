@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use candid::{Nat, Principal};
 
+use types::CanisterId;
 use types::strategies::StrategyId;
 
 use crate::pools::pool::Pool;
@@ -9,6 +10,7 @@ pub trait BasicStrategy {
     fn get_name(&self) -> String;
     fn get_id(&self) -> StrategyId;
     fn get_description(&self) -> String;
+    fn get_base_token(&self) -> CanisterId;
     fn get_pools(&self) -> Vec<Pool>;
     fn get_total_shares(&self) -> Nat;
     fn set_total_shares(&mut self, total_shares: Nat);
@@ -47,6 +49,10 @@ macro_rules! impl_strategy_methods {
 
             fn get_description(&self) -> String {
                 STRATEGY_MAP.get(&self.id).unwrap().description.clone()
+            }
+
+            fn get_base_token(&self) -> CanisterId {
+                STRATEGY_MAP.get(&self.id).unwrap().base_token
             }
 
             fn get_pools(&self) -> Vec<Pool> {
