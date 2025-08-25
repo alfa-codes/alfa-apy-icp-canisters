@@ -1,6 +1,7 @@
 type AddLiquidityResponse = record {
   token_0_amount : nat;
   token_1_amount : nat;
+  token0_equivalent_total : nat;
   position_id : nat64;
 };
 
@@ -27,20 +28,13 @@ type AddLiquidityToPoolCompleted = record {
   pool_id : text;
 };
 
-type AddPoolResult = variant {
-  Ok : text;
-  Err : ResponseError;
-};
+type AddPoolResult = variant { Ok : text; Err : ResponseError };
 
-type ApyValue = record {
-  tokens_apy : float64;
-  usd_apy : float64;
-};
+type ApyValue = record { tokens_apy : float64; usd_apy : float64 };
 
-type DeletePoolResult = variant {
-  Ok;
-  Err : ResponseError;
-};
+type DeletePoolResult = variant { Ok; Err : ResponseError };
+
+type Environment = variant { Production; Test };
 
 type Event = variant {
   AddLiquidityToPoolFailed : AddLiquidityToPoolFailed;
@@ -55,6 +49,7 @@ type EventRecord = record {
   id : nat64;
   user : opt principal;
   event : Event;
+  strategy_id : opt nat16;
   timestamp : nat64;
   correlation_id : text;
 };
@@ -78,8 +73,8 @@ type GetPoolsResult = variant {
 
 type InternalError = record {
   context : text;
-  code : nat32;
-  kind : InternalErrorKind;
+  code : nat64;
+  kind : ResponseErrorKind;
   extra : opt vec record { text; text };
   message : text;
 };
@@ -135,11 +130,24 @@ type PositionData = record {
 };
 
 type ResponseError = record {
-  code : nat32;
-  kind : InternalErrorKind;
+  code : nat64;
+  kind : ResponseErrorKind;
   message : text;
   details : opt vec record { text; text };
 };
+
+type ResponseErrorKind = variant {
+  AccessDenied;
+  Infrastructure;
+  NotFound;
+  Timeout;
+  Unknown;
+  BusinessLogic;
+  ExternalService;
+  Validation;
+};
+
+type RuntimeConfig = record { environment : Environment };
 
 type TestCreatePoolSnapshotResult = variant {
   Ok : PoolSnapshot;
@@ -177,9 +185,6 @@ type WithdrawLiquidityResult = variant {
   Err : ResponseError;
 };
 
-type Environment = variant { Production; Test };
-type RuntimeConfig = record { environment : Environment };
-
 service : (opt RuntimeConfig) -> {
   add_liquidity_to_pool : (principal, text, nat) -> (AddLiquidityResult);
   add_pool : (principal, principal, ExchangeId) -> (AddPoolResult);
@@ -189,7 +194,6 @@ service : (opt RuntimeConfig) -> {
   get_pool_metrics : (vec text) -> (vec record { text; PoolMetrics });
   get_pools : () -> (GetPoolsResult);
   get_pools_snapshots : (vec text) -> (vec record { text; vec PoolSnapshot });
-  get_runtime_config : () -> (RuntimeConfig) query;
   set_operator : (principal) -> ();
   test_add_pool_snapshot : (PoolSnapshotArgs) -> ();
   test_create_pool_snapshot : (text) -> (TestCreatePoolSnapshotResult);
@@ -198,4 +202,4 @@ service : (opt RuntimeConfig) -> {
   test_delete_pool_snapshots : (text) -> ();
   test_update_pool_ids : () -> ();
   withdraw_liquidity_from_pool : (text) -> (WithdrawLiquidityResult);
-}
+};

@@ -28,8 +28,8 @@ pub trait BasicStrategy {
     fn set_current_liquidity(&mut self, current_liquidity: Option<Nat>);
     fn get_current_liquidity_updated_at(&self) -> Option<u64>;
     fn set_current_liquidity_updated_at(&mut self, current_liquidity_updated_at: Option<u64>);
-    fn get_test(&self) -> bool;
-    fn set_test(&mut self, test: bool);
+    fn get_enabled(&self) -> bool;
+    fn set_enabled(&mut self, enabled: bool);
 }
 
 #[macro_export]
@@ -125,12 +125,12 @@ macro_rules! impl_strategy_methods {
                 self.current_liquidity_updated_at = current_liquidity_updated_at;
             }
 
-            fn get_test(&self) -> bool {
-                self.test
+            fn get_enabled(&self) -> bool {
+                self.enabled
             }
 
-            fn set_test(&mut self, test: bool) {
-                self.test = test;
+            fn set_enabled(&mut self, enabled: bool) {
+                self.enabled = enabled;
             }
         }
     };

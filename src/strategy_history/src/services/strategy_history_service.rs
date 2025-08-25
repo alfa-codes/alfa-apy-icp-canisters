@@ -47,9 +47,9 @@ pub async fn initialize_strategy_states_and_create_snapshots(
             .collect::<Vec<_>>();
     }
 
-    // Filter test strategies for now
+    // Filter enabled strategies
     vault_strategies = vault_strategies.iter()
-        .filter(|s| s.test)
+        .filter(|s| s.enabled)
         .cloned()
         .collect::<Vec<_>>();
 

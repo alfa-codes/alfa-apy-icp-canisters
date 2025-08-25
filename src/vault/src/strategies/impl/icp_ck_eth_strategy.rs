@@ -7,15 +7,16 @@ use types::strategies::StrategyId;
 
 use crate::impl_strategy_methods;
 use crate::strategies::basic_strategy::BasicStrategy;
+use crate::strategies::r#impl::description::STRATEGY_MAP;
 use crate::strategies::strategy::IStrategy;
 use crate::strategies::strategy_candid::StrategyCandid;
 use crate::pools::pool::Pool;
-use crate::strategies::r#impl::description::STRATEGY_MAP;
 
-impl_strategy_methods!(ckBTCStrategy);
+//TODO override deposit/withdraw to support ICPSWAP
+impl_strategy_methods!(IcpCkETHStrategy);
 #[derive(Clone, Debug, CandidType, Serialize, Deserialize)]
 #[allow(non_camel_case_types)]
-pub struct ckBTCStrategy {
+pub struct IcpCkETHStrategy {
     id: StrategyId,
     current_pool: Option<Pool>,
     position_id: Option<u64>,
@@ -28,28 +29,28 @@ pub struct ckBTCStrategy {
     enabled: bool,
 }
 
-impl ckBTCStrategy {
+impl IcpCkETHStrategy {
     pub fn new() -> Self {
-        // TODO: move to config
-        ckBTCStrategy {
-            id: 1,
-            position_id: None,
+        //TODO move to config
+        IcpCkETHStrategy {
+            id: 7,
             current_pool: None,
-            total_balance: Nat::from(0u64), // TODO: rename to total_initial_balance
+            position_id: None,
+            total_balance: Nat::from(0u64),
             total_shares: Nat::from(0u64),
             user_shares: HashMap::new(),
             initial_deposit: HashMap::new(),
             current_liquidity: None,
             current_liquidity_updated_at: None,
-            enabled: false,
+            enabled: true,
         }
     }
 }
 
 #[async_trait]
-impl IStrategy for ckBTCStrategy {
+impl IStrategy for IcpCkETHStrategy {
     fn to_candid(&self) -> StrategyCandid {
-        StrategyCandid::ckBTCStrategyV(self.clone())
+        StrategyCandid::IcpCkETHStrategyV(self.clone())
     }
 
     fn clone_self(&self) -> Box<dyn IStrategy> {

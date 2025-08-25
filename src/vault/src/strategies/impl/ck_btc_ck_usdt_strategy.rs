@@ -7,16 +7,15 @@ use types::strategies::StrategyId;
 
 use crate::impl_strategy_methods;
 use crate::strategies::basic_strategy::BasicStrategy;
-use crate::strategies::r#impl::description::STRATEGY_MAP;
 use crate::strategies::strategy::IStrategy;
 use crate::strategies::strategy_candid::StrategyCandid;
 use crate::pools::pool::Pool;
+use crate::strategies::r#impl::description::STRATEGY_MAP;
 
-//TODO override deposit/withdraw to support ICPSWAP
-impl_strategy_methods!(IcpCkUSDTStrategy);
+impl_strategy_methods!(ckBTCckUSDTStrategy);
 #[derive(Clone, Debug, CandidType, Serialize, Deserialize)]
 #[allow(non_camel_case_types)]
-pub struct IcpCkUSDTStrategy {
+pub struct ckBTCckUSDTStrategy {
     id: StrategyId,
     current_pool: Option<Pool>,
     position_id: Option<u64>,
@@ -26,31 +25,31 @@ pub struct IcpCkUSDTStrategy {
     initial_deposit: HashMap<Principal, Nat>,
     current_liquidity: Option<Nat>,
     current_liquidity_updated_at: Option<u64>,
-    test: bool,
+    enabled: bool,
 }
 
-impl IcpCkUSDTStrategy {
+impl ckBTCckUSDTStrategy {
     pub fn new() -> Self {
-        //TODO move to config
-        IcpCkUSDTStrategy {
-            id: 3,
-            current_pool: None,
+        // TODO: move to config
+        ckBTCckUSDTStrategy {
+            id: 6,
             position_id: None,
-            total_balance: Nat::from(0u64),
+            current_pool: None,
+            total_balance: Nat::from(0u64), // TODO: rename to total_initial_balance
             total_shares: Nat::from(0u64),
             user_shares: HashMap::new(),
             initial_deposit: HashMap::new(),
             current_liquidity: None,
             current_liquidity_updated_at: None,
-            test: false,
+            enabled: true,
         }
     }
 }
 
 #[async_trait]
-impl IStrategy for IcpCkUSDTStrategy {
+impl IStrategy for ckBTCckUSDTStrategy {
     fn to_candid(&self) -> StrategyCandid {
-        StrategyCandid::IcpCkUSDTStrategyV(self.clone())
+        StrategyCandid::ckBTCckUSDTStrategyV(self.clone())
     }
 
     fn clone_self(&self) -> Box<dyn IStrategy> {

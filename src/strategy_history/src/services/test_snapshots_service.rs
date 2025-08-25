@@ -2,18 +2,17 @@ use candid::Nat;
 use std::ops::{Div, Mul};
 use noise::NoiseFn;
 
+use ::utils::util::current_timestamp_secs;
+use utils::util::nat_to_u128;
 use errors::internal_error::error::{InternalError, InternalErrorKind};
 use errors::internal_error::error_codes::module::areas::{
     canisters as canister_area,
     canisters::domains::strategy_history as strategy_history_domain,
     canisters::domains::strategy_history::components as strategy_history_domain_components,
 };
-use ::utils::util::current_timestamp_secs;
-
-use utils::util::nat_to_u128;
 
 use crate::strategy_snapshot::strategy_snapshot::StrategySnapshot;
-use crate::types::types::{CreateTestSnapshotsRequest, CreateTestSnapshotsResponse};
+use crate::types::types::{CreateTestSnapshotsRequest, CreateTestSnapshotsResponse, TestLiquidityData};
 use crate::vault::vault_service;
 
 // Module code: "03-03-02"
@@ -103,17 +102,28 @@ pub async fn create_test_snapshots(
             )
         })?;
 
-    let test_liquidity_data = strategy_state.test_liquidity_data
-        .ok_or_else(|| {
-            InternalError::business_logic(
-                build_error_code(InternalErrorKind::BusinessLogic, 7), // Error code: "03-03-02 03 07"
-                "test_snapshots_service::create_test_snapshots".to_string(),
-                "Strategy is not initialized with test liquidity data".to_string(),
-                errors::error_extra! {
-                    "strategy_id" => request.strategy_id,
-                },
-            )
-        })?;
+    // TODO: for test purposes, we will use current test liquidity data
+    let test_liquidity_data = strategy_state.test_liquidity_data.unwrap_or(
+        TestLiquidityData {
+            tx_id: 0,
+            shares: Nat::from(200_000_000u64),
+            amount: Nat::from(200_000_000u64),
+            position_id: 0,
+        }
+    );
+
+    // TODO: remove this after testing
+    // let test_liquidity_data = strategy_state.test_liquidity_data
+    //     .ok_or_else(|| {
+    //         InternalError::business_logic(
+    //             build_error_code(InternalErrorKind::BusinessLogic, 7), // Error code: "03-03-02 03 07"
+    //             "test_snapshots_service::create_test_snapshots".to_string(),
+    //             "Strategy is not initialized with test liquidity data".to_string(),
+    //             errors::error_extra! {
+    //                 "strategy_id" => request.strategy_id,
+    //             },
+    //         )
+    //     })?;
 
     // Use test data as base
     let test_liquidity_data_amount = test_liquidity_data.amount.clone();

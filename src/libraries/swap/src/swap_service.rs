@@ -37,6 +37,7 @@ pub async fn swap_icrc2_optimal(
 ) -> Result<SwapResponse, InternalError> {
     let provider = quote_swap_icrc2_optimal(
         provider_impls.clone(),
+        icrc_ledger_client.clone(),
         input_token.clone(),
         output_token.clone(),
         amount.clone()
@@ -96,6 +97,7 @@ pub async fn swap_icrc2(
 
 pub async fn quote_swap_icrc2_optimal(
     provider_impls: ProviderImpls,
+    icrc_ledger_client: Arc<dyn ICRCLedgerClient>,
     input_token: CanisterId,
     output_token: CanisterId,
     amount: Nat,
@@ -105,24 +107,22 @@ pub async fn quote_swap_icrc2_optimal(
         provider_impls.kongswap,
         input_token.clone(),
         output_token.clone(),
+        amount.clone()
+    ).await;
+    let icp_quote = quote_swap_icpswap(
+        provider_impls.icpswap,
+        icrc_ledger_client,
+        input_token.clone(),
+        output_token.clone(),
         amount
     ).await;
-    // let icp_quote = quote_swap_icpswap(
-    //     icpswap_provider,
-    //     input_token.clone(),
-    //     output_token.clone(),
-    //     amount
-    // ).await;
 
     //Return the quote with the highest amount_out
-    // std::cmp::max_by(
-    //     kong_quote.unwrap(),
-    //     icp_quote.unwrap(),
-    //     |a, b| a.amount_out.cmp(&b.amount_out)
-    // )
-
-    // TODO: remove this after testing and return the quote with the highest amount_out
-    Ok(kong_quote?)
+    Ok(std::cmp::max_by(
+        kong_quote.unwrap(),
+        icp_quote.unwrap(),
+        |a, b| a.amount_out.cmp(&b.amount_out)
+    ))
 }
 
 pub async fn quote_swap_icrc2(

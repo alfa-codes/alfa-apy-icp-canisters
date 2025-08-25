@@ -93,7 +93,7 @@ pub async fn create_pool_snapshot(context: Context, pool: &Pool) -> Result<PoolS
     Ok(snapshot)
 }
 
-async fn get_position_data(context: Context, pool: &Pool) -> Result<Option<PositionData>, InternalError> {
+async fn get_position_data(_context: Context, pool: &Pool) -> Result<Option<PositionData>, InternalError> {
     let liquidity_client = get_liquidity_client(pool).await;
 
     if let Some(position_id) = pool.position_id.as_ref().cloned() {
@@ -113,7 +113,7 @@ async fn get_position_data(context: Context, pool: &Pool) -> Result<Option<Posit
     }
 }
 
-async fn get_pool_data(context: Context, pool: &Pool) -> Result<Option<PoolData>, InternalError> {
+async fn get_pool_data(_context: Context, pool: &Pool) -> Result<Option<PoolData>, InternalError> {
     let liquidity_client = get_liquidity_client(pool).await;
     let pool_data_response = liquidity_client.get_pool_data().await?;
 

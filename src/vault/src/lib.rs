@@ -177,9 +177,9 @@ async fn user_strategies(user: Principal) -> Vec<UserStrategyResponse> {
 }
 
 #[update]
-async fn test_set_strategy_test(strategy_id: u16, test: bool) {
+async fn test_set_strategy_enabled(strategy_id: u16, enabled: bool) {
     let mut strategy = strategies_repo::get_strategy_by_id(strategy_id).unwrap();
-    strategy.set_test(test);
+    strategy.set_enabled(enabled);
     strategies_repo::save_strategy(strategy);
 }
 
@@ -274,6 +274,7 @@ fn pre_upgrade() {
 #[post_upgrade]
 fn post_upgrade() {
     stable_state::stable_restore();
+    strategy_service::init_strategies();
     strategy_stats_service::start_strategy_stats_update_timer(STRATEGY_STATS_FETCHING_INTERVAL);
 }
 

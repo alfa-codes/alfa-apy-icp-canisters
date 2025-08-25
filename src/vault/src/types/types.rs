@@ -11,16 +11,16 @@ use crate::event_records::event_record::EventRecord;
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
 pub struct StrategyDepositArgs {
+    pub strategy_id: StrategyId,
     pub ledger: CanisterId,
     pub amount: Nat,
-    pub strategy_id: StrategyId,
 }
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
 pub struct StrategyWithdrawArgs {
+    pub strategy_id: StrategyId,
     pub ledger: CanisterId,
     pub percentage: Nat,
-    pub strategy_id: StrategyId,
 }
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
@@ -59,7 +59,7 @@ pub struct StrategyResponse {
     pub current_liquidity: Option<Nat>,
     pub current_liquidity_updated_at: Option<u64>,
     pub position_id: Option<u64>,
-    pub test: bool,
+    pub enabled: bool,
 }
 
 // TODO: rename to UserPositionResponse

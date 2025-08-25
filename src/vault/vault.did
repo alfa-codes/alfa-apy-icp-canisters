@@ -50,6 +50,7 @@ type EventRecord = record {
   id : nat64;
   user : opt principal;
   event : Event;
+  strategy_id : opt nat16;
   timestamp : nat64;
   correlation_id : text;
 };
@@ -61,24 +62,18 @@ type EventRecordsPaginationResponse = record {
   items : vec EventRecord;
 };
 
-type ExchangeId = variant {
-  Sonic;
-  KongSwap;
-  ICPSwap;
-};
+type ExchangeId = variant { Sonic; KongSwap; ICPSwap };
 
 type GetEventRecordsResult = variant {
   Ok : EventRecordsPaginationResponse;
   Err : ResponseError;
 };
 
-type Icrc28TrustedOriginsResponse = record {
-  trusted_origins : vec text;
-};
+type Icrc28TrustedOriginsResponse = record { trusted_origins : vec text };
 
 type InternalError = record {
   context : text;
-  code : nat32;
+  code : nat64;
   kind : InternalErrorKind;
   extra : opt vec record { text; text };
   message : text;
@@ -86,6 +81,7 @@ type InternalError = record {
 
 type InternalErrorKind = variant {
   AccessDenied;
+  Infrastructure;
   NotFound;
   Timeout;
   Unknown;
@@ -109,20 +105,15 @@ type Pool = record {
 };
 
 type ResponseError = record {
-  code : nat32;
+  code : nat64;
   kind : InternalErrorKind;
   message : text;
   details : opt vec record { text; text };
 };
 
-type RuntimeConfig = record {
-  environment : Environment;
-};
+type RuntimeConfig = record { environment : Environment };
 
-type SortOrder = variant {
-  Asc;
-  Desc;
-};
+type SortOrder = variant { Asc; Desc };
 
 type StrategyDepositArgs = record {
   strategy_id : nat16;
@@ -196,6 +187,7 @@ type StrategyResponse = record {
   name : text;
   description : text;
   total_shares : nat;
+  enabled : bool;
   initial_deposit : vec record { principal; nat };
   user_shares : vec record { principal; nat };
   current_liquidity : opt nat;
@@ -204,7 +196,6 @@ type StrategyResponse = record {
   pools : vec Pool;
   users_count : nat32;
   position_id : opt nat64;
-  test : bool;
 };
 
 type StrategyWithdrawArgs = record {
@@ -314,7 +305,7 @@ service : (opt Conf, opt RuntimeConfig) -> {
   test_icpswap_withdraw : (principal, nat, nat) -> (nat);
   test_reset_strategy : (nat16) -> ();
   test_update_strategy_stats : () -> ();
-  test_set_strategy_test : (nat16, bool) -> ();
+  test_set_strategy_enabled : (nat16, bool) -> ();
   user_strategies : (principal) -> (vec UserStrategyResponse);
   withdraw : (StrategyWithdrawArgs) -> (StrategyWithdrawResult);
 };

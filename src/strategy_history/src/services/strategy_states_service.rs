@@ -16,7 +16,11 @@ use crate::repository::strategy_states_repo;
 use crate::vault::vault_service;
 use crate::utils::service_resolver;
 use crate::strategy_snapshot::strategy_snapshot::Pool;
-use crate::types::types::{StrategyState, InitializeStrategyStatesResponse, TestLiquidityData};
+use crate::types::types::{
+    StrategyState,
+    InitializeStrategyStatesResponse,
+    TestLiquidityData,
+};
 use crate::types::external_canister_types::{
     StrategyDepositArgs,
     StrategyDepositResponse,
@@ -106,9 +110,7 @@ pub async fn initialize_strategy_states_with_list(
     })
 }
 
-// =============== Private methods ===============
-
-async fn deposit_test_liquidity_to_strategy(
+pub async fn deposit_test_liquidity_to_strategy(
     vault_strategy: &VaultStrategyResponse
 ) -> Result<StrategyDepositResponse, InternalError> {
     // Pick base token ledger (token0) from current pool or first pool
@@ -145,9 +147,9 @@ async fn deposit_test_liquidity_to_strategy(
         };
 
     let args = StrategyDepositArgs {
+        strategy_id: vault_strategy.id,
         ledger: deposit_token_ledger,
         amount: deposit_amount.clone(),
-        strategy_id: vault_strategy.id,
     };
 
     let vault_actor = vault_service::get_vault_actor().await?;
@@ -172,6 +174,8 @@ async fn deposit_test_liquidity_to_strategy(
         }
     }
 }
+
+// =============== Private methods ===============
 
 async fn compute_liquidity_amount_for_deposit(pool: Pool) -> Option<Nat> {
     let service_resolver = service_resolver::get_service_resolver();
@@ -215,6 +219,7 @@ async fn swap_icp_to_target_token_for_amount(
 
     let quote_icp_to_target = swap_service::quote_swap_icrc2_optimal(
         service_resolver.provider_impls(),
+        icrc_ledger_client,
         *ICP_TOKEN_CANISTER_ID,
         target_token,
         sample_icp_amount.clone(),

@@ -322,6 +322,8 @@ When adding new modules, error kinds, or error numbers — update this documenta
 - `03-03-01 04 09` - IC error from 'vault_service::deposit' call (ExternalService)
 - `03-03-01 03 10` - Vault returned error from 'vault_service::deposit' (BusinessLogic)
 - `03-03-01 03 11` - Vault strategy not found for strategy ID in 'strategy_snapshot_service::create_strategies_snapshots' (BusinessLogic)
+- `03-03-01 04 12` - IC error from 'vault_service::withdraw' call (ExternalService)
+- `03-03-01 03 13` - Vault returned error from 'vault_service::withdraw' (BusinessLogic)
 
 #### 03-03-02. Strategy History – Test Snapshots
 

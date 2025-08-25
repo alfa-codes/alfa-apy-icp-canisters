@@ -168,6 +168,7 @@ pub async fn get_strategy_current_liquidity_usd(
     // Quote base token (token0) to ckUSDT to approximate USD value
     let quote_to_usdt = swap_service::quote_swap_icrc2_optimal(
         service_resolver.provider_impls(),
+        service_resolver.icrc_ledger_client(),
         pool.token0,
         *CKUSDT_TOKEN_CANISTER_ID,
         current_liquidity_base,

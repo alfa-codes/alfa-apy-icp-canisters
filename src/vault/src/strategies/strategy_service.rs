@@ -1,28 +1,26 @@
-use crate::repository::strategies_repo::{add_if_not_exists, add_or_update_strategy, STRATEGIES};
+use crate::strategies::r#impl::ck_btc_ck_usdt_strategy::ckBTCckUSDTStrategy;
 use crate::strategies::r#impl::ck_btc_strategy::ckBTCStrategy;
 use crate::strategies::r#impl::panda_icp_stategy::PandaTestStrategy;
 use crate::strategies::r#impl::icp_strategy::ICPStrategy;
-use crate::strategies::r#impl::icp_usdt_kong_icpswap_strategy::IcpCkUSDTStrategy;
+use crate::strategies::r#impl::icp_ck_usdt_strategy::IcpCkUSDTStrategy;
 use crate::strategies::r#impl::ics_icp_strategy::IcsStrategy;
+use crate::strategies::r#impl::icp_ck_eth_strategy::IcpCkETHStrategy;
 use crate::types::types::StrategyResponse;
+use crate::repository::strategies_repo;
 
 pub fn init_strategies() {
-    let ck_btc = Box::new(ckBTCStrategy::new());
-    let icp = Box::new(ICPStrategy::new());
-    add_if_not_exists(ck_btc);
-    add_if_not_exists(icp);
-    add_or_update_strategy(Box::new(IcpCkUSDTStrategy::new()));
-    add_or_update_strategy(Box::new(PandaTestStrategy::new()));
-    add_or_update_strategy(Box::new(IcsStrategy::new()));
+    strategies_repo::add_if_not_exists(Box::new(ckBTCStrategy::new()));
+    strategies_repo::add_if_not_exists( Box::new(ICPStrategy::new()));
+    strategies_repo::add_or_update_strategy(Box::new(IcpCkUSDTStrategy::new()));
+    strategies_repo::add_or_update_strategy(Box::new(PandaTestStrategy::new()));
+    strategies_repo::add_or_update_strategy(Box::new(IcsStrategy::new()));
+    strategies_repo::add_or_update_strategy(Box::new(ckBTCckUSDTStrategy::new()));
+    strategies_repo::add_or_update_strategy(Box::new(IcpCkETHStrategy::new()));
 }
 
-// TODO: move to repo
 pub fn get_actual_strategies() -> Vec<StrategyResponse> {
-    let strategies: Vec<StrategyResponse> = STRATEGIES.with(|trss| {
-        let a = trss.borrow();
-        a.iter()
-            .map(|a| a.to_response())
-            .collect()
-    });
-    strategies
+    strategies_repo::get_enabled_strategies()
+        .into_iter()
+        .map(|s| s.to_response())
+        .collect()
 }

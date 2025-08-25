@@ -12,7 +12,9 @@ use errors::internal_error::error_codes::module::areas::{
 use crate::types::external_canister_types::{
     StrategyDepositArgs,
     StrategyDepositResponse,
-    StrategyDepositResult,
+    StrategyWithdrawArgs,
+    StrategyWithdrawResponse,
+    ResponseError,
     VaultStrategyResponse,
 };
 
@@ -40,8 +42,9 @@ impl VaultActor {
         &self,
         args: StrategyDepositArgs
     ) -> Result<StrategyDepositResponse, InternalError> {
-        let (result,): (StrategyDepositResult,) =
-            ic_cdk::call(self.principal, "deposit", (args,)).await
+        let (result,): (Result<StrategyDepositResponse, ResponseError>,) =
+            ic_cdk::call(self.principal, "deposit", (args,))
+                .await
                 .map_err(|e| InternalError::external_service(
                     build_error_code(InternalErrorKind::ExternalService, 9), // Error code: "03-03-01 04 09"
                     "vault_service::deposit call".to_string(),
@@ -49,11 +52,36 @@ impl VaultActor {
                     None,
                 ))?;
 
-        match result.0 {
+        match result {
             Ok(response) => Ok(response),
             Err(err) => Err(InternalError::business_logic(
                 build_error_code(InternalErrorKind::BusinessLogic, 10), // Error code: "03-03-01 03 10"
                 "vault_service::deposit".to_string(),
+                format!("Vault returned error: {}", err.message),
+                None,
+            )),
+        }
+    }
+
+    pub async fn withdraw(
+        &self,
+        args: StrategyWithdrawArgs
+    ) -> Result<StrategyWithdrawResponse, InternalError> {
+        let (result,): (Result<StrategyWithdrawResponse, ResponseError>,) =
+            ic_cdk::call(self.principal, "withdraw", (args,))
+                .await
+                .map_err(|e| InternalError::external_service(
+                    build_error_code(InternalErrorKind::ExternalService, 12), // Error code: "03-03-01 04 12"
+                    "vault_service::withdraw call".to_string(),
+                    format!("IC error: {:?}", e),
+                    None,
+                ))?;
+
+        match result {
+            Ok(response) => Ok(response),
+            Err(err) => Err(InternalError::business_logic(
+                build_error_code(InternalErrorKind::BusinessLogic, 13), // Error code: "03-03-01 03 13"
+                "vault_service::withdraw".to_string(),
                 format!("Vault returned error: {}", err.message),
                 None,
             )),

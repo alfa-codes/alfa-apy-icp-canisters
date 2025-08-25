@@ -1,3 +1,5 @@
+use candid::Nat;
+
 use yield_calculator::{YieldSnapshot, TimePeriod};
 use types::strategies::StrategyId;
 
@@ -15,7 +17,9 @@ pub fn calculate_strategy_yield(snapshots: &[StrategySnapshot], now: u64) -> f64
         snapshots,
         TimePeriod::All,
         now,
-        |snapshot: &StrategySnapshot| snapshot.test_liquidity_amount.clone().unwrap(),
+        |snapshot: &StrategySnapshot| {
+            snapshot.test_liquidity_amount.clone().unwrap_or_else(|| Nat::from(0u64))
+        },
     )
 }
 

@@ -15,6 +15,15 @@ pub fn get_all_strategies() -> Vec<Box<dyn IStrategy>> {
     })
 }
 
+pub fn get_enabled_strategies() -> Vec<Box<dyn IStrategy>> {
+    STRATEGIES.with(|strategies| {
+        StrategyIterator::new(strategies.borrow_mut())
+            .into_iter()
+            .filter(|s| s.get_enabled())
+            .collect()
+    })
+}
+
 pub fn get_user_strategies(user: Principal) -> Vec<Box<dyn IStrategy>> {
     STRATEGIES.with(|strategies| {
         StrategyIterator::new(strategies.borrow_mut())
@@ -147,7 +156,7 @@ mod tests {
             None
         }
 
-        fn get_test(&self) -> bool {
+        fn get_enabled(&self) -> bool {
             false
         }
 
@@ -159,7 +168,7 @@ mod tests {
         fn set_position_id(&mut self, _id: Option<u64>) {}
         fn set_current_liquidity(&mut self, _liq: Option<Nat>) {}
         fn set_current_liquidity_updated_at(&mut self, _ts: Option<u64>) {}
-        fn set_test(&mut self, _test: bool) {}
+        fn set_enabled(&mut self, _enabled: bool) {}
     }
 
     #[async_trait::async_trait]

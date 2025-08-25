@@ -106,6 +106,7 @@ impl LiquidityClient for KongSwapLiquidityClient {
         // Get quote for token swap
         let optimal_quote = swap_service::quote_swap_icrc2_optimal(
             self.provider_impls.clone(),
+            self.icrc_ledger_client.clone(),
             self.token0.clone(),
             self.token1.clone(),
             amount.clone(),

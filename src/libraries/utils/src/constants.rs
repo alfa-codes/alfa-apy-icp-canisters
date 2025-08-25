@@ -20,6 +20,7 @@ pub const CKBTC_TOKEN_PRINCIPAL: &str = "mxzaz-hqaaa-aaaar-qaada-cai";
 pub const PANDA_TOKEN_PRINCIPAL: &str = "druyg-tyaaa-aaaaq-aactq-cai";
 pub const NFIDW_TOKEN_PRINCIPAL: &str = "mih44-vaaaa-aaaaq-aaekq-cai";
 pub const ICS_TOKEN_PRINCIPAL: &str = "ca6gz-lqaaa-aaaaq-aacwa-cai";
+pub const CKETH_TOKEN_PRINCIPAL: &str = "ss2fx-dyaaa-aaaar-qacoq-cai";
 
 // ICPSWAP PRINCIPALS
 pub const ICPSWAP_SWAP_FACTORY_PRINCIPAL: &str = "4mmnk-kiaaa-aaaag-qbllq-cai";
@@ -57,6 +58,8 @@ pub static NFIDW_TOKEN_CANISTER_ID: Lazy<CanisterId> =
     Lazy::new(|| principal_to_canister_id(NFIDW_TOKEN_PRINCIPAL));
 pub static ICS_TOKEN_CANISTER_ID: Lazy<CanisterId> =
     Lazy::new(|| principal_to_canister_id(ICS_TOKEN_PRINCIPAL));
+pub static CKETH_TOKEN_CANISTER_ID: Lazy<CanisterId> =
+    Lazy::new(|| principal_to_canister_id(CKETH_TOKEN_PRINCIPAL));
 
 
 // ICPSWAP CANISTER IDS
