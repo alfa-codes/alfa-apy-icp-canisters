@@ -3,7 +3,7 @@
   
   <div style="margin-top: 20px; padding: 15px; background: rgba(168, 85, 247, 0.1); border-radius: 10px; border: 1px solid #a855f7; max-width: 500px;">
     <p style="margin: 0; color: #a855f7; font-size: 16px; font-weight: 500;">
-      🎯 <strong>New!</strong> Check out our comprehensive <a href="./docs/main_doc_draft.md" target="_blank" style="color: #22ff88; text-decoration: none; font-weight: 600;">technical documentation</a> with architecture details!
+      🎯 <strong>New!</strong> Check out our comprehensive <a href="https://alfa-codes.github.io/alfa-apy-icp-canisters/" target="_blank" style="color: #22ff88; text-decoration: none; font-weight: 600;">technical documentation</a> with architecture details!
     </p>
   </div>
 </div>
@@ -14,12 +14,12 @@
 
 ### Automatically maximize returns through intelligent liquidity management, real-time APY tracking, and dynamic asset rebalancing across multiple DEX providers.
 
-## 🌟 [Live Application](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/) | 📚 [Documentation](./docs/main_doc_draft.md)
+## 🌟 [Live Application](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/) | 📚 [Documentation](https://alfa-codes.github.io/alfa-apy-icp-canisters/)
 
 ## 🚀 Quick Links
 
 - **🎯 [Live Application](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/)** - Try ALFA APY now
-- **📖 [Technical Documentation](./docs/main_doc_draft.md)** - Complete architecture and API reference
+- **📖 [Technical Documentation](https://alfa-codes.github.io/alfa-apy-icp-canisters/)** - Complete architecture and API reference
 - **🎥 [Introduction Video](https://youtu.be/ldqRNLbQflI)** - Learn about ALFA APY
 - **📈 [Progress Update](https://www.youtube.com/watch?v=Vb0YfFJg770)** - Latest development status
 
@@ -99,7 +99,7 @@ Advanced algorithm that evaluates pools using:
   <p style="margin: 0 0 20px 0; color: #0f0f0f; font-size: 16px; opacity: 0.9;">
     Get started with our comprehensive technical documentation and guides
   </p>
-  <a href="./docs/main_doc_draft.md" target="_blank" style="display: inline-block; background: #0f0f0f; color: #22ff88; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; transition: all 0.3s ease; border: 2px solid #0f0f0f;">
+  <a href="https://alfa-codes.github.io/alfa-apy-icp-canisters/" target="_blank" style="display: inline-block; background: #0f0f0f; color: #22ff88; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; transition: all 0.3s ease; border: 2px solid #0f0f0f;">
     📖 View Technical Documentation
   </a>
 </div>
