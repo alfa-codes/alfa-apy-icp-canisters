@@ -1,5 +1,6 @@
 type CreateTestSnapshotsRequest = record {
   from_timestamp : nat64;
+  to_timestamp : nat64;
   min_apy : float64;
   strategy_id : nat16;
   max_apy : float64;
@@ -20,6 +21,8 @@ type CreateTestSnapshotsResult = variant {
   Ok : CreateTestSnapshotsResponse;
   Err : ResponseError;
 };
+
+type Environment = variant { Dev; Production; Test; Staging };
 
 type ExchangeId = variant { Sonic; KongSwap; ICPSwap };
 
@@ -77,6 +80,8 @@ type ResponseErrorKind = variant {
   Validation;
 };
 
+type RuntimeConfig = record { environment : Environment };
+
 type SaveStrategySnapshotResult = variant { Ok; Err : ResponseError };
 
 type StrategyHistory = record {
@@ -114,14 +119,14 @@ type TestLiquidityData = record {
   amount : nat;
   position_id : nat64;
 };
-
-service : () -> {
+service : (opt RuntimeConfig) -> {
   get_all_strategy_states : () -> (vec record { nat16; StrategyState }) query;
   get_strategies_history : (GetStrategiesHistoryRequest) -> (
       GetStrategiesHistoryResult,
     ) query;
   get_strategy_snapshots_count : (nat16) -> (nat64) query;
   get_strategy_state : (nat16) -> (opt StrategyState) query;
+  get_runtime_config : () -> (RuntimeConfig) query;
   test_create_snapshots : (CreateTestSnapshotsRequest) -> (
       CreateTestSnapshotsResult,
     );

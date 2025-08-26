@@ -14,6 +14,7 @@ use errors::response_error::error::ResponseError;
 use ::types::strategies::StrategyId;
 
 use crate::repository::stable_state;
+use crate::repository::runtime_config_repo::{self, RuntimeConfig};
 use crate::services::strategy_history_service;
 use crate::services::strategy_states_service;
 use crate::services::scheduler_service;
@@ -40,13 +41,17 @@ thread_local! {
 // =============== Initialization ===============
 
 #[init]
-fn init() {
+fn init(runtime_config: Option<RuntimeConfig>) {
+    let runtime_config = runtime_config.unwrap_or_default();
+    runtime_config_repo::set_runtime_config(runtime_config);
+
     scheduler_service::start_fetching_timer(STRATEGY_HISTORY_FETCHING_INTERVAL);
 }
 
 #[pre_upgrade]
 fn pre_upgrade() {
     stable_state::stable_save();
+    scheduler_service::stop_fetching_timer();
 }
 
 #[post_upgrade]
@@ -127,6 +132,11 @@ fn test_delete_strategy_state(strategy_id: StrategyId) {
 #[update]
 fn test_delete_all_snapshots() {
     repository::snapshots_repo::delete_all_snapshots();
+}
+
+#[query]
+fn get_runtime_config() -> RuntimeConfig {
+    runtime_config_repo::get_runtime_config()
 }
 
 // =============== Candid Export ===============

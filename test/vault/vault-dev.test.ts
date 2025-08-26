@@ -19,13 +19,14 @@ import {
 export const USE_LOCAL_ENV = false;
 
 describe("Vault DEV Integration Tests", () => {
-    const canisterId = canisterIds.vault.dev;
+    const canisterId = canisterIds.vault.staging;
     const identity = "87654321876543218765432187654399";
 
     console.log("canisterId", canisterId);
 
-    // const ledgerCanisterId = ICS_CANISTER_ID;
-    const ledgerCanisterId = PANDA_CANISTER_ID;
+    const ledgerCanisterId = ICS_CANISTER_ID;
+    // const ledgerCanisterId = PANDA_CANISTER_ID;
+    // const ledgerCanisterId = ICP_CANISTER_ID;
 
     let principalId: Principal;
     let memberIdentity: Ed25519KeyIdentity;
@@ -69,11 +70,13 @@ describe("Vault DEV Integration Tests", () => {
     });
 
     describe(".deposit", () => {
-        const strategyId = 4; // Panda-ICP Balanced Strategy
+        const strategyId = 7; // ICP-ckETH Dynamic Strategy
+        // const strategyId = 4; // Panda-ICP Balanced Strategy
         // const strategyId = 5; // ICS-ICP Balanced Strategy
 
         const approveAmount = BigInt(10000000000);
-        const depositAmount = BigInt(200_000_000);
+        const depositAmount = BigInt(1_000_000);
+        // const depositAmount = BigInt(200_000_000);
         // const depositAmount = BigInt(1_000_000_000);
 
         it("Deposits to strategy without any liquidity", async () => {

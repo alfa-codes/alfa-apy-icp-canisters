@@ -4,7 +4,7 @@ use candid::{Nat, Principal};
 use types::CanisterId;
 use types::strategies::StrategyId;
 
-use crate::pools::pool::Pool;
+use ::types::strategies::Pool;
 
 pub trait BasicStrategy {
     fn get_name(&self) -> String;

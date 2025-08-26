@@ -1,3 +1,5 @@
+use ::types::strategies::StrategyResponse;
+
 use crate::strategies::r#impl::ck_btc_ck_usdt_strategy::ckBTCckUSDTStrategy;
 use crate::strategies::r#impl::ck_btc_strategy::ckBTCStrategy;
 use crate::strategies::r#impl::panda_icp_stategy::PandaTestStrategy;
@@ -5,7 +7,6 @@ use crate::strategies::r#impl::icp_strategy::ICPStrategy;
 use crate::strategies::r#impl::icp_ck_usdt_strategy::IcpCkUSDTStrategy;
 use crate::strategies::r#impl::ics_icp_strategy::IcsStrategy;
 use crate::strategies::r#impl::icp_ck_eth_strategy::IcpCkETHStrategy;
-use crate::types::types::StrategyResponse;
 use crate::repository::strategies_repo;
 
 pub fn init_strategies() {

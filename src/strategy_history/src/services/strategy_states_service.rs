@@ -1,8 +1,9 @@
 use candid::Nat;
 use candid::Principal;
 
-use ::utils::constants::{ICP_TOKEN_CANISTER_ID, VAULT_PRINCIPAL_DEV};
+use ::utils::constants::ICP_TOKEN_CANISTER_ID;
 use ::utils::util::{nat_to_f64, current_timestamp_secs};
+use ::types::CanisterId;
 use swap::swap_service;
 use errors::internal_error::error::{InternalError, InternalErrorKind};
 use errors::internal_error::error_codes::module::areas::{
@@ -10,12 +11,11 @@ use errors::internal_error::error_codes::module::areas::{
     canisters::domains::strategy_history as strategy_history_domain,
     canisters::domains::strategy_history::components as strategy_history_domain_components,
 };
-use ::types::strategies::StrategyId;
+use ::types::strategies::{StrategyId, StrategyResponse};
 
 use crate::repository::strategy_states_repo;
 use crate::vault::vault_service;
 use crate::utils::service_resolver;
-use crate::strategy_snapshot::strategy_snapshot::Pool;
 use crate::types::types::{
     StrategyState,
     InitializeStrategyStatesResponse,
@@ -24,7 +24,6 @@ use crate::types::types::{
 use crate::types::external_canister_types::{
     StrategyDepositArgs,
     StrategyDepositResponse,
-    VaultStrategyResponse,
 };
 
 // Module code: "03-03-01"
@@ -48,7 +47,7 @@ pub fn delete_strategy_state(strategy_id: StrategyId) {
 }
 
 pub async fn initialize_strategy_states_with_list(
-    vault_strategies: &Vec<VaultStrategyResponse>,
+    vault_strategies: &Vec<StrategyResponse>,
     strategy_ids: Option<Vec<StrategyId>>,
 ) -> Result<InitializeStrategyStatesResponse, InternalError> {
     let filter_ids = strategy_ids.unwrap_or_default();
@@ -111,16 +110,14 @@ pub async fn initialize_strategy_states_with_list(
 }
 
 pub async fn deposit_test_liquidity_to_strategy(
-    vault_strategy: &VaultStrategyResponse
+    vault_strategy: &StrategyResponse
 ) -> Result<StrategyDepositResponse, InternalError> {
     // Pick base token ledger (token0) from current pool or first pool
-    let pool = vault_strategy.current_pool.clone().unwrap_or_else(|| {
-        vault_strategy.pools[0].clone()
-    });
+    let base_token = vault_strategy.base_token.clone();
 
     // Compute minimal safe deposit for this strategy/pool
     let minimal_token0_deposit = match compute_liquidity_amount_for_deposit(
-        pool.clone()
+        base_token.clone()
     ).await {
         Some(amount) => amount,
         None => {
@@ -128,22 +125,25 @@ pub async fn deposit_test_liquidity_to_strategy(
                 build_error_code(InternalErrorKind::BusinessLogic, 5), // Error code: "03-03-01 03 05"
                 "strategy_history_service::deposit_test_liquidity_to_strategy".to_string(),
                 "Failed to compute minimal deposit".to_string(),
-                None,
+                errors::error_extra! {
+                    "strategy_id" => vault_strategy.id,
+                    "base_token" => base_token,
+                },
             ));
         }
     };
 
     // If base token is not ICP, first swap ICP -> base token, then deposit acquired amount
     let (deposit_token_ledger, deposit_amount) =
-        if pool.token0 != *ICP_TOKEN_CANISTER_ID {
+        if base_token != *ICP_TOKEN_CANISTER_ID {
             let swapped = swap_icp_to_target_token_for_amount(
-                pool.token0,
+                base_token,
                 minimal_token0_deposit.clone()
             ).await?;
 
-            (pool.token0, swapped)
+            (base_token, swapped)
         } else {
-            (pool.token0, minimal_token0_deposit.clone())
+            (base_token, minimal_token0_deposit.clone())
         };
 
     let args = StrategyDepositArgs {
@@ -156,7 +156,7 @@ pub async fn deposit_test_liquidity_to_strategy(
 
     // Ensure allowance for vault to pull funds from this canister on the selected ledger
     approve_deposit_allowance(
-        Principal::from_text(VAULT_PRINCIPAL_DEV).unwrap(),
+        vault_actor.get_principal().await,
         deposit_token_ledger,
         deposit_amount.clone(),
     ).await?;
@@ -169,7 +169,10 @@ pub async fn deposit_test_liquidity_to_strategy(
                 build_error_code(InternalErrorKind::BusinessLogic, 6), // Error code: "03-03-01 03 06"
                 "strategy_history_service::deposit_test_liquidity_to_strategy".to_string(),
                 format!("Deposit call failed: {:?}", err),
-                None,
+                errors::error_extra! {
+                    "strategy_id" => vault_strategy.id,
+                    "base_token" => base_token,
+                },
             ));
         }
     }
@@ -177,32 +180,29 @@ pub async fn deposit_test_liquidity_to_strategy(
 
 // =============== Private methods ===============
 
-async fn compute_liquidity_amount_for_deposit(pool: Pool) -> Option<Nat> {
+async fn compute_liquidity_amount_for_deposit(token: CanisterId) -> Option<Nat> {
     let service_resolver = service_resolver::get_service_resolver();
     let icrc_ledger_client = service_resolver.icrc_ledger_client();
 
-    let decimals_token0 = icrc_ledger_client.icrc1_decimals(pool.token0).await.ok()?;
-
-    let base_unit_token0 = Nat::from(10u128.pow(decimals_token0 as u32));
-
-    // Fees
     let transfer_fee_token0 = icrc_ledger_client
-        .icrc1_fee(pool.token0)
+        .icrc1_fee(token)
         .await
         .unwrap_or_else(|_| Nat::from(0u64));
 
-    // Minimum per-side requirements in native subunits
-    let required_token0 = 
-        transfer_fee_token0.clone() + transfer_fee_token0.clone() + base_unit_token0.clone();
+    // Fees for swap token0 to token1 + slippage
+    let swap_token0_to_token1_fee = transfer_fee_token0.clone() * Nat::from(2u64);
 
-    let safety_coefficient = Nat::from(1u64);
-    let total_required_token0 = required_token0.clone() * Nat::from(2u64) * safety_coefficient;
+    // Fees for deposit two tokens
+    let deposit_fee = transfer_fee_token0.clone() * Nat::from(2u64);
+
+    let coefficient = Nat::from(100u64);
+    let total_required_token0 = (deposit_fee + swap_token0_to_token1_fee) * coefficient;
 
     Some(total_required_token0)
 }
 
 async fn swap_icp_to_target_token_for_amount(
-    target_token: ::types::CanisterId,
+    target_token: CanisterId,
     target_amount_out: Nat,
 ) -> Result<Nat, InternalError> {
     let service_resolver = service_resolver::get_service_resolver();
@@ -229,7 +229,10 @@ async fn swap_icp_to_target_token_for_amount(
         build_error_code(InternalErrorKind::BusinessLogic, 7), // Error code: "03-03-01 03 07"
         "strategy_history_service::swap_icp_to_target_for_amount".to_string(),
         format!("Quote failed: {:?}", e),
-        None,
+        errors::error_extra! {
+            "target_token" => target_token,
+            "target_amount_out" => target_amount_out,
+        },
     ))?;
 
     let target_per_icp_price = 
@@ -252,7 +255,10 @@ async fn swap_icp_to_target_token_for_amount(
         build_error_code(InternalErrorKind::BusinessLogic, 8), // Error code: "03-03-01 03 08"
         "strategy_history_service::swap_icp_to_target_for_amount".to_string(),
         format!("Swap failed: {:?}", e),
-        None,
+        errors::error_extra! {
+            "target_token" => target_token,
+            "target_amount_out" => target_amount_out,
+        },
     ))?;
 
     Ok(Nat::from(swap_response.amount_out))
@@ -269,7 +275,7 @@ fn build_test_liquidity_data(deposit_response: StrategyDepositResponse) -> TestL
 
 async fn approve_deposit_allowance(
     spender: Principal,
-    ledger: ::types::CanisterId,
+    ledger: CanisterId,
     amount: Nat,
 ) -> Result<Nat, InternalError> {
     let service_resolver = service_resolver::get_service_resolver();

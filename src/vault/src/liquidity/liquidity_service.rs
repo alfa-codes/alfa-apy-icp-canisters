@@ -2,12 +2,12 @@ use candid::Nat;
 
 use types::context::Context;
 use types::liquidity::{AddLiquidityResponse, WithdrawLiquidityResponse};
+use ::types::strategies::Pool;
 use liquidity::liquidity_router::get_liquidity_client;
 use errors::internal_error::error::InternalError;
 use swap::swap_service;
 
-use crate::pools::pool_data::PoolData;
-use crate::pools::pool::Pool;
+use crate::types::types::PoolData;
 use crate::pool_stats::pool_stats_service;
 use crate::event_records::event_record_service;
 use crate::event_records::event_record::Event;

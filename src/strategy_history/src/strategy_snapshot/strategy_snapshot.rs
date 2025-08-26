@@ -2,11 +2,9 @@ use candid::{CandidType, Deserialize, Nat};
 use serde::Serialize;
 
 use ::utils::util::current_timestamp_secs;
-use types::exchange_id::ExchangeId;
-use types::CanisterId;
+use types::strategies::{StrategyId, Pool};
 use validation::validation::Validation;
 use validation::fields_validator::FieldsValidator;
-use types::strategies::StrategyId;
 
 use crate::repository::snapshots_repo;
 
@@ -95,30 +93,6 @@ impl Validation for StrategySnapshot {
             .positive("total_balance", self.total_balance.clone())
             .positive("total_shares", self.total_shares.clone())
             .build()
-    }
-}
-
-#[derive(CandidType, Deserialize, Clone, Serialize, Debug, PartialEq, Eq, Hash)]
-pub struct Pool {
-    pub id: String,
-    pub token0: CanisterId,
-    pub token1: CanisterId,
-    pub provider: ExchangeId,
-}
-
-impl Pool {
-    pub fn new(
-        id: String,
-        token0: CanisterId,
-        token1: CanisterId,
-        provider: ExchangeId,
-    ) -> Self {
-        Self {
-            id,
-            token0,
-            token1,
-            provider,
-        }
     }
 }
 

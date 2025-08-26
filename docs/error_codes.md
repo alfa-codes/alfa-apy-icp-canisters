@@ -201,7 +201,8 @@ When adding new modules, error kinds, or error numbers — update this documenta
 
 #### 02-01-02. Libraries – Swap – KongSwap
 
-*No errors yet*
+- **02-01-02 03 01** - Pool not found for the specified tokens
+- **02-01-02 03 02** - Invalid token configuration for KongSwap pool
 
 #### 02-01-03 – Libraries – Swap – ICPSwap
 

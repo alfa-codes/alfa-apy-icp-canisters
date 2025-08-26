@@ -4,14 +4,13 @@ use serde::Serialize;
 use std::collections::HashMap;
 
 use types::CanisterId;
-use types::strategies::StrategyId;
+use types::strategies::{StrategyId, Pool};
 use utils::constants::CKBTC_TOKEN_CANISTER_ID;
 
 use crate::impl_strategy_methods;
 use crate::strategies::basic_strategy::BasicStrategy;
 use crate::strategies::strategy::IStrategy;
 use crate::strategies::strategy_candid::StrategyCandid;
-use crate::pools::pool::Pool;
 use crate::strategies::r#impl::description::STRATEGY_MAP;
 
 impl_strategy_methods!(ckBTCStrategy);

@@ -9,6 +9,7 @@ use types::exchange_id::ExchangeId;
 use types::pool::PoolTrait;
 use types::context::Context;
 use utils::token_transfer::icrc1_transfer_to_user;
+use ::types::strategies::{StrategyResponse, Pool};
 use errors::internal_error::error::{InternalError, InternalErrorKind};
 use errors::internal_error::error_codes::module::areas::{
     canisters as canister_area,
@@ -23,13 +24,11 @@ use crate::repository::strategies_repo;
 use crate::strategies::basic_strategy::BasicStrategy;
 use crate::strategies::strategy_candid::StrategyCandid;
 use crate::liquidity::liquidity_service;
-use crate::pools::pool::Pool;
 use crate::strategies::stats::strategy_stats_service;
 use crate::strategies::smart_rebalance_service;
 use crate::types::types::{
     StrategyDepositResponse,
     StrategyRebalanceResponse,
-    StrategyResponse,
     StrategyWithdrawResponse,
 };
 
@@ -588,7 +587,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
 
         pools_data
             .iter()
-            .filter(|x| x.pool.provider == ExchangeId::ICPSwap) // TODO: remove this after testing
+            .filter(|x| x.pool.provider == ExchangeId::ICPSwap)
             // .max_by_key(|x| x.apy) // TODO: uncomment this after testing
             .map(|x| x.pool.clone())
             .next()

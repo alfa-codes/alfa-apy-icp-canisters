@@ -9,12 +9,11 @@ use errors::internal_error::error_codes::module::areas::{
 };
 use validation::validation::Validation;
 use ::utils::util::current_timestamp_secs;
-use ::types::strategies::StrategyId;
+use ::types::strategies::{StrategyId, StrategyResponse};
 
 use crate::repository::snapshots_repo;
 use crate::strategy_snapshot::strategy_snapshot::StrategySnapshot;
 use crate::types::types::{StrategyState, CreateStrategiesSnapshotsResponse};
-use crate::types::external_canister_types::VaultStrategyResponse;
 use crate::services::strategy_yield_service;
 
 // Module code: "03-03-01"
@@ -51,7 +50,7 @@ pub fn get_strategy_snapshots_count(strategy_id: StrategyId) -> u64 {
 
 pub fn create_strategies_snapshots(
     strategy_states: &Vec<(StrategyId, StrategyState)>,
-    vault_strategies: &Vec<VaultStrategyResponse>,
+    vault_strategies: &Vec<StrategyResponse>,
 ) -> Result<CreateStrategiesSnapshotsResponse, InternalError> {
     let mut errors = Vec::new();
     let mut success_count = 0;
@@ -94,7 +93,7 @@ pub fn create_strategies_snapshots(
 // =============== Private methods ===============
 
 fn build_strategy_snapshot(
-    vault_strategy: &VaultStrategyResponse,
+    vault_strategy: &StrategyResponse,
 ) -> Result<StrategySnapshot, InternalError> {
     let test_liquidity_amount = current_test_liquidity_amount(vault_strategy);
 
@@ -117,7 +116,7 @@ fn build_strategy_snapshot(
     ))
 }
 
-fn current_test_liquidity_amount(vault_strategy: &VaultStrategyResponse) -> Option<Nat> {
+fn current_test_liquidity_amount(vault_strategy: &StrategyResponse) -> Option<Nat> {
     let canister_principal = ic_cdk::api::id();
     let test_liquidity_shares = vault_strategy
         .user_shares

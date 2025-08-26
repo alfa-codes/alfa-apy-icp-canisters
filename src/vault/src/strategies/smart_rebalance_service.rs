@@ -1,7 +1,8 @@
 use smart_rebalance::{self, types::*};
 use utils::util::current_timestamp_secs;
 
-use crate::pools::pool::Pool;
+use ::types::strategies::Pool;
+
 use crate::pool_stats::pool_stats_service;
 
 pub const BPS_SCALE_FACTOR: u32 = 10_000;

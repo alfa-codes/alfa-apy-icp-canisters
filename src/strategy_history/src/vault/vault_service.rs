@@ -1,13 +1,14 @@
 use candid::Principal;
 use ic_cdk::api::call::CallResult;
 
-use utils::constants::VAULT_PRINCIPAL_DEV;
 use errors::internal_error::error::{InternalError, InternalErrorKind};
 use errors::internal_error::error_codes::module::areas::{
     canisters as canister_area,
     canisters::domains::strategy_history as strategy_history_domain,
     canisters::domains::strategy_history::components as strategy_history_components,
 };
+use ::types::strategies::StrategyResponse;
+use crate::utils::service_resolver::get_service_resolver;
 
 use crate::types::external_canister_types::{
     StrategyDepositArgs,
@@ -15,7 +16,6 @@ use crate::types::external_canister_types::{
     StrategyWithdrawArgs,
     StrategyWithdrawResponse,
     ResponseError,
-    VaultStrategyResponse,
 };
 
 // Module code: "03-03-01"
@@ -31,8 +31,12 @@ pub struct VaultActor {
 }
 
 impl VaultActor {
-    pub async fn get_strategies(&self) -> CallResult<Vec<VaultStrategyResponse>> {
-        let (strategies,): (Vec<VaultStrategyResponse>,) = 
+    pub async fn get_principal(&self) -> Principal {
+        self.principal
+    }
+
+    pub async fn get_strategies(&self) -> CallResult<Vec<StrategyResponse>> {
+        let (strategies,): (Vec<StrategyResponse>,) = 
             ic_cdk::call(self.principal, "get_strategies", ()).await?;
 
         Ok(strategies)
@@ -90,7 +94,10 @@ impl VaultActor {
 }
 
 pub async fn get_vault_actor() -> Result<VaultActor, InternalError> {
+    let service_resolver = get_service_resolver();
+    let vault_principal = service_resolver.vault_canister_id().unwrap();
+
     Ok(VaultActor {
-        principal: Principal::from_text(VAULT_PRINCIPAL_DEV).unwrap(),
+        principal: vault_principal,
     })
 }

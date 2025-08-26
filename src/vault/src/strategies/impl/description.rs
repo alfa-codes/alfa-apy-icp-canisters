@@ -2,15 +2,13 @@ use lazy_static::lazy_static;
 use std::collections::HashMap;
 
 use types::exchange_id::ExchangeId;
+use types::strategies::{StrategyId, Pool};
 use types::pool::PoolTrait;
-use types::strategies::StrategyId;
 use types::CanisterId;
 use utils::constants::{
     CKBTC_TOKEN_CANISTER_ID, CKETH_TOKEN_CANISTER_ID, CKUSDT_TOKEN_CANISTER_ID,
     ICP_TOKEN_CANISTER_ID, ICS_TOKEN_CANISTER_ID, PANDA_TOKEN_CANISTER_ID,
 };
-
-use crate::pools::pool::Pool;
 
 #[derive(Debug, Clone)]
 pub struct StrategyInfo {
@@ -74,94 +72,82 @@ lazy_static! {
                 Pool::build(
                     *CKUSDT_TOKEN_CANISTER_ID,
                     *ICP_TOKEN_CANISTER_ID,
-                    ExchangeId::KongSwap,
+                    ExchangeId::ICPSwap,
                 ),
             ],
         });
 
-        strategy_map.insert(
-            4,
-            StrategyInfo {
-                name: "Panda-ICP Balanced Strategy".to_string(),
-                description: "Cheap test strategy".to_string(),
-                base_token: *PANDA_TOKEN_CANISTER_ID,
-                pools: vec![
-                    Pool::build(
-                        *PANDA_TOKEN_CANISTER_ID,
-                        *ICP_TOKEN_CANISTER_ID,
-                        ExchangeId::KongSwap,
-                    ),
-                    Pool::build(
-                        *PANDA_TOKEN_CANISTER_ID,
-                        *ICP_TOKEN_CANISTER_ID,
-                        ExchangeId::ICPSwap,
-                    ),
-                ],
-            },
-        );
+        strategy_map.insert(4, StrategyInfo {
+            name: "Panda-ICP Balanced Strategy".to_string(),
+            description: "Cheap test strategy".to_string(),
+            base_token: *PANDA_TOKEN_CANISTER_ID,
+            pools: vec![
+                Pool::build(
+                    *PANDA_TOKEN_CANISTER_ID,
+                    *ICP_TOKEN_CANISTER_ID,
+                    ExchangeId::KongSwap,
+                ),
+                Pool::build(
+                    *PANDA_TOKEN_CANISTER_ID,
+                    *ICP_TOKEN_CANISTER_ID,
+                    ExchangeId::ICPSwap,
+                ),
+            ],
+        });
 
-        strategy_map.insert(
-            5,
-            StrategyInfo {
-                name: "ICS-ICP Balanced Strategy".to_string(),
-                description: "Cheap test strategy".to_string(),
-                base_token: *ICS_TOKEN_CANISTER_ID,
-                pools: vec![
-                    Pool::build(
-                        *ICS_TOKEN_CANISTER_ID,
-                        *ICP_TOKEN_CANISTER_ID,
-                        ExchangeId::KongSwap,
-                    ),
-                    Pool::build(
-                        *ICS_TOKEN_CANISTER_ID,
-                        *ICP_TOKEN_CANISTER_ID,
-                        ExchangeId::ICPSwap,
-                    ),
-                ],
-            },
-        );
+        strategy_map.insert(5, StrategyInfo {
+            name: "ICS-ICP Balanced Strategy".to_string(),
+            description: "Cheap test strategy".to_string(),
+            base_token: *ICS_TOKEN_CANISTER_ID,
+            pools: vec![
+                Pool::build(
+                    *ICS_TOKEN_CANISTER_ID,
+                    *ICP_TOKEN_CANISTER_ID,
+                    ExchangeId::KongSwap,
+                ),
+                Pool::build(
+                    *ICS_TOKEN_CANISTER_ID,
+                    *ICP_TOKEN_CANISTER_ID,
+                    ExchangeId::ICPSwap,
+                ),
+            ],
+        });
 
-        strategy_map.insert(
-            6,
-            StrategyInfo {
-                name: "ckBTC-ckUSDT Balanced Strategy".to_string(),
-                description: "Staging strategy".to_string(),
-                base_token: *CKBTC_TOKEN_CANISTER_ID,
-                pools: vec![
-                    Pool::build(
-                        *CKBTC_TOKEN_CANISTER_ID,
-                        *CKUSDT_TOKEN_CANISTER_ID,
-                        ExchangeId::KongSwap,
-                    ),
-                    Pool::build(
-                        *CKBTC_TOKEN_CANISTER_ID,
-                        *CKUSDT_TOKEN_CANISTER_ID,
-                        ExchangeId::ICPSwap,
-                    ),
-                ],
-            },
-        );
+        strategy_map.insert(6, StrategyInfo {
+            name: "ckBTC-ckUSDT Balanced Strategy".to_string(),
+            description: "Staging strategy".to_string(),
+            base_token: *CKBTC_TOKEN_CANISTER_ID,
+            pools: vec![
+                Pool::build(
+                    *CKBTC_TOKEN_CANISTER_ID,
+                    *CKUSDT_TOKEN_CANISTER_ID,
+                    ExchangeId::KongSwap,
+                ),
+                Pool::build(
+                    *CKBTC_TOKEN_CANISTER_ID,
+                    *CKUSDT_TOKEN_CANISTER_ID,
+                    ExchangeId::ICPSwap,
+                ),
+            ],
+        });
 
-        strategy_map.insert(
-            7,
-            StrategyInfo {
-                name: "ICP-ckETH Dynamic Strategy".to_string(),
-                description: "Staging strategy".to_string(),
-                base_token: *ICP_TOKEN_CANISTER_ID,
-                pools: vec![
-                    Pool::build(
-                        *CKETH_TOKEN_CANISTER_ID,
-                        *ICP_TOKEN_CANISTER_ID,
-                        ExchangeId::KongSwap,
-                    ),
-                    Pool::build(
-                        *ICP_TOKEN_CANISTER_ID,
-                        *CKETH_TOKEN_CANISTER_ID,
-                        ExchangeId::ICPSwap,
-                    ),
-                ],
-            },
-        );
+        strategy_map.insert(7, StrategyInfo {
+            name: "ICP-ckETH Dynamic Strategy".to_string(),
+            description: "Staging strategy".to_string(),
+            base_token: *ICP_TOKEN_CANISTER_ID,
+            pools: vec![
+                Pool::build(
+                    *CKETH_TOKEN_CANISTER_ID,
+                    *ICP_TOKEN_CANISTER_ID,
+                    ExchangeId::KongSwap,
+                ),
+                Pool::build(
+                    *ICP_TOKEN_CANISTER_ID,
+                    *CKETH_TOKEN_CANISTER_ID,
+                    ExchangeId::ICPSwap,
+                ),
+            ],
+        });
 
         strategy_map
     };

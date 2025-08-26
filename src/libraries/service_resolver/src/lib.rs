@@ -10,10 +10,8 @@ use types::CanisterId;
 use utils::constants::{
     VAULT_CANISTER_ID_STAGING,
     VAULT_CANISTER_ID_DEV,
-    VAULT_CANISTER_ID_PRODUCTION,
     POOL_STATS_CANISTER_ID_STAGING,
-    POOL_STATS_CANISTER_ID_DEV,
-    POOL_STATS_CANISTER_ID_PRODUCTION
+    POOL_STATS_CANISTER_ID_DEV
 };
 
 pub struct ServiceResolver {
@@ -34,8 +32,8 @@ impl ServiceResolver {
     pub fn vault_canister_id(&self) -> Option<CanisterId> {
         match self.environment {
             Environment::Staging => Some(*VAULT_CANISTER_ID_STAGING),
-            Environment::Production => Some(*VAULT_CANISTER_ID_PRODUCTION),
             Environment::Dev => Some(*VAULT_CANISTER_ID_DEV),
+            Environment::Production => None,
             Environment::Test => None,
         }
     }
@@ -43,8 +41,8 @@ impl ServiceResolver {
     pub fn pool_stats_canister_id(&self) -> Option<CanisterId> {
         match self.environment {
             Environment::Staging => Some(*POOL_STATS_CANISTER_ID_STAGING),
-            Environment::Production => Some(*POOL_STATS_CANISTER_ID_PRODUCTION),
             Environment::Dev => Some(*POOL_STATS_CANISTER_ID_DEV),
+            Environment::Production => None,
             Environment::Test => None,
         }
     }

@@ -4,6 +4,7 @@ use noise::NoiseFn;
 
 use ::utils::util::current_timestamp_secs;
 use utils::util::nat_to_u128;
+use ::types::strategies::StrategyResponse;
 use errors::internal_error::error::{InternalError, InternalErrorKind};
 use errors::internal_error::error_codes::module::areas::{
     canisters as canister_area,
@@ -75,16 +76,16 @@ pub async fn create_test_snapshots(
             },
         ));
     }
+    
 
-    let current_time = current_timestamp_secs();
-    if request.from_timestamp >= current_time {
+    if request.from_timestamp >= request.to_timestamp {
         return Err(InternalError::business_logic(
             build_error_code(InternalErrorKind::BusinessLogic, 5), // Error code: "03-03-02 03 05"
             "test_snapshots_service::create_test_snapshots".to_string(),
             "from_timestamp must be in the past".to_string(),
             errors::error_extra! {
                 "from_timestamp" => request.from_timestamp,
-                "current_time" => current_time,
+                "to_timestamp" => request.to_timestamp,
             },
         ));
     }
@@ -135,7 +136,7 @@ pub async fn create_test_snapshots(
     let current_liquidity_updated_at = Some(current_timestamp_secs());
 
     // Calculate the number of snapshots
-    let total_duration = current_time - request.from_timestamp;
+    let total_duration = request.to_timestamp - request.from_timestamp;
     let snapshots_count = (total_duration / request.snapshot_interval_secs) + 1;
 
     // Create snapshots
@@ -215,7 +216,7 @@ pub async fn create_test_snapshots(
         strategy_id: request.strategy_id,
         snapshots_created,
         from_timestamp: request.from_timestamp,
-        to_timestamp: current_time,
+        to_timestamp: request.to_timestamp,
         min_apy: request.min_apy,
         max_apy: request.max_apy,
         actual_apy_range: (actual_min_apy, actual_max_apy),
@@ -244,7 +245,7 @@ fn calculate_target_growth_factor(target_apy: f64, duration_seconds: f64) -> f64
 }
 
 /// Calculate our test liquidity amount based on our shares in the strategy
-fn current_test_liquidity_amount(vault_strategy: &crate::types::external_canister_types::VaultStrategyResponse) -> Option<Nat> {
+fn current_test_liquidity_amount(vault_strategy: &StrategyResponse) -> Option<Nat> {
     let canister_principal = ic_cdk::api::id();
     let test_liquidity_shares = vault_strategy
         .user_shares

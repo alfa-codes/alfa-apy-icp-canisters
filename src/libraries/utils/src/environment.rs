@@ -36,14 +36,15 @@ impl Environment {
             "test" => Environment::Test,
             "dev" => Environment::Dev,
             "staging" => Environment::Staging,
-            _ => Environment::Production,
+            "production" => Environment::Production,
+            _ => Environment::Staging,
         }
     }
 }
 
 impl Default for Environment {
     fn default() -> Self {
-        Environment::Production
+        Environment::Staging
     }
 }
 

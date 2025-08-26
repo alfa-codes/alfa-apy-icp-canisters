@@ -87,6 +87,7 @@ pub struct TestLiquidityData {
 pub struct CreateTestSnapshotsRequest {
     pub strategy_id: StrategyId,
     pub from_timestamp: u64,
+    pub to_timestamp: u64,
     pub min_apy: f64,
     pub max_apy: f64,
     pub snapshot_interval_secs: u64,

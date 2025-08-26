@@ -4,7 +4,6 @@ mod repository;
 mod user;
 mod types;
 mod event_records;
-mod pools;
 mod pool_stats;
 mod service;
 mod utils;
@@ -17,6 +16,7 @@ use ic_cdk_macros::{init, post_upgrade, pre_upgrade, query, update};
 use errors::response_error::error::ResponseError;
 use ::types::CanisterId;
 use ::types::context::Context;
+use ::types::strategies::StrategyResponse;
 
 use crate::repository::stable_state;
 use crate::repository::strategies_repo;

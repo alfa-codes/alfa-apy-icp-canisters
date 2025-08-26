@@ -88,9 +88,9 @@ mod tests {
     use std::collections::HashMap;
     use candid::{Nat, Principal};
     use types::CanisterId;
+    use ::types::strategies::Pool;
 
     use crate::strategies::basic_strategy::BasicStrategy;
-    use crate::pools::pool::Pool;
     use crate::strategies::strategy_candid::StrategyCandid;
 
     #[derive(Clone)]

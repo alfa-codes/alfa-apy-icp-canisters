@@ -62,7 +62,7 @@
       ],
       "type": "persistent"
     },
-    "ic": {
+    "production": {
       "providers": [
         "https://icp0.io"
       ],
