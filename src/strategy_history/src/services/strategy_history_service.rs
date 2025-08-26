@@ -53,12 +53,13 @@ pub async fn initialize_strategy_states_and_create_snapshots(
         .cloned()
         .collect::<Vec<_>>();
 
+    // TODO: uncomment this after testing
     // Ensure strategies are initialized before snapshotting using already fetched list
-    let _initialize_strategy_states_response = 
-        strategy_states_service::initialize_strategy_states_with_list(
-            &vault_strategies, 
-            None
-        ).await?;
+    // let _initialize_strategy_states_response = 
+    //     strategy_states_service::initialize_strategy_states_with_list(
+    //         &vault_strategies, 
+    //         None
+    //     ).await?;
 
     let initialized_strategy_states = 
         strategy_states_repo::get_all_initialized_strategy_states_by_ids(
