@@ -24,8 +24,8 @@ describe("Vault DEV Integration Tests", () => {
 
     console.log("canisterId", canisterId);
 
-    const ledgerCanisterId = ICS_CANISTER_ID;
-    // const ledgerCanisterId = PANDA_CANISTER_ID;
+    // const ledgerCanisterId = ICS_CANISTER_ID;
+    const ledgerCanisterId = PANDA_CANISTER_ID;
     // const ledgerCanisterId = ICP_CANISTER_ID;
 
     let principalId: Principal;
@@ -71,8 +71,8 @@ describe("Vault DEV Integration Tests", () => {
 
     describe(".deposit", () => {
         // const strategyId = 7; // ICP-ckETH Dynamic Strategy
-        // const strategyId = 4; // Panda-ICP Balanced Strategy
-        const strategyId = 5; // ICS-ICP Balanced Strategy
+        const strategyId = 4; // Panda-ICP Balanced Strategy
+        // const strategyId = 5; // ICS-ICP Balanced Strategy
 
         const approveAmount = BigInt(10000000000);
         // const depositAmount = BigInt(1_000_000);

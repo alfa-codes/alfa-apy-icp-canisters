@@ -14,11 +14,11 @@
 
 ### Automatically maximize returns through intelligent liquidity management, real-time APY tracking, and dynamic asset rebalancing across multiple DEX providers.
 
-## 🌟 [Live Application](https://kxsds-zqaaa-aaaai-atk3a-cai.icp0.io/) | 📚 [Documentation](./docs/main_doc_draft.md)
+## 🌟 [Live Application](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/) | 📚 [Documentation](./docs/main_doc_draft.md)
 
 ## 🚀 Quick Links
 
-- **🎯 [Live Application](https://kxsds-zqaaa-aaaai-atk3a-cai.icp0.io/)** - Try ALFA APY now
+- **🎯 [Live Application](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/)** - Try ALFA APY now
 - **📖 [Technical Documentation](./docs/main_doc_draft.md)** - Complete architecture and API reference
 - **🎥 [Introduction Video](https://youtu.be/ldqRNLbQflI)** - Learn about ALFA APY
 - **📈 [Progress Update](https://www.youtube.com/watch?v=Vb0YfFJg770)** - Latest development status
@@ -118,6 +118,6 @@ Advanced algorithm that evaluates pools using:
 
 ## Community & Support
 
-- **Website**: [https://kxsds-zqaaa-aaaai-atk3a-cai.icp0.io/](https://kxsds-zqaaa-aaaai-atk3a-cai.icp0.io/)
+- **Website**: [https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/)
 - **Internet Computer**: [https://internetcomputer.org](https://internetcomputer.org)
 - **DFINITY Foundation**: [https://dfinity.org](https://dfinity.org)
