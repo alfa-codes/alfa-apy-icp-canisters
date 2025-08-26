@@ -8,7 +8,7 @@
 
 ### Automatically maximize returns through intelligent liquidity management, real-time APY tracking, and dynamic asset rebalancing across multiple DEX providers.
 
-## 🌟 [Live Application](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/) | 📚 [Documentation](https://alfa-codes.github.io/alfa-apy-icp-canisters/)
+## 🌟 [Live Application](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/)
 
 
 ## What is ALFA APY?

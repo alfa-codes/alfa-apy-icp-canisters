@@ -25,8 +25,8 @@ Doc: https://github.com/ICPSwap-Labs/docs/blob/main/02.SwapPool/Liquidity/02.Add
 
 Doc: https://github.com/ICPSwap-Labs/docs/blob/main/02.SwapPool/Liquidity/05.Getting_Amounts_For_Liquidity.md
 
-1. Запрос `getPool` в канистру **SwapFactory** – в response получаем `canisterId` пула
-2. Запрос на `metadata` в канистру с id `canisterId` – в response получаем `sqrtPriceX96`
+1. Request `getPool` to the **SwapFactory** canister – in response we get the pool's `canisterId`
+2. Request `metadata` to the canister with id `canisterId` – in response we get `sqrtPriceX96`
 3. ….
 
 ---
@@ -82,7 +82,7 @@ Response:
 
 Description:
 
-У каждого пула отдельная канистра. Этим запросом мы можем получить `canisterId`  для пула.
+Each pool has its own separate canister. With this request we can get the `canisterId` for the pool.
 
 ## Pool metadata
 
