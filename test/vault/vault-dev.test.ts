@@ -70,13 +70,13 @@ describe("Vault DEV Integration Tests", () => {
     });
 
     describe(".deposit", () => {
-        const strategyId = 7; // ICP-ckETH Dynamic Strategy
+        // const strategyId = 7; // ICP-ckETH Dynamic Strategy
         // const strategyId = 4; // Panda-ICP Balanced Strategy
-        // const strategyId = 5; // ICS-ICP Balanced Strategy
+        const strategyId = 5; // ICS-ICP Balanced Strategy
 
         const approveAmount = BigInt(10000000000);
-        const depositAmount = BigInt(1_000_000);
-        // const depositAmount = BigInt(200_000_000);
+        // const depositAmount = BigInt(1_000_000);
+        const depositAmount = BigInt(200_000_000);
         // const depositAmount = BigInt(1_000_000_000);
 
         it("Deposits to strategy without any liquidity", async () => {

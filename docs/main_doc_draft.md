@@ -1,4 +1,4 @@
-# AlfaAPY – Main Documentation (Draft)
+# AlfaAPY – Main Documentation
 
 ## 1. Project Overview
 
@@ -24,11 +24,11 @@
 - DEX/ledger integrations: `KongSwap`, `ICPSwap`, `ICRC` ledgers.
 
 ### 1.5 Key features
-- `SmartRebalance` with a composite score (details: docs/smart_rebalance.md)
+- `SmartRebalance` with a composite score (details: `docs/smart_rebalance.md`)
 - Strategy profiles (Conservative, Balanced, Aggressive, etc.) with per‑profile weights, cooldowns, thresholds.
 - Accurate USD valuation via on‑chain quotes into a stable token at execution time.
 - UI: strategy charts for APY and TVL.
-- Event log and structured error codes (docs/error_codes.md).
+- Event log and structured error codes (`docs/error_codes.md`).
 
 
 ## 2. Architecture
@@ -67,9 +67,12 @@
 
 
 ## 3. User Interface
-TODO
+Main doc: `docs/user_interface.md`
+
+
 
 ## 4. Smart Rebalance Algorithm
+
 `SmartRebalance` evaluates every eligible pool with a composite score and moves liquidity only when it is economically justified. The score blends short‑term smoothed APY in USD and tokens (SMA), pool size (log(TVL)), capital efficiency (volume/TVL), APY volatility, token‑price volatility, and explicit execution costs (DEX fees + gas). Decisions are gated by cooldowns, minimal score delta, and an expected‑gain‑versus‑cost check over the intended holding period. Strategy profiles (Conservative, Balanced, Aggressive, etc.) tune the weights and gates so the behavior matches a user’s risk/return preference. For the full specification and formulas, see: `docs/smart_rebalance.md`.
 
 
@@ -77,6 +80,7 @@ TODO
 
 
 ## 5. Strategies in Vault
+
 Strategies are the user‑facing abstraction in `Vault`: a user chooses a strategy type and deposits funds; in return they receive shares that represent a proportional claim on the strategy’s assets. The strategy keeps exactly one active LP position at a time in one of its eligible pools and may migrate liquidity via `SmartRebalance` when gates are satisfied.
 
 ### 5.1 Lifecycle
@@ -95,9 +99,8 @@ Every critical action emits an event (started/completed/failed) with a correlati
 
 
 
-
-
 ## 6. Liquidity Management
+
 Vault enacts deposits and withdrawals through a lightweight router and provider clients (`KongSwap`, `ICPSwap`). We never embed DEX specifics into strategies: execution details live behind a stable interface, so strategy logic stays simple and auditable.
 
 On deposit, the router prepares funds (normalizes to the base token if needed), derives LP amounts with our share formula, and adds liquidity to the current pool. On withdraw, the router decreases the LP position proportionally, realizes fees, converts proceeds back to the base token when appropriate, and settles them to the user. Along the way we apply basic safeguards (slippage/min‑amount checks, provider availability) and tag every operation with a correlation ID for traceability.
@@ -105,22 +108,58 @@ On deposit, the router prepares funds (normalizes to the base token if needed), 
 See also:
 - Liquidity pools calculation flow: `docs/liquidity_pools_calculation_flow.md`
 - `KongSwap` provider flow: `docs/kong_swap_provider_flow.md`
-- ICP Swap notes: `docs/icp_swap.md`
+- `ICPSwap` doc: `docs/icp_swap.md`
 
 
 
 
 ## 7. Error Handling
+
 We use structured, non‑panicking errors across all canisters: each failure returns a typed error with a stable code, concise message, source, and metadata, and is mirrored to the event log with the same correlation ID; both error and event are persisted in stable state and can be joined for end‑to‑end traceability and analytics. Full format, categories, and the live catalog are in docs/error_codes.md; implementation details are covered in section 11 (Observability & Operations) and the `event_records` library.
 
 Full format, categories, and the live catalog: `docs/error_codes.md`
 
 ## 8. Events
-TODO
 
+AlfaAPY uses a comprehensive event system to track all critical operations. Each event follows a "Started → Completed/Failed" pattern and includes metadata for auditing and debugging.
 
+### 8.1 Event Structure
+
+Every event contains:
+- **`id`**: Unique event identifier
+- **`timestamp`**: Event timestamp in seconds
+- **`event`**: Specific event data
+- **`correlation_id`**: Links related events in an operation
+- **`user`**: User principal (optional)
+- **`strategy_id`**: Associated strategy ID (optional)
+
+### 8.2 Event Types
+
+**Strategy Events:**
+- `StrategyDepositStarted/Completed/Failed`: Strategy deposits
+- `StrategyWithdrawStarted/Completed/Failed`: Strategy withdrawals  
+- `StrategyRebalanceStarted/Completed/Failed`: Strategy rebalancing
+
+**Pool Events:**
+- `AddLiquidityToPoolStarted/Completed/Failed`: Adding liquidity to pools
+- `WithdrawLiquidityFromPoolStarted/Completed/Failed`: Removing liquidity from pools
+
+**Swap Events:**
+- `SwapTokenStarted/Completed/Failed`: Token swaps between pools
+
+**Event Flow Pattern:**
+All events follow the pattern: `Started` → `Completed` or `Failed`, enabling operation tracking and error handling.
+
+### 8.3 Use Cases
+
+Events enable:
+- **Monitoring**: Track operation progress and performance
+- **Debugging**: Trace user issues and errors
+- **Audit**: Complete operation history for compliance
+- **Analytics**: User activity and strategy performance metrics
 
 ## 9. Testing & QA
+
 ### 9.1 Unit tests
 Pure functions (APY/yield calc, metrics, scoring, decision gates) have deterministic tests with edge‑case coverage.
 
@@ -132,9 +171,10 @@ In `Environment::Test`, all provider/DEX and ledger calls are routed to mocks vi
 
 
 ## 10. Roadmap & Open Items
+- [ ] AI factor for Smart Rebalance
 - [ ] Index-based strategies
 - [ ] Customizable strategies (user can configure their own strategies)
-- [ ] Retry for user action depositing/withdrawing
+- [ ] Retry for user actions depositing/withdrawing
 - [x] `SmartRebalance` Algorithm
 - [x] Integration tests and mocks infrastructure
 - [x] UI events grouping
