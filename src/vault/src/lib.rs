@@ -229,6 +229,7 @@ fn icrc10_supported_standards() -> Vec<SupportedStandard> {
 fn icrc28_trusted_origins() -> Icrc28TrustedOriginsResponse {
     let trusted_origins = vec![
         String::from("https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io"),
+        String::from("https://kxsds-zqaaa-aaaai-atk3a-cai.icp0.io"),
     ];
 
     Icrc28TrustedOriginsResponse { trusted_origins }

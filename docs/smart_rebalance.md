@@ -8,6 +8,10 @@ APY and other performance metrics are computed using historical snapshots of tes
 
 ## Core Idea
 
+<p align="center">
+  <img src="./images/smart_rebalance/1_smart_rebalance_1.jpg" width="80%" height="auto"/>
+</p>
+
 Instead of naively moving liquidity to the pool with the highest current APY, Smart Rebalance evaluates each pool using a composite scoring function that reflects:
 
 - Smoothed APY (USD & Tokens) — averages short-term yield data to filter out noise and spikes
@@ -20,6 +24,10 @@ Instead of naively moving liquidity to the pool with the highest current APY, Sm
 This approach helps reduce churn, avoid noise-driven decisions, and allocate capital toward consistently high-performing, efficient, and safe liquidity pools.
 
 ## APY Calculation
+
+<p align="center">
+  <img src="./images/smart_rebalance/1_smart_rebalance_2.jpg" width="80%" height="auto"/>
+</p>
 
 ### APY Inputs
 

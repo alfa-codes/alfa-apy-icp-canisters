@@ -12,6 +12,10 @@
 - `SmartRebalance` (in `Vault`) computes a composite score per pool and applies safety gates (cooldown, score delta, expected gain vs cost). If gates pass, `Vault` executes the rebalance.
 - `StrategyHistory` keeps longitudinal snapshots of each strategy for analysis and transparency.
 
+<p align="center">
+  <img src="./images/main_doc/1_project_diagram.jpg" width="80%" height="auto"/>
+</p>
+
 ### 1.3 Why it’s different
 - Real Data‑first: we continuously collect and store real pool and strategy data (snapshots of positions, TVL, derived APY). This gives an auditable historical dataset and realized APY (not fabricated or purely protocol‑reported).
 - `SmartRebalance`: a proprietary scoring algorithm that leverages those real datasets and multiple factors (SMA APY in USD/tokens, log(TVL), capital efficiency, APY volatility, token price volatility) with explicit execution costs; the chosen strategy type adjusts weights and gates (cooldowns, score thresholds, gain‑vs‑cost), so rebalancing aligns with the user’s risk/return profile while avoiding churn and noise‑driven moves.
@@ -167,17 +171,4 @@ Pure functions (APY/yield calc, metrics, scoring, decision gates) have determini
 Local replica tests cover strategy flows: deposit → LP add → rebalance decision → migrate → withdraw; providers are mocked with controllable slippage/latency.
 
 ### 9.3 Environment‑specific mocking
-In `Environment::Test`, all provider/DEX and ledger calls are routed to mocks via the `service_resolver`: `providers::mock::{kongswap, icpswap}` and `icrc_ledger_client::mock::MockICRCLedgerClient`. In `Environment::Production`, default implementations are used (`DefaultKongSwapProvider`, `DefaultICPSwapProvider`, `DefaultICRCLedgerClient`). See `service_resolver::ServiceResolver`.
-
-
-## 10. Roadmap & Open Items
-- [ ] AI factor for Smart Rebalance
-- [ ] Index-based strategies
-- [ ] Customizable strategies (user can configure their own strategies)
-- [ ] Retry for user actions depositing/withdrawing
-- [x] `SmartRebalance` Algorithm
-- [x] Integration tests and mocks infrastructure
-- [x] UI events grouping
-- [x] Support all ICP wallets
-- [x] Strategy charts
-- [x] Strategy history 
+In `Environment::Test`, all provider/DEX and ledger calls are routed to mocks via the `service_resolver`: `providers::mock::{kongswap, icpswap}` and `icrc_ledger_client::mock::MockICRCLedgerClient`. In `Environment::Production`, default implementations are used (`DefaultKongSwapProvider`, `DefaultICPSwapProvider`, `DefaultICRCLedgerClient`). See `service_resolver::ServiceResolver`. 
