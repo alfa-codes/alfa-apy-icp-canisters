@@ -144,6 +144,7 @@ service : (opt RuntimeConfig) -> {
     );
   test_delete_all_snapshots : () -> ();
   test_delete_strategy_state : (nat16) -> ();
+  test_delete_all_snapshots_for_strategy : (nat16) -> ();
   test_initialize_strategy_states : (opt vec nat16) -> (
       InitializeStrategyStatesResult,
     );

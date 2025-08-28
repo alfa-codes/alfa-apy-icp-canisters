@@ -178,3 +178,9 @@ pub fn delete_all_snapshots() {
         strategy_snapshots.borrow_mut().clear();
     });
 }
+
+pub fn delete_all_snapshots_for_strategy(strategy_id: u16) {
+    STRATEGY_SNAPSHOTS.with(|strategy_snapshots| {
+        strategy_snapshots.borrow_mut().remove(&strategy_id);
+    });
+}

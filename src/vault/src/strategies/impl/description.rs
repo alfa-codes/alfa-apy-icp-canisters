@@ -84,7 +84,7 @@ lazy_static! {
 
         strategy_map.insert(4, StrategyInfo {
             name: "Panda-ICP Balanced Strategy".to_string(),
-            description: "Cheap test strategy".to_string(),
+            description: "A balanced strategy that maintains equal exposure to Panda and ICP tokens across both KongSwap and ICPSwap exchanges for optimal liquidity distribution.".to_string(),
             base_token: *PANDA_TOKEN_CANISTER_ID,
             pools: vec![
                 Pool::build(
@@ -102,7 +102,7 @@ lazy_static! {
 
         strategy_map.insert(5, StrategyInfo {
             name: "ICS-ICP Balanced Strategy".to_string(),
-            description: "Cheap test strategy".to_string(),
+            description: "A balanced strategy that diversifies exposure between ICS and ICP tokens across KongSwap and ICPSwap exchanges, providing stable returns through cross-exchange arbitrage opportunities.".to_string(),
             base_token: *ICS_TOKEN_CANISTER_ID,
             pools: vec![
                 Pool::build(
@@ -120,7 +120,7 @@ lazy_static! {
 
         strategy_map.insert(6, StrategyInfo {
             name: "ckBTC-ckUSDT Balanced Strategy".to_string(),
-            description: "Staging strategy".to_string(),
+            description: "A balanced strategy that maintains stable exposure to ckBTC while providing liquidity to ckUSDT pairs across KongSwap and ICPSwap exchanges for consistent returns.".to_string(),
             base_token: *CKBTC_TOKEN_CANISTER_ID,
             pools: vec![
                 Pool::build(
@@ -138,7 +138,7 @@ lazy_static! {
 
         strategy_map.insert(7, StrategyInfo {
             name: "ICP-ckETH Dynamic Strategy".to_string(),
-            description: "Staging strategy".to_string(),
+            description: "A dynamic strategy that actively manages ICP and ckETH positions across KongSwap and ICPSwap exchanges, optimizing for yield through cross-exchange liquidity provision and rebalancing.".to_string(),
             base_token: *ICP_TOKEN_CANISTER_ID,
             pools: vec![
                 Pool::build(
@@ -156,7 +156,7 @@ lazy_static! {
 
         strategy_map.insert(8, StrategyInfo {
             name: "ckBTC-ICP Dynamic Strategy".to_string(),
-            description: "Production strategy".to_string(),
+            description: "A dynamic strategy that actively manages ckBTC and ICP positions across KongSwap and ICPSwap exchanges, optimizing for yield through cross-exchange liquidity provision and strategic rebalancing based on market conditions.".to_string(),
             base_token: *CKBTC_TOKEN_CANISTER_ID,
             pools: vec![
                 Pool::build(
@@ -174,7 +174,7 @@ lazy_static! {
 
         strategy_map.insert(9, StrategyInfo {
             name: "GLDT-ckUSDT Balanced Strategy".to_string(),
-            description: "Production strategy".to_string(),
+            description: "A balanced strategy that maintains stable exposure to GLDT while providing liquidity to ckUSDT pairs across KongSwap and ICPSwap exchanges, designed for consistent returns in the gold-backed token market.".to_string(),
             base_token: *GLDT_TOKEN_CANISTER_ID,
             pools: vec![
                 Pool::build(

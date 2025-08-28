@@ -139,6 +139,10 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : PoolSnapshot,
     'Err' : ResponseError,
   });
+  const TestCreateTestSnapshotsResult = IDL.Variant({
+    'Ok' : IDL.Null,
+    'Err' : ResponseError,
+  });
   const WithdrawLiquidityResponse = IDL.Record({
     'token_0_amount' : IDL.Nat,
     'token_1_amount' : IDL.Nat,
@@ -182,6 +186,11 @@ export const idlFactory = ({ IDL }) => {
     'test_create_pool_snapshot' : IDL.Func(
         [IDL.Text],
         [TestCreatePoolSnapshotResult],
+        [],
+      ),
+    'test_create_test_snapshots' : IDL.Func(
+        [IDL.Text, IDL.Nat, IDL.Float64],
+        [TestCreateTestSnapshotsResult],
         [],
       ),
     'test_delete_all_pools_and_snapshots' : IDL.Func([], [], []),

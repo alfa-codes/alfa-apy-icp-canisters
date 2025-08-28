@@ -145,6 +145,11 @@ fn test_delete_all_snapshots() {
     repository::snapshots_repo::delete_all_snapshots();
 }
 
+#[update]
+fn test_delete_all_snapshots_for_strategy(strategy_id: StrategyId) {
+    repository::snapshots_repo::delete_all_snapshots_for_strategy(strategy_id);
+}
+
 #[query]
 fn get_runtime_config() -> RuntimeConfig {
     runtime_config_repo::get_runtime_config()

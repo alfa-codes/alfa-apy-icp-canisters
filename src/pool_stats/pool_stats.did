@@ -154,6 +154,11 @@ type TestCreatePoolSnapshotResult = variant {
   Err : ResponseError;
 };
 
+type TestCreateTestSnapshotsResult = variant {
+  Ok;
+  Err : ResponseError;
+};
+
 type WithdrawLiquidityFromPoolCompleted = record {
   shares : nat;
   total_shares : nat;
@@ -197,6 +202,7 @@ service : (opt RuntimeConfig) -> {
   set_operator : (principal) -> ();
   test_add_pool_snapshot : (PoolSnapshotArgs) -> ();
   test_create_pool_snapshot : (text) -> (TestCreatePoolSnapshotResult);
+  test_create_test_snapshots : (text, nat, float64) -> (TestCreateTestSnapshotsResult);
   test_delete_all_pools_and_snapshots : () -> ();
   test_delete_pool_snapshot : (text, text) -> ();
   test_delete_pool_snapshots : (text) -> ();

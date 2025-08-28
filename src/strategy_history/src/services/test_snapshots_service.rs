@@ -148,7 +148,11 @@ pub async fn create_test_snapshots(
         let timestamp = request.from_timestamp + (i * request.snapshot_interval_secs);
         
         // Generate random APY in the given range
-        let random_apy = generate_random_apy_in_range(request.min_apy, request.max_apy, i as u32);
+        let random_apy = generate_random_apy_in_range(
+            request.min_apy,
+            request.max_apy, i as u32,
+            request.strategy_id
+        );
         
         // Calculate the growth factor to achieve the random APY
         let duration_from_start = timestamp - request.from_timestamp;
@@ -226,9 +230,9 @@ pub async fn create_test_snapshots(
 // =============== Private methods ===============
 
 /// Generates a random APY in the given range
-/// Uses the snapshot index as seed for determinism
-fn generate_random_apy_in_range(min_apy: f64, max_apy: f64, snapshot_index: u32) -> f64 {
-    let perlin = noise::Perlin::new(42);
+/// Uses the strategy_id as seed for unique patterns per strategy
+fn generate_random_apy_in_range(min_apy: f64, max_apy: f64, snapshot_index: u32, strategy_id: u16) -> f64 {
+    let perlin = noise::Perlin::new(strategy_id as u32);
     let x = snapshot_index as f64 * 0.05;
     let noise_val = perlin.get([x]) * 0.5 + 0.5;
     min_apy + noise_val * (max_apy - min_apy)

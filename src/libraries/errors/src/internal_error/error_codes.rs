@@ -80,6 +80,7 @@ pub mod module {
                     pub mod components {
                         pub const CORE: &str = "01";
                         pub const POOL_METRICS: &str = "02";
+                        pub const TEST_SNAPSHOTS_SERVICE: &str = "03";
                     }
                 }
                 pub mod strategy_history {

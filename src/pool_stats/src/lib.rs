@@ -45,6 +45,7 @@ pub mod pool_metrics;
 pub mod event_records;
 pub mod types;
 pub mod service;
+pub mod test_snapshots_service;
 pub mod utils;
 
 // const SNAPSHOTS_FETCHING_INTERVAL: u64 = 3600; // 1 hour
@@ -155,7 +156,7 @@ pub async fn test_create_pool_snapshot(pool_id: String) -> TestCreatePoolSnapsho
         TestCreatePoolSnapshotResult(result)
     } else {
         let error = InternalError::not_found(
-                            build_error_code(InternalErrorKind::NotFound, 0), // Error code: "03-02-01 03 00"
+            build_error_code(InternalErrorKind::NotFound, 0), // Error code: "03-02-01 03 00"
             "pool_stats::create_pool_snapshot".to_string(),
             format!("Pool not found: {pool_id}"),
             errors::error_extra! {
@@ -166,6 +167,19 @@ pub async fn test_create_pool_snapshot(pool_id: String) -> TestCreatePoolSnapsho
 
         TestCreatePoolSnapshotResult(Err(ResponseError::from_internal_error(error)))
     }
+}
+
+// TODO: test method, remove after testing
+#[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
+pub struct TestCreateTestSnapshotsResult(pub Result<(), ResponseError>);
+
+#[update]
+pub fn test_create_test_snapshots(pool_id: String, tvl: u128, target_apy: f64) -> TestCreateTestSnapshotsResult {
+    let result = 
+        test_snapshots_service::create_test_snapshots(pool_id, tvl, target_apy)
+            .map_err(|error| ResponseError::from_internal_error(error));
+
+    TestCreateTestSnapshotsResult(result)
 }
 
 // ========================== End of test method ==========================
