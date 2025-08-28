@@ -6,14 +6,13 @@ use errors::internal_error::error_codes::module::areas::{
     canisters::domains::strategy_history::components as strategy_history_domain_components,
 };
 
-use crate::repository::strategy_states_repo;
-use crate::repository::snapshots_repo;
+use crate::repository::{strategy_states_repo, snapshots_repo};
 use crate::vault::vault_service;
-use crate::services::strategy_states_service;
-use crate::services::strategy_snapshots_service;
+use crate::services::{strategy_snapshots_service, strategy_states_service};
 use crate::types::types::{
     InitializeStrategyStatesAndCreateSnapshotsResponse,
     StrategyHistory,
+    InitializeStrategyStatesResponse,
 };
 
 // Module code: "03-03-01"
@@ -25,7 +24,7 @@ errors::define_error_code_builder_fn!(
 );
 
 pub async fn initialize_strategy_states_and_create_snapshots(
-    strategy_ids: Option<Vec<StrategyId>>
+    strategy_ids: Option<Vec<StrategyId>>,
 ) -> Result<InitializeStrategyStatesAndCreateSnapshotsResponse, InternalError> {
     // Get strategies data from vault
     let mut vault_strategies = vault_service::get_vault_actor().await?
@@ -97,6 +96,36 @@ pub async fn initialize_strategy_states_and_create_snapshots(
         success_count,
         errors,
     })
+}
+
+pub async fn initialize_strategy_states(
+    strategy_ids: Option<Vec<StrategyId>>,
+) -> Result<InitializeStrategyStatesResponse, InternalError> {
+    // Get strategies data from vault
+    let mut vault_strategies = vault_service::get_vault_actor().await?
+        .get_strategies().await
+        .map_err(|e| {
+            InternalError::business_logic(
+                build_error_code(InternalErrorKind::BusinessLogic, 1), // Error code: "03-03-01 03 01"
+                "strategy_history_service::initialize_strategy_states_and_create_snapshots".to_string(),
+                format!("Failed to fetch strategies from vault: {:?}", e),
+                None,
+            )
+        })?;
+
+    // Filter enabled strategies
+    vault_strategies = vault_strategies.iter()
+        .filter(|s| s.enabled)
+        .cloned()
+        .collect::<Vec<_>>();
+
+    let initialize_strategy_states_response =
+        strategy_states_service::initialize_strategy_states_with_list(
+            &vault_strategies,
+            strategy_ids,
+        ).await?;
+
+    Ok(initialize_strategy_states_response)
 }
 
 pub async fn get_strategies_history(

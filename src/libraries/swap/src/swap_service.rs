@@ -86,6 +86,7 @@ pub async fn swap_icrc2(
             "swap_service::swap_icrc2".to_string(),
             "Invalid provider".to_string(),
             errors::error_extra! {
+                "caller_canister_id" => get_caller_canister_id(),
                 "input_token" => input_token,
                 "output_token" => output_token,
                 "amount" => amount,
@@ -157,6 +158,7 @@ pub async fn quote_swap_icrc2(
             "swap_service::quote_swap_icrc2".to_string(),
             "Invalid provider".to_string(),
             errors::error_extra! {
+                "caller_canister_id" => get_caller_canister_id(),
                 "input_token" => input_token,
                 "output_token" => output_token,
                 "amount" => amount,
@@ -192,6 +194,9 @@ pub async fn swap_icrc2_kongswap(
 
     let swap_result = swap_client.swap(amount.clone()).await?;
 
+    // panic!("swap_result: {:?}", swap_result);
+    // panic!("input_token: {:?}, output_token: {:?}, amount: {:?}", input_token.to_text(), output_token.to_text(), amount);
+
     Ok(SwapResponse {
         provider: ExchangeId::KongSwap,
         amount_out: swap_result.amount_out,
@@ -205,8 +210,7 @@ pub async fn swap_icrc2_icpswap(
     input_token: CanisterId,
     output_token: CanisterId,
     amount: Nat,
-) -> Result<SwapResponse, InternalError>
-{
+) -> Result<SwapResponse, InternalError> {
     let swap_client = Box::new(
         ICPSwapSwapClient::new(
             provider_impl,
@@ -279,4 +283,8 @@ pub async fn quote_swap_icpswap(
         provider: ExchangeId::ICPSwap,
         amount_out: result.amount_out,
     })
+}
+
+fn get_caller_canister_id() -> String {
+    ic_cdk::id().to_text()
 }

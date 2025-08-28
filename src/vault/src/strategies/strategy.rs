@@ -583,7 +583,20 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
 
     async fn get_best_apy_pool(&self) -> Option<Pool> {
         let strategy_pools = self.get_pools();
-        let pools_data = liquidity_service::get_pools_data(strategy_pools).await; // TODO: handle error
+
+        let pools_data = liquidity_service::get_pools_data(
+            strategy_pools.clone()
+        ).await; // TODO: handle error
+
+        // TODO: Remove this after testing.
+        // This is a temporary fix to handle the case where no pools are found in pool_stats.
+        if pools_data.is_empty() {
+            return strategy_pools
+                .into_iter()
+                .filter(|pool| pool.token0 == self.get_base_token())
+                .map(|pool| pool.clone())
+                .next();
+        }
 
         pools_data
             .iter()

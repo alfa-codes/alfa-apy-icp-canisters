@@ -12,7 +12,7 @@ pub struct RuntimeConfig {
 impl Default for RuntimeConfig {
     fn default() -> Self {
         Self {
-            environment: Environment::Staging,
+            environment: Environment::Dev,
         }
     }
 }

@@ -1,8 +1,8 @@
 type CreateTestSnapshotsRequest = record {
   from_timestamp : nat64;
-  to_timestamp : nat64;
   min_apy : float64;
   strategy_id : nat16;
+  to_timestamp : nat64;
   max_apy : float64;
   snapshot_interval_secs : nat64;
 };
@@ -44,6 +44,17 @@ type InitializeStrategyStatesAndCreateSnapshotsResponse = record {
 
 type InitializeStrategyStatesAndCreateSnapshotsResult = variant {
   Ok : InitializeStrategyStatesAndCreateSnapshotsResponse;
+  Err : ResponseError;
+};
+
+type InitializeStrategyStatesResponse = record {
+  skipped_already_initialized_strategy_states : vec nat16;
+  failed_strategy_states : vec record { nat16; InternalError };
+  initialized_strategy_states : vec nat16;
+};
+
+type InitializeStrategyStatesResult = variant {
+  Ok : InitializeStrategyStatesResponse;
   Err : ResponseError;
 };
 
@@ -119,19 +130,23 @@ type TestLiquidityData = record {
   amount : nat;
   position_id : nat64;
 };
+
 service : (opt RuntimeConfig) -> {
   get_all_strategy_states : () -> (vec record { nat16; StrategyState }) query;
+  get_runtime_config : () -> (RuntimeConfig) query;
   get_strategies_history : (GetStrategiesHistoryRequest) -> (
       GetStrategiesHistoryResult,
     ) query;
   get_strategy_snapshots_count : (nat16) -> (nat64) query;
   get_strategy_state : (nat16) -> (opt StrategyState) query;
-  get_runtime_config : () -> (RuntimeConfig) query;
   test_create_snapshots : (CreateTestSnapshotsRequest) -> (
       CreateTestSnapshotsResult,
     );
   test_delete_all_snapshots : () -> ();
   test_delete_strategy_state : (nat16) -> ();
+  test_initialize_strategy_states : (opt vec nat16) -> (
+      InitializeStrategyStatesResult,
+    );
   test_initialize_strategy_states_and_create_snapshots : (opt vec nat16) -> (
       InitializeStrategyStatesAndCreateSnapshotsResult,
     );

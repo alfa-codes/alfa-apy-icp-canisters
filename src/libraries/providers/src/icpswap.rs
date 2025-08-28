@@ -206,7 +206,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                         "token_in" => token_in,
                         "token_out" => token_out,
                         "fee" => pool_args.fee,
-                        "swap_factory_canister" => ICPSWAP_SWAP_FACTORY_CANISTER_ID,
+                        "swap_factory_canister" => ICPSWAP_SWAP_FACTORY_CANISTER_ID.to_text(),
                     }
                 )
             })?
@@ -220,7 +220,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                         "token_in" => token_in,
                         "token_out" => token_out,
                         "fee" => pool_args.fee,
-                        "swap_factory_canister" => ICPSWAP_SWAP_FACTORY_CANISTER_ID,
+                        "swap_factory_canister" => ICPSWAP_SWAP_FACTORY_CANISTER_ID.to_text(),
                     }
                 )
             })
@@ -250,7 +250,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_swap_pool_canister_c2c_client::quote': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "amount_in" => amount_in,
                         "zero_for_one" => zero_for_one,
                         "amount_out_minimum" => amount_out_minimum,
@@ -264,7 +264,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("Error calling 'icpswap_swap_pool_canister_c2c_client::quote': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "amount_in" => amount_in,
                         "zero_for_one" => zero_for_one,
                         "amount_out_minimum" => amount_out_minimum,
@@ -295,7 +295,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_swap_pool_canister_c2c_client::swap': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "amount_in" => amount_in,
                         "zero_for_one" => zero_for_one,
                         "amount_out_minimum" => amount_out_minimum,
@@ -309,7 +309,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("Error calling 'icpswap_swap_pool_canister_c2c_client::swap': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "amount_in" => amount_in,
                         "zero_for_one" => zero_for_one,
                         "amount_out_minimum" => amount_out_minimum,
@@ -331,7 +331,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_swap_pool_canister_c2c_client::getTokenMeta': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                     }
                 )
             })?
@@ -342,7 +342,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("Error calling 'icpswap_swap_pool_canister_c2c_client::getTokenMeta': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                     }
                 )
             })
@@ -370,8 +370,8 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_swap_pool_canister_c2c_client::depositFrom': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
-                        "token_in" => token_in,
+                        "canister_id" => canister_id.to_text(),
+                        "token_in" => token_in.to_text(),
                         "amount" => amount,
                         "token_fee" => token_fee,
                     }
@@ -384,8 +384,8 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("Error calling 'icpswap_swap_pool_canister_c2c_client::depositFrom': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
-                        "token_in" => token_in,
+                        "canister_id" => canister_id.to_text(),
+                        "token_in" => token_in.to_text(),
                         "amount" => amount,
                         "token_fee" => token_fee,
                     }
@@ -415,8 +415,8 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_swap_pool_canister_c2c_client::withdraw': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
-                        "token_out" => token_out,
+                        "canister_id" => canister_id.to_text(),
+                        "token_out" => token_out.to_text(),
                         "amount" => amount,
                         "token_fee" => token_fee,
                     }
@@ -429,8 +429,8 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("Error calling 'icpswap_swap_pool_canister_c2c_client::withdraw': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
-                        "token_out" => token_out,
+                        "canister_id" => canister_id.to_text(),
+                        "token_out" => token_out.to_text(),
                         "amount" => amount,
                         "token_fee" => token_fee,
                     }
@@ -451,7 +451,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_swap_pool_canister_c2c_client::metadata': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                     }
                 )
             })?
@@ -462,7 +462,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("Error calling 'icpswap_swap_pool_canister_c2c_client::metadata': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                     }
                 )
             })
@@ -498,7 +498,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_swap_pool_canister_c2c_client::mint': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "token0" => token0.clone(),
                         "token1" => token1.clone(),
                         "amount0_desired" => amount0_desired.clone(),
@@ -516,7 +516,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("Error calling 'icpswap_swap_pool_canister_c2c_client::mint': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "token0" => token0,
                         "token1" => token1,
                         "amount0_desired" => amount0_desired,
@@ -546,8 +546,8 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_swap_pool_canister_c2c_client::getUserPositionIdsByPrincipal': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
-                        "principal" => principal,
+                        "canister_id" => canister_id.to_text(),
+                        "principal" => principal.to_text(),
                     }
                 )
             })?;
@@ -559,8 +559,8 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                 format!("Error calling 'icpswap_swap_pool_canister_c2c_client::getUserPositionIdsByPrincipal': {error:?}"),
                 errors::error_extra! {
                     "provider" => PROVIDER,
-                    "canister_id" => canister_id,
-                    "principal" => principal,
+                    "canister_id" => canister_id.to_text(),
+                    "principal" => principal.to_text(),
                 }
             )
         })
@@ -583,8 +583,8 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_swap_pool_canister_c2c_client::getUserPositionsByPrincipal': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
-                        "principal" => principal,
+                        "canister_id" => canister_id.to_text(),
+                        "principal" => principal.to_text(),
                     }
                 )
             })?;
@@ -596,8 +596,8 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                 format!("Error calling 'icpswap_swap_pool_canister_c2c_client::getUserPositionsByPrincipal': {error:?}"),
                 errors::error_extra! {
                     "provider" => PROVIDER,
-                    "canister_id" => canister_id,
-                    "principal" => principal,
+                    "canister_id" => canister_id.to_text(),
+                    "principal" => principal.to_text(),
                 }
             )
         })
@@ -621,7 +621,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_swap_pool_canister_c2c_client::getUserUnusedBalance': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "principal" => principal,
                     }
                 )
@@ -633,7 +633,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("Error calling 'icpswap_swap_pool_canister_c2c_client::getUserUnusedBalance': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "principal" => principal,
                     }
                 )
@@ -662,7 +662,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_swap_pool_canister_c2c_client::increaseLiquidity': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "position_id" => position_id,
                         "amount0_desired" => amount0_desired.clone(),
                         "amount1_desired" => amount1_desired.clone(),
@@ -676,7 +676,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("Error calling 'icpswap_swap_pool_canister_c2c_client::increaseLiquidity': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "position_id" => position_id,
                         "amount0_desired" => amount0_desired,
                         "amount1_desired" => amount1_desired,
@@ -705,7 +705,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_swap_pool_canister_c2c_client::decreaseLiquidity': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "position_id" => position_id,
                         "liquidity" => liquidity.clone(),
                     }
@@ -718,7 +718,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("Error calling 'icpswap_swap_pool_canister_c2c_client::decreaseLiquidity': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "position_id" => position_id,
                         "liquidity" => liquidity,
                     }
@@ -744,7 +744,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_swap_pool_canister_c2c_client::getUserPosition': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "position_id" => position_id,
                     }
                 )
@@ -757,7 +757,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                 format!("Error calling 'icpswap_swap_pool_canister_c2c_client::getUserPosition': {error:?}"),
                 errors::error_extra! {
                     "provider" => PROVIDER,
-                    "canister_id" => canister_id,
+                    "canister_id" => canister_id.to_text(),
                     "position_id" => position_id,
                 }
             )
@@ -782,7 +782,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_swap_pool_canister_c2c_client::claim': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "position_id" => position_id,
                     }
                 )
@@ -794,7 +794,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("Error calling 'icpswap_swap_pool_canister_c2c_client::claim': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "position_id" => position_id,
                     }
                 )
@@ -824,7 +824,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                         "sqrt_price_x96" => sqrt_price_x96,
                         "token_0_decimals" => token_0_decimals,
                         "token_1_decimals" => token_1_decimals,
-                        "swap_calculator_canister" => ICPSWAP_SWAP_CALCULATOR_CANISTER_ID,
+                        "swap_calculator_canister" => ICPSWAP_SWAP_CALCULATOR_CANISTER_ID.to_text(),
                     }
                 )
             })
@@ -868,7 +868,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                         "tick_lower" => tick_lower,
                         "tick_upper" => tick_upper,
                         "liquidity" => liquidity,
-                        "swap_calculator_canister" => ICPSWAP_SWAP_CALCULATOR_CANISTER_ID,
+                        "swap_calculator_canister" => ICPSWAP_SWAP_CALCULATOR_CANISTER_ID.to_text(),
                     }
                 )
             })
@@ -883,7 +883,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                         "tick_lower" => tick_lower,
                         "tick_upper" => tick_upper,
                         "liquidity" => liquidity,
-                        "swap_calculator_canister" => ICPSWAP_SWAP_CALCULATOR_CANISTER_ID,
+                        "swap_calculator_canister" => ICPSWAP_SWAP_CALCULATOR_CANISTER_ID.to_text(),
                     }
                 )
             })?;
@@ -906,7 +906,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_node_index_canister_c2c_client::getAllTokens': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "node_index_canister" => ICPSWAP_NODE_INDEX_CANISTER_ID,
+                        "node_index_canister" => ICPSWAP_NODE_INDEX_CANISTER_ID.to_text(),
                     }
                 )
             })
@@ -917,7 +917,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("Error calling 'icpswap_node_index_canister_c2c_client::getAllTokens': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "node_index_canister" => ICPSWAP_NODE_INDEX_CANISTER_ID,
+                        "node_index_canister" => ICPSWAP_NODE_INDEX_CANISTER_ID.to_text(),
                     }
                 )
             })?;
@@ -938,7 +938,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_global_index_canister_c2c_client::tvlStorageCanister': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "global_index_canister" => ICPSWAP_GLOBAL_INDEX_CANISTER_ID,
+                        "global_index_canister" => ICPSWAP_GLOBAL_INDEX_CANISTER_ID.to_text(),
                     }
                 )
             })
@@ -949,7 +949,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("Error calling 'icpswap_global_index_canister_c2c_client::tvlStorageCanister': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "global_index_canister" => ICPSWAP_GLOBAL_INDEX_CANISTER_ID,
+                        "global_index_canister" => ICPSWAP_GLOBAL_INDEX_CANISTER_ID.to_text(),
                     }
                 )
             })?;
@@ -977,7 +977,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("IC error calling 'icpswap_tvl_storage_canister_c2c_client::getPoolChartTvl': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "pool_canister_id" => pool_canister_id.clone(),
                         "offset" => offset,
                         "limit" => limit,
@@ -991,7 +991,7 @@ impl ICPSwapProvider for DefaultICPSwapProvider {
                     format!("Error calling 'icpswap_tvl_storage_canister_c2c_client::getPoolChartTvl': {error:?}"),
                     errors::error_extra! {
                         "provider" => PROVIDER,
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                         "pool_canister_id" => pool_canister_id,
                         "offset" => offset,
                         "limit" => limit,

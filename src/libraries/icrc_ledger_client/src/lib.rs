@@ -56,21 +56,25 @@ impl ICRCLedgerClient for DefaultICRCLedgerClient {
                     "icrc_ledger_client::icrc1_decimals".to_string(),
                     format!("IC error calling 'icrc_ledger_canister_c2c_client::icrc1_decimals': {error:?}"),
                     errors::error_extra! {
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                     }
                 )
             })
     }
 
     async fn icrc2_approve(
-        &self, spender: Principal,
+        &self,
+        spender: Principal,
         canister_id: CanisterId,
         amount: Nat
     ) -> Result<Nat, InternalError> {
+        let fee = self.icrc1_fee(canister_id.clone()).await?;
+        let approve_amount = amount.clone() + fee.clone();
+
         let args = ApproveArgs {
             from_subaccount: None,
                 spender: spender.into(),
-                amount: Nat::from(99999999999999 as u128), //TODO: amount + fee
+                amount: approve_amount.clone(),
                 expected_allowance: None,
                 expires_at: None,
                 fee: None,
@@ -88,9 +92,11 @@ impl ICRCLedgerClient for DefaultICRCLedgerClient {
                     "icrc_ledger_client::icrc2_approve".to_string(),
                     format!("IC error calling 'icrc_ledger_canister_c2c_client::icrc2_approve': {error:?}"),
                     errors::error_extra! {
-                        "spender" => spender,
-                        "canister_id" => canister_id,
+                        "spender" => spender.to_text(),
+                        "canister_id" => canister_id.to_text(),
                         "amount" => amount,
+                        "fee" => fee,
+                        "approve_amount" => approve_amount,
                     }
                 )
             })?
@@ -100,9 +106,11 @@ impl ICRCLedgerClient for DefaultICRCLedgerClient {
                     "icrc_ledger_client::icrc2_approve".to_string(),
                     format!("Error calling 'icrc_ledger_canister_c2c_client::icrc2_approve': {error:?}"),
                     errors::error_extra! {
-                        "spender" => spender,
-                        "canister_id" => canister_id,
+                        "spender" => spender.to_text(),
+                        "canister_id" => canister_id.to_text(),
                         "amount" => amount,
+                        "fee" => fee,
+                        "approve_amount" => approve_amount,
                     }
                 )
             })
@@ -134,8 +142,8 @@ impl ICRCLedgerClient for DefaultICRCLedgerClient {
                     "icrc_ledger_client::icrc2_transfer_from".to_string(),
                     format!("IC error calling 'icrc_ledger_canister_c2c_client::icrc2_transfer_from': {error:?}"),
                     errors::error_extra! {
-                        "from" => from,
-                        "canister_id" => canister_id,
+                        "from" => from.to_text(),
+                        "canister_id" => canister_id.to_text(),
                         "amount" => amount,
                     }
                 )
@@ -146,8 +154,8 @@ impl ICRCLedgerClient for DefaultICRCLedgerClient {
                     "icrc_ledger_client::icrc2_transfer_from".to_string(),
                     format!("Error calling 'icrc_ledger_canister_c2c_client::icrc2_transfer_from': {err:?}"),
                     errors::error_extra! {
-                        "from" => from,
-                        "canister_id" => canister_id,
+                        "from" => from.to_text(),
+                        "canister_id" => canister_id.to_text(),
                         "amount" => amount,
                     }
                 )
@@ -164,7 +172,7 @@ impl ICRCLedgerClient for DefaultICRCLedgerClient {
                     "icrc_ledger_client::icrc1_fee".to_string(),
                     format!("IC error calling 'icrc_ledger_canister_c2c_client::icrc1_fee': {error:?}"),
                     errors::error_extra! {
-                        "canister_id" => canister_id,
+                        "canister_id" => canister_id.to_text(),
                     }
                 )
             })

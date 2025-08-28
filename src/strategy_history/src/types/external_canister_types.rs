@@ -1,4 +1,5 @@
 use candid::{CandidType, Deserialize, Nat};
+use core::fmt::Display;
 use serde::Serialize;
 
 use types::strategies::StrategyId;
@@ -18,12 +19,43 @@ pub enum ResponseErrorKind {
     Unknown,
 }
 
+impl Display for ResponseErrorKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ResponseErrorKind::NotFound => write!(f, "NotFound"),
+            ResponseErrorKind::Validation => write!(f, "Validation"),
+            ResponseErrorKind::BusinessLogic => write!(f, "BusinessLogic"),
+            ResponseErrorKind::ExternalService => write!(f, "ExternalService"),
+            ResponseErrorKind::AccessDenied => write!(f, "AccessDenied"),
+            ResponseErrorKind::Infrastructure => write!(f, "Infrastructure"),
+            ResponseErrorKind::Timeout => write!(f, "Timeout"),
+            ResponseErrorKind::Unknown => write!(f, "Unknown"),
+        }
+    }
+}
+
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
 pub struct ResponseError {
     pub code: ErrorCode,
     pub kind: ResponseErrorKind,
     pub message: String,
     pub details: Option<Vec<(String, String)>>,
+}
+
+impl ResponseError {
+    pub fn to_text(&self) -> String {
+        format!(
+            "{}:{}:{}:{}",
+            self.code.to_string(),
+            self.kind.to_string(),
+            self.message,
+            self.details.as_ref().map(|details| {
+                details.iter().map(|(key, value)| {
+                    format!("{}:{}", key, value)
+                }).collect::<Vec<String>>().join(", ")
+            }).unwrap_or_default()
+        )
+    }
 }
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]

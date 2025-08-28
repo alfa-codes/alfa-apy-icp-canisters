@@ -5,18 +5,18 @@ use std::collections::HashMap;
 
 use types::CanisterId;
 use types::strategies::{StrategyId, Pool};
-use utils::constants::PANDA_TOKEN_CANISTER_ID;
+use utils::constants::CKBTC_TOKEN_CANISTER_ID;
 
 use crate::impl_strategy_methods;
 use crate::strategies::basic_strategy::BasicStrategy;
-use crate::strategies::r#impl::description::STRATEGY_MAP;
 use crate::strategies::strategy::IStrategy;
 use crate::strategies::strategy_candid::StrategyCandid;
+use crate::strategies::r#impl::description::STRATEGY_MAP;
 
-impl_strategy_methods!(PandaTestStrategy);
+impl_strategy_methods!(CkBtcIcpStrategy);
 #[derive(Clone, Debug, CandidType, Serialize, Deserialize)]
 #[allow(non_camel_case_types)]
-pub struct PandaTestStrategy {
+pub struct CkBtcIcpStrategy {
     id: StrategyId,
     base_token: CanisterId,
     current_pool: Option<Pool>,
@@ -30,15 +30,15 @@ pub struct PandaTestStrategy {
     enabled: bool,
 }
 
-impl PandaTestStrategy {
+impl CkBtcIcpStrategy {
     pub fn new() -> Self {
-        //TODO move to config
-        PandaTestStrategy {
-            id: 4,
-            base_token: *PANDA_TOKEN_CANISTER_ID,
-            current_pool: None,
+        // TODO: move to config
+        CkBtcIcpStrategy {
+            id: 8,
+            base_token: *CKBTC_TOKEN_CANISTER_ID,
             position_id: None,
-            total_balance: Nat::from(0u64),
+            current_pool: None,
+            total_balance: Nat::from(0u64), // TODO: rename to total_initial_balance
             total_shares: Nat::from(0u64),
             user_shares: HashMap::new(),
             initial_deposit: HashMap::new(),
@@ -50,9 +50,9 @@ impl PandaTestStrategy {
 }
 
 #[async_trait]
-impl IStrategy for PandaTestStrategy {
+impl IStrategy for CkBtcIcpStrategy {
     fn to_candid(&self) -> StrategyCandid {
-        StrategyCandid::PandaTestStrategyV(self.clone())
+        StrategyCandid::CkBtcIcpStrategyV(self.clone())
     }
 
     fn clone_self(&self) -> Box<dyn IStrategy> {

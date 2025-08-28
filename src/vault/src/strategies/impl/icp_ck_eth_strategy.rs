@@ -45,7 +45,7 @@ impl IcpCkETHStrategy {
             initial_deposit: HashMap::new(),
             current_liquidity: None,
             current_liquidity_updated_at: None,
-            enabled: true,
+            enabled: false,
         }
     }
 }

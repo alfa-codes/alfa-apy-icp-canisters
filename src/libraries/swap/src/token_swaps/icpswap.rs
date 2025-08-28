@@ -206,6 +206,7 @@ impl SwapClient for ICPSwapSwapClient {
 
         // 4. Swap
         let expected_out_u128 = nat_to_u128(&expected_out);
+
         // Сonsider slippage tolerance
         let amount_out_minimum = Nat::from(
             expected_out_u128 * (1000 - SLIPPAGE_TOLERANCE_POINTS) / 1000u128

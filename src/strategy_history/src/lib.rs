@@ -30,6 +30,7 @@ use crate::types::types::{
     GetAllStrategyStatesResult,
     CreateTestSnapshotsRequest,
     CreateTestSnapshotsResult,
+    InitializeStrategyStatesResult,
 };
 
 const STRATEGY_HISTORY_FETCHING_INTERVAL: u64 = 1800; // 30 minutes
@@ -101,6 +102,16 @@ async fn test_initialize_strategy_states_and_create_snapshots(strategy_ids: Opti
             .map_err(|e| ResponseError::from_internal_error(e));
 
     InitializeStrategyStatesAndCreateSnapshotsResult(result)
+}
+
+#[update]
+async fn test_initialize_strategy_states(strategy_ids: Option<Vec<StrategyId>>) -> InitializeStrategyStatesResult {
+    let result =
+        strategy_history_service::initialize_strategy_states(strategy_ids)
+            .await
+            .map_err(|e| ResponseError::from_internal_error(e));
+
+    InitializeStrategyStatesResult(result)
 }
 
 /// Save a strategy snapshot

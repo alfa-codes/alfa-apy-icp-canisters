@@ -25,6 +25,9 @@ pub struct GetStrategiesHistoryRequest {
 }
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
+pub struct InitializeStrategyStatesResult(pub Result<InitializeStrategyStatesResponse, ResponseError>);
+
+#[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
 pub struct GetAllStrategyStatesResult(pub Vec<(StrategyId, StrategyState)>);
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
@@ -106,3 +109,4 @@ pub struct CreateTestSnapshotsResponse {
     pub max_apy: f64,
     pub actual_apy_range: (f64, f64), // Actual APY range
 }
+

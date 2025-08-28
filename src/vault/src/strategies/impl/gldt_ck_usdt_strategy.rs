@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use types::CanisterId;
 use types::strategies::{StrategyId, Pool};
-use utils::constants::PANDA_TOKEN_CANISTER_ID;
+use utils::constants::GLDT_TOKEN_CANISTER_ID;
 
 use crate::impl_strategy_methods;
 use crate::strategies::basic_strategy::BasicStrategy;
@@ -13,10 +13,11 @@ use crate::strategies::r#impl::description::STRATEGY_MAP;
 use crate::strategies::strategy::IStrategy;
 use crate::strategies::strategy_candid::StrategyCandid;
 
-impl_strategy_methods!(PandaTestStrategy);
+//TODO override deposit/withdraw to support ICPSWAP
+impl_strategy_methods!(GldtCkUsdtStrategy);
 #[derive(Clone, Debug, CandidType, Serialize, Deserialize)]
 #[allow(non_camel_case_types)]
-pub struct PandaTestStrategy {
+pub struct GldtCkUsdtStrategy {
     id: StrategyId,
     base_token: CanisterId,
     current_pool: Option<Pool>,
@@ -30,12 +31,12 @@ pub struct PandaTestStrategy {
     enabled: bool,
 }
 
-impl PandaTestStrategy {
+impl GldtCkUsdtStrategy {
     pub fn new() -> Self {
         //TODO move to config
-        PandaTestStrategy {
-            id: 4,
-            base_token: *PANDA_TOKEN_CANISTER_ID,
+        GldtCkUsdtStrategy {
+            id: 9,
+            base_token: *GLDT_TOKEN_CANISTER_ID,
             current_pool: None,
             position_id: None,
             total_balance: Nat::from(0u64),
@@ -50,9 +51,9 @@ impl PandaTestStrategy {
 }
 
 #[async_trait]
-impl IStrategy for PandaTestStrategy {
+impl IStrategy for GldtCkUsdtStrategy {
     fn to_candid(&self) -> StrategyCandid {
-        StrategyCandid::PandaTestStrategyV(self.clone())
+        StrategyCandid::GldtCkUsdtStrategyV(self.clone())
     }
 
     fn clone_self(&self) -> Box<dyn IStrategy> {

@@ -47,22 +47,30 @@ impl VaultActor {
         args: StrategyDepositArgs
     ) -> Result<StrategyDepositResponse, InternalError> {
         let (result,): (Result<StrategyDepositResponse, ResponseError>,) =
-            ic_cdk::call(self.principal, "deposit", (args,))
+            ic_cdk::call(self.principal, "deposit", (args.clone(),))
                 .await
-                .map_err(|e| InternalError::external_service(
+                .map_err(|ic_error| InternalError::external_service(
                     build_error_code(InternalErrorKind::ExternalService, 9), // Error code: "03-03-01 04 09"
                     "vault_service::deposit call".to_string(),
-                    format!("IC error: {:?}", e),
-                    None,
+                    format!("IC error: {:?}", ic_error),
+                    errors::error_extra! {
+                        "strategy_id" => args.strategy_id,
+                        "ledger" => args.ledger.to_text(),
+                        "amount" => args.amount,
+                    },
                 ))?;
 
         match result {
             Ok(response) => Ok(response),
-            Err(err) => Err(InternalError::business_logic(
+            Err(error) => Err(InternalError::business_logic(
                 build_error_code(InternalErrorKind::BusinessLogic, 10), // Error code: "03-03-01 03 10"
                 "vault_service::deposit".to_string(),
-                format!("Vault returned error: {}", err.message),
-                None,
+                format!("Vault returned error: {}", error.to_text()),
+                errors::error_extra! {
+                    "strategy_id" => args.strategy_id,
+                    "ledger" => args.ledger.to_text(),
+                    "amount" => args.amount,
+                },
             )),
         }
     }
@@ -72,22 +80,30 @@ impl VaultActor {
         args: StrategyWithdrawArgs
     ) -> Result<StrategyWithdrawResponse, InternalError> {
         let (result,): (Result<StrategyWithdrawResponse, ResponseError>,) =
-            ic_cdk::call(self.principal, "withdraw", (args,))
+            ic_cdk::call(self.principal, "withdraw", (args.clone(),))
                 .await
-                .map_err(|e| InternalError::external_service(
+                .map_err(|ic_error| InternalError::external_service(
                     build_error_code(InternalErrorKind::ExternalService, 12), // Error code: "03-03-01 04 12"
                     "vault_service::withdraw call".to_string(),
-                    format!("IC error: {:?}", e),
-                    None,
+                    format!("IC error: {:?}", ic_error),
+                    errors::error_extra! {
+                        "strategy_id" => args.strategy_id,
+                        "ledger" => args.ledger.to_text(),
+                        "percentage" => args.percentage,
+                    },
                 ))?;
 
         match result {
             Ok(response) => Ok(response),
-            Err(err) => Err(InternalError::business_logic(
+            Err(error) => Err(InternalError::business_logic(
                 build_error_code(InternalErrorKind::BusinessLogic, 13), // Error code: "03-03-01 03 13"
                 "vault_service::withdraw".to_string(),
-                format!("Vault returned error: {}", err.message),
-                None,
+                format!("Vault returned error: {}", error.to_text()),
+                errors::error_extra! {
+                    "strategy_id" => args.strategy_id,
+                    "ledger" => args.ledger.to_text(),
+                    "percentage" => args.percentage,
+                },
             )),
         }
     }

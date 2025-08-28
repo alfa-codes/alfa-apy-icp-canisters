@@ -101,7 +101,7 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                     "KongSwapProvider::pools".to_string(),
                     format!("IC error calling 'kongswap_canister_c2c_client::pools': {error:?}"),
                     errors::error_extra! {
-                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                     }
                 )
             })?
@@ -111,7 +111,7 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                     "KongSwapProvider::pools".to_string(),
                     format!("Error calling 'kongswap_canister_c2c_client::pools': {error_message:?}"),
                     errors::error_extra! {
-                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                     }
                 )
             })
@@ -136,7 +136,7 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                     "KongSwapProvider::swap_amounts".to_string(),
                     format!("IC error calling 'kongswap_canister_c2c_client::swap_amounts': {error:?}"),
                     errors::error_extra! {
-                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                         "token_in" => token_in.clone(),
                         "token_out" => token_out.clone(),
                         "amount" => amount,
@@ -150,7 +150,7 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                 "KongSwapProvider::swap_amounts".to_string(),
                 format!("Error calling 'kongswap_canister_c2c_client::swap_amounts': {error_message:?}"),
                 errors::error_extra! {
-                    "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                    "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                     "token_in" => token_in,
                     "token_out" => token_out,
                     "amount" => amount,
@@ -183,7 +183,7 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                     "KongSwapProvider::swap".to_string(),
                     format!("Error calling 'kongswap_canister_c2c_client::swap': {error:?}"),
                     errors::error_extra! {
-                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                         "pay_amount" => args.pay_amount,
                         "pay_token" => args.pay_token,
                         "receive_token" => args.receive_token,
@@ -197,7 +197,7 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                     "KongSwapProvider::swap".to_string(),
                     format!("Error calling 'kongswap_canister_c2c_client::swap': {error:?}"),
                     errors::error_extra! {
-                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                         "pay_amount" => args.pay_amount,
                         "pay_token" => args.pay_token,
                         "receive_token" => args.receive_token,
@@ -225,7 +225,7 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                     "KongSwapProvider::add_liquidity_amounts".to_string(),
                     format!("IC error calling 'kongswap_canister_c2c_client::add_liquidity_amounts': {error:?}"),
                     errors::error_extra! {
-                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                         "token0" => token_0.clone(),
                         "amount" => amount,
                         "token1" => token_1.clone(),
@@ -239,7 +239,7 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                 "KongSwapProvider::add_liquidity_amounts".to_string(),
                 format!("Error calling 'kongswap_canister_c2c_client::add_liquidity_amounts': {error_message:?}"),
                 errors::error_extra! {
-                    "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                    "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                     "token0" => token_0,
                     "amount" => amount,
                     "token1" => token_1,
@@ -288,13 +288,13 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                     "KongSwapProvider::add_liquidity".to_string(),
                     format!("IC error calling 'kongswap_canister_c2c_client::add_liquidity': {error:?}"),
                     errors::error_extra! {
-                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                         "token_0" => token_0.clone(),
                         "amount_0" => amount_0,
                         "token_1" => token_1.clone(),
                         "amount_1" => amount_1,
-                        "ledger0" => ledger0,
-                        "ledger1" => ledger1,
+                        "ledger0" => ledger0.to_text(),
+                        "ledger1" => ledger1.to_text(),
                     }
                 )
             })?;
@@ -305,13 +305,13 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                 "KongSwapProvider::add_liquidity".to_string(),
                 format!("Error calling 'kongswap_canister_c2c_client::add_liquidity': {error_message:?}"),
                 errors::error_extra! {
-                    "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                    "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                     "token_0" => token_0,
                     "amount_0" => amount_0,
                     "token_1" => token_1,
                     "amount_1" => amount_1,
-                    "ledger0" => ledger0,
-                    "ledger1" => ledger1,
+                    "ledger0" => ledger0.to_text(),
+                    "ledger1" => ledger1.to_text(),
                 }
             )
         })
@@ -331,7 +331,7 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                     "KongSwapProvider::user_balances".to_string(),
                     format!("IC error calling 'kongswap_canister_c2c_client::user_balances': {error:?}"),
                     errors::error_extra! {
-                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                         "principal_id" => principal_id.clone(),
                     }
                 )
@@ -343,7 +343,7 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                 "KongSwapProvider::user_balances".to_string(),
                 format!("Error calling 'kongswap_canister_c2c_client::user_balances': {error_message:?}"),
                 errors::error_extra! {
-                    "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                    "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                     "principal_id" => principal_id,
                 }
             )
@@ -372,7 +372,7 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                     "KongSwapProvider::remove_liquidity_amounts".to_string(),
                     format!("IC error calling 'kongswap_canister_c2c_client::remove_liquidity_amounts': {error:?}"),
                     errors::error_extra! {
-                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                         "token_0" => token_0.clone(),
                         "token_1" => token_1.clone(),
                         "remove_lp_token_amount" => remove_lp_token_amount,
@@ -386,7 +386,7 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                 "KongSwapProvider::remove_liquidity_amounts".to_string(),
                 format!("Error calling 'kongswap_canister_c2c_client::remove_liquidity_amounts': {error_message:?}"),
                 errors::error_extra! {
-                    "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                    "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                     "token_0" => token_0,
                     "token_1" => token_1,
                     "remove_lp_token_amount" => remove_lp_token_amount,
@@ -417,7 +417,7 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                     "KongSwapProvider::remove_liquidity".to_string(),
                     format!("IC error calling 'kongswap_canister_c2c_client::remove_liquidity': {error:?}"),
                     errors::error_extra! {
-                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                        "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                         "token_0" => token_0.clone(),
                         "token_1" => token_1.clone(),
                         "remove_lp_token_amount" => remove_lp_token_amount,
@@ -431,7 +431,7 @@ impl KongSwapProvider for DefaultKongSwapProvider {
                 "KongSwapProvider::remove_liquidity".to_string(),
                 format!("Error calling 'kongswap_canister_c2c_client::remove_liquidity': {error_message:?}"),
                 errors::error_extra! {
-                    "kongswap_canister_id" => KONGSWAP_CANISTER_ID,
+                    "kongswap_canister_id" => KONGSWAP_CANISTER_ID.to_text(),
                     "token_0" => token_0,
                     "token_1" => token_1,
                     "remove_lp_token_amount" => remove_lp_token_amount,

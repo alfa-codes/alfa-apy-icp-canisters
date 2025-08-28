@@ -1,4 +1,5 @@
 use once_cell::sync::Lazy;
+
 use types::CanisterId;
 
 use crate::util::principal_to_canister_id;
@@ -28,6 +29,7 @@ pub const PANDA_TOKEN_PRINCIPAL: &str = "druyg-tyaaa-aaaaq-aactq-cai";
 pub const NFIDW_TOKEN_PRINCIPAL: &str = "mih44-vaaaa-aaaaq-aaekq-cai";
 pub const ICS_TOKEN_PRINCIPAL: &str = "ca6gz-lqaaa-aaaaq-aacwa-cai";
 pub const CKETH_TOKEN_PRINCIPAL: &str = "ss2fx-dyaaa-aaaar-qacoq-cai";
+pub const GLDT_TOKEN_PRINCIPAL: &str = "6c7su-kiaaa-aaaar-qaira-cai";
 
 // ICPSWAP PRINCIPALS
 pub const ICPSWAP_SWAP_FACTORY_PRINCIPAL: &str = "4mmnk-kiaaa-aaaag-qbllq-cai";
@@ -37,6 +39,8 @@ pub const ICPSWAP_GLOBAL_INDEX_PRINCIPAL: &str = "gp26j-lyaaa-aaaag-qck6q-cai";
 
 // KONGSWAP PRINCIPALS
 pub const KONGSWAP_CANISTER_PRINCIPAL: &str = "2ipq2-uqaaa-aaaar-qailq-cai";
+
+
 
 // ================= CANISTER IDS =================
 
@@ -79,7 +83,8 @@ pub static ICS_TOKEN_CANISTER_ID: Lazy<CanisterId> =
     Lazy::new(|| principal_to_canister_id(ICS_TOKEN_PRINCIPAL));
 pub static CKETH_TOKEN_CANISTER_ID: Lazy<CanisterId> =
     Lazy::new(|| principal_to_canister_id(CKETH_TOKEN_PRINCIPAL));
-
+pub static GLDT_TOKEN_CANISTER_ID: Lazy<CanisterId> =
+    Lazy::new(|| principal_to_canister_id(GLDT_TOKEN_PRINCIPAL));
 
 // ICPSWAP CANISTER IDS
 pub static ICPSWAP_SWAP_FACTORY_CANISTER_ID: Lazy<CanisterId> =

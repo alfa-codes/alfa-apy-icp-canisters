@@ -6,8 +6,13 @@ use types::strategies::{StrategyId, Pool};
 use types::pool::PoolTrait;
 use types::CanisterId;
 use utils::constants::{
-    CKBTC_TOKEN_CANISTER_ID, CKETH_TOKEN_CANISTER_ID, CKUSDT_TOKEN_CANISTER_ID,
-    ICP_TOKEN_CANISTER_ID, ICS_TOKEN_CANISTER_ID, PANDA_TOKEN_CANISTER_ID,
+    CKBTC_TOKEN_CANISTER_ID,
+    CKETH_TOKEN_CANISTER_ID,
+    CKUSDT_TOKEN_CANISTER_ID,
+    ICP_TOKEN_CANISTER_ID,
+    ICS_TOKEN_CANISTER_ID,
+    PANDA_TOKEN_CANISTER_ID,
+    GLDT_TOKEN_CANISTER_ID,
 };
 
 #[derive(Debug, Clone)]
@@ -144,6 +149,42 @@ lazy_static! {
                 Pool::build(
                     *ICP_TOKEN_CANISTER_ID,
                     *CKETH_TOKEN_CANISTER_ID,
+                    ExchangeId::ICPSwap,
+                ),
+            ],
+        });
+
+        strategy_map.insert(8, StrategyInfo {
+            name: "ckBTC-ICP Dynamic Strategy".to_string(),
+            description: "Production strategy".to_string(),
+            base_token: *CKBTC_TOKEN_CANISTER_ID,
+            pools: vec![
+                Pool::build(
+                    *CKBTC_TOKEN_CANISTER_ID,
+                    *ICP_TOKEN_CANISTER_ID,
+                    ExchangeId::KongSwap,
+                ),
+                Pool::build(
+                    *CKBTC_TOKEN_CANISTER_ID,
+                    *ICP_TOKEN_CANISTER_ID,
+                    ExchangeId::ICPSwap,
+                ),
+            ],
+        });
+
+        strategy_map.insert(9, StrategyInfo {
+            name: "GLDT-ckUSDT Balanced Strategy".to_string(),
+            description: "Production strategy".to_string(),
+            base_token: *GLDT_TOKEN_CANISTER_ID,
+            pools: vec![
+                Pool::build(
+                    *GLDT_TOKEN_CANISTER_ID,
+                    *CKUSDT_TOKEN_CANISTER_ID,
+                    ExchangeId::KongSwap,
+                ),
+                Pool::build(
+                    *GLDT_TOKEN_CANISTER_ID,
+                    *CKUSDT_TOKEN_CANISTER_ID,
                     ExchangeId::ICPSwap,
                 ),
             ],

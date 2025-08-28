@@ -128,10 +128,10 @@ impl LiquidityClient for KongSwapLiquidityClient {
         // Calculate how much token_0 and token_1 to swap and add to pool (initial estimate)
         let initial_split = 
             LiquidityCalculator::calculate_token_amounts_for_deposit(
-            nat_to_f64(&amount),
+                nat_to_f64(&amount),
                 provider_pool_target_ratio.clone(),
                 quoted_swap_price_token0_to_token1.clone(),
-        );
+            );
 
         let planned_token0_for_swap = initial_split.token_0_for_swap;
         let planned_token0_for_pool = initial_split.token_0_for_pool;
@@ -159,68 +159,35 @@ impl LiquidityClient for KongSwapLiquidityClient {
             &provider_suggested_token0_for_pool
         ); // denominator
 
-        // Initial intended token0 for pool (from calculator)
-        let mut token0_amount_for_pool_u128 = planned_token0_for_pool as u128;
-
-        // Max token0 that can be paired with actually received token1: floor(token1_received * den / num)
-        let max_token0_affordable_by_token1_u128 = if target_ratio_token1_per_token0_num == 0 {
-            0
-        } else {
-            token1_received_u128
-                .saturating_mul(target_ratio_token1_per_token0_den)
-                / target_ratio_token1_per_token0_num
-        };
-
-        // Respect both the calculator plan and the cap from actual token1
-        token0_amount_for_pool_u128 = token0_amount_for_pool_u128.min(
-            max_token0_affordable_by_token1_u128
-        );
-
         // Reserve fees so transfers can succeed: reduce amounts to leave fee headroom
         let token0_transfer_fee_u128 = nat_to_u128(&token0_transfer_fee);
         let token1_transfer_fee_u128 = nat_to_u128(&token1_transfer_fee);
 
-        // Ensure token0 to pool leaves room for token0 transfer fee
-        token0_amount_for_pool_u128 = token0_amount_for_pool_u128.saturating_sub(
-            token0_transfer_fee_u128
-        );
+        // Variables to store final amounts for pool
+        let token0_amount_for_pool_u128: u128;
+        let token1_amount_for_pool_u128: u128;
 
-        // Corresponding token1 needed for this token0, based on ratio
-        let mut token1_amount_for_pool_u128 = if target_ratio_token1_per_token0_den == 0 {
-            0
+        // Get the target ratio
+        let target_ratio_token1_per_token0 = nat_to_f64(&provider_suggested_token1_for_pool) 
+            / nat_to_f64(&provider_suggested_token0_for_pool);
+
+        // Calculate how much token1 we can afford with our available token0
+        let available_token0_for_pool = planned_token0_for_pool as u128;
+        let required_token1_for_pool = (available_token0_for_pool as f64 * target_ratio_token1_per_token0) as u128;
+
+        // Check if we have enough token1
+        if required_token1_for_pool > token1_received_u128 {
+            // We don't have enough token1, so recalculate both amounts maintaining the ratio
+            let final_token1_for_pool = token1_received_u128;
+            let final_token0_for_pool = (final_token1_for_pool as f64 / target_ratio_token1_per_token0) as u128;
+
+            // Subtract fees
+            token0_amount_for_pool_u128 = final_token0_for_pool.saturating_sub(token0_transfer_fee_u128);
+            token1_amount_for_pool_u128 = final_token1_for_pool.saturating_sub(token1_transfer_fee_u128);
         } else {
-            token0_amount_for_pool_u128
-                .saturating_mul(target_ratio_token1_per_token0_num)
-                / target_ratio_token1_per_token0_den
-        };
-
-        let token1_available_for_pool_after_fee_u128 = token1_received_u128.saturating_sub(
-            token1_transfer_fee_u128
-        );
-
-        // Ensure token1 to pool leaves room for token1 transfer fee and does not exceed actual received
-        if token1_amount_for_pool_u128 > token1_available_for_pool_after_fee_u128 {
-            // Recalculate token0 to fit into available token1 after reserving fee
-            let recomputed_token0_amount_for_pool_u128 = 
-                if target_ratio_token1_per_token0_num == 0 {
-                    0
-                } else {
-                    token1_available_for_pool_after_fee_u128
-                        .saturating_mul(target_ratio_token1_per_token0_den)
-                        / target_ratio_token1_per_token0_num
-                };
-
-            token0_amount_for_pool_u128 = token0_amount_for_pool_u128.min(
-                recomputed_token0_amount_for_pool_u128
-            );
-
-            token1_amount_for_pool_u128 = if target_ratio_token1_per_token0_den == 0 {
-                0
-            } else {
-                token0_amount_for_pool_u128
-                    .saturating_mul(target_ratio_token1_per_token0_num)
-                    / target_ratio_token1_per_token0_den
-            };
+            // We have enough token1, use the planned amounts
+            token0_amount_for_pool_u128 = available_token0_for_pool.saturating_sub(token0_transfer_fee_u128);
+            token1_amount_for_pool_u128 = required_token1_for_pool.saturating_sub(token1_transfer_fee_u128);
         }
 
         // Guard against zero amounts
