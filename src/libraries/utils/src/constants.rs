@@ -9,17 +9,19 @@ use crate::util::principal_to_canister_id;
 // POOL STATS PRINCIPAL
 pub const POOL_STATS_PRINCIPAL_STAGING: &str = "oxawg-7aaaa-aaaag-aub6q-cai";
 pub const POOL_STATS_PRINCIPAL_DEV: &str = "tvneh-raaaa-aaaao-a4opq-cai";
-pub const POOL_STATS_PRINCIPAL_PRODUCTION: &str = "";
+pub const POOL_STATS_PRINCIPAL_PRODUCTION: &str = "duz7e-rqaaa-aaaai-atlla-cai";
 
 // VAULT PRINCIPAL
 pub const VAULT_PRINCIPAL_STAGING: &str = "ownab-uaaaa-aaaap-qp2na-cai";
 pub const VAULT_PRINCIPAL_DEV: &str = "wsic7-jiaaa-aaaad-qhocq-cai";
-pub const VAULT_PRINCIPAL_PRODUCTION: &str = "";
+pub const VAULT_PRINCIPAL_PRODUCTION: &str = "yyqug-jaaaa-aaaag-aufza-cai";
 
 // STRATEGY HISTORY PRINCIPAL
 pub const STRATEGY_HISTORY_PRINCIPAL_STAGING: &str = "cfd5a-6aaaa-aaaac-a374q-cai";
 pub const STRATEGY_HISTORY_PRINCIPAL_DEV: &str = "wcqxd-aaaaa-aaaah-qqe3a-cai";
-pub const STRATEGY_HISTORY_PRINCIPAL_PRODUCTION: &str = "";
+pub const STRATEGY_HISTORY_PRINCIPAL_PRODUCTION: &str = "mb3wl-3yaaa-aaaac-a4bmq-cai";
+
+
 
 // TOKEN PRINCIPALS
 pub const ICP_TOKEN_PRINCIPAL: &str = "ryjl3-tyaaa-aaaaa-aaaba-cai";
@@ -30,6 +32,9 @@ pub const NFIDW_TOKEN_PRINCIPAL: &str = "mih44-vaaaa-aaaaq-aaekq-cai";
 pub const ICS_TOKEN_PRINCIPAL: &str = "ca6gz-lqaaa-aaaaq-aacwa-cai";
 pub const CKETH_TOKEN_PRINCIPAL: &str = "ss2fx-dyaaa-aaaar-qacoq-cai";
 pub const GLDT_TOKEN_PRINCIPAL: &str = "6c7su-kiaaa-aaaar-qaira-cai";
+pub const CKLINK_TOKEN_PRINCIPAL: &str = "g4tto-rqaaa-aaaar-qageq-cai";
+
+
 
 // ICPSWAP PRINCIPALS
 pub const ICPSWAP_SWAP_FACTORY_PRINCIPAL: &str = "4mmnk-kiaaa-aaaag-qbllq-cai";
@@ -85,6 +90,8 @@ pub static CKETH_TOKEN_CANISTER_ID: Lazy<CanisterId> =
     Lazy::new(|| principal_to_canister_id(CKETH_TOKEN_PRINCIPAL));
 pub static GLDT_TOKEN_CANISTER_ID: Lazy<CanisterId> =
     Lazy::new(|| principal_to_canister_id(GLDT_TOKEN_PRINCIPAL));
+pub static CKLINK_TOKEN_CANISTER_ID: Lazy<CanisterId> =
+    Lazy::new(|| principal_to_canister_id(CKLINK_TOKEN_PRINCIPAL));
 
 // ICPSWAP CANISTER IDS
 pub static ICPSWAP_SWAP_FACTORY_CANISTER_ID: Lazy<CanisterId> =

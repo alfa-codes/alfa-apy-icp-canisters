@@ -4,6 +4,8 @@ use std::ops::Mul;
 // TODO: remove this struct
 pub struct LiquidityCalculator;
 
+#[derive(Debug, Clone, PartialEq)]
+
 pub struct CalculatePoolLiquidityAmountsResponse {
     pub token_0_for_swap: f64,
     pub token_0_for_pool: f64,

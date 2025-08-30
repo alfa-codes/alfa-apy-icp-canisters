@@ -136,7 +136,7 @@ pub async fn deposit_test_liquidity_to_strategy(
     let base_token_fee = icrc_ledger_client.icrc1_fee(base_token).await?;
 
     let available_for_deposit = if deposit_amount > base_token_fee {
-        deposit_amount - base_token_fee
+        deposit_amount.clone() - base_token_fee
     } else {
         Nat::from(0u64)
     };

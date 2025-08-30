@@ -41,6 +41,7 @@ pub async fn deposit(
     args: StrategyDepositArgs
 ) -> Result<StrategyDepositResponse, InternalError> {
     let strategy_id = context.strategy_id.unwrap();
+
     let mut strategy = get_strategy_by_id(strategy_id)
         .ok_or_else(|| {
             InternalError::not_found(
@@ -53,6 +54,9 @@ pub async fn deposit(
                 },
             )
         })?;
+    
+    // TODO: Add validation for ledger
+    // if args.ledger != strategy.get_base_token() {}
 
     user_service::accept_deposit(context.clone(), args.amount.clone(), args.ledger).await?;
     strategy.deposit(context.clone(), args.amount.clone()).await

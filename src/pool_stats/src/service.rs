@@ -7,6 +7,8 @@ use types::liquidity::{AddLiquidityResponse, WithdrawLiquidityResponse};
 use types::context::Context;
 use types::CanisterId;
 use types::pool::PoolTrait;
+use swap::swap_service;
+use utils::constants::ICP_TOKEN_CANISTER_ID;
 use errors::internal_error::error::{InternalError, InternalErrorKind};
 use errors::internal_error::error_codes::module::areas::{
     canisters as canister_area,
@@ -23,7 +25,9 @@ use crate::repository::pools_repo;
 use crate::liquidity::liquidity_service;
 use crate::repository::event_records_repo;
 use crate::event_records::event_record::EventRecord;
-use crate::utils::service_resolver::get_service_resolver;
+use crate::utils::service_resolver;
+
+const ICP_AMOUNT_FOR_DEPOSIT: u64 = 10_000_000; // 0.1 ICP
 
 // Module code: "03-02-01"
 errors::define_error_code_builder_fn!(
@@ -41,7 +45,7 @@ pub fn add_pool(
     provider: ExchangeId
 ) -> Result<String, InternalError> {
     let pool = Pool::build(token0, token1, provider);
-    pool.save();
+    pools_repo::add_pool_if_not_exists(pool.clone());
     Ok(pool.id)
 }
 
@@ -99,6 +103,77 @@ pub fn get_pools_snapshots(pool_ids: Vec<String>) -> HashMap<String, Vec<PoolSna
 
 // ========================== Liquidity management ==========================
 
+pub async fn deposit_test_liquidity_to_pool(
+    context: Context,
+    pool_id: String,
+) -> Result<AddLiquidityResponse, InternalError> {
+    let pool = pools_repo::get_pool_by_id(pool_id.clone());
+
+    if pool.is_none() {
+        let error = InternalError::not_found(
+            build_error_code(InternalErrorKind::NotFound, 8), // Error code: "03-02-01 01 08"
+            "service::deposit_test_liquidity_to_pool".to_string(),
+            "Pool not found".to_string(),
+            errors::error_extra! {
+                "context" => context,
+                "pool_id" => pool_id,
+            },
+        );
+
+        return Err(error);
+    }
+
+    let mut pool = pool.unwrap();
+
+    if pool.position_id.is_some() {
+        let error = InternalError::business_logic(
+            build_error_code(InternalErrorKind::BusinessLogic, 9), // Error code: "03-02-01 03 09"
+            "service::deposit_test_liquidity_to_pool".to_string(),
+            "Pool already has liquidity".to_string(),
+            errors::error_extra! {
+                "context" => context,
+                "pool_id" => pool_id,
+            },
+        );
+
+        return Err(error);
+    }
+
+    let service_resolver = service_resolver::get_service_resolver();
+    let icrc_ledger_client = service_resolver.icrc_ledger_client();
+
+    let token0 = pool.token0.clone();
+    let deposit_icp_amount = Nat::from(ICP_AMOUNT_FOR_DEPOSIT);
+
+    // Swap ICP → base_token or return ICP as is
+    let deposit_amount = if token0 != *ICP_TOKEN_CANISTER_ID {
+        swap_icp_to_base_token(token0.clone(), deposit_icp_amount.clone()).await?
+    } else {
+        deposit_icp_amount.clone()
+    };
+
+    let token0_fee = icrc_ledger_client.icrc1_fee(token0.clone()).await?;
+
+    let available_for_deposit = if deposit_amount > token0_fee {
+        deposit_amount - token0_fee
+    } else {
+        Nat::from(0u64)
+    };
+
+    let response = liquidity_service::add_liquidity_to_pool(
+        context.clone(),
+        pool.clone(),
+        available_for_deposit
+    ).await?;
+
+    pool.position_id = Some(response.position_id);
+    pools_repo::update_pool(pool_id.clone(), pool.clone());
+
+    pool_snapshot_service::create_pool_snapshot(context, &pool).await?;
+
+    Ok(response)
+}
+
 pub async fn add_liquidity_to_pool(
     context: Context,
     ledger: CanisterId,
@@ -109,7 +184,7 @@ pub async fn add_liquidity_to_pool(
 
     if pool.is_none() {
         let error = InternalError::not_found(
-                            build_error_code(InternalErrorKind::NotFound, 3), // Error code: "03-02-01 01 03"
+            build_error_code(InternalErrorKind::NotFound, 3), // Error code: "03-02-01 01 03"
             "service::add_liquidity_to_pool".to_string(),
             "Pool not found".to_string(),
             errors::error_extra! {
@@ -127,7 +202,7 @@ pub async fn add_liquidity_to_pool(
 
     if pool.position_id.is_some() {
         let error = InternalError::business_logic(
-                            build_error_code(InternalErrorKind::BusinessLogic, 4), // Error code: "03-02-01 03 04"
+            build_error_code(InternalErrorKind::BusinessLogic, 4), // Error code: "03-02-01 03 04"
             "service::add_liquidity_to_pool".to_string(),
             "Pool already has liquidity".to_string(),
             errors::error_extra! {
@@ -141,7 +216,7 @@ pub async fn add_liquidity_to_pool(
         return Err(error);
     }
 
-    let service_resolver = get_service_resolver();
+    let service_resolver = service_resolver::get_service_resolver();
     let icrc_ledger_client = service_resolver.icrc_ledger_client();
 
     icrc_ledger_client.icrc2_transfer_from(
@@ -172,7 +247,7 @@ pub async fn withdraw_liquidity_from_pool(
 
     if pool.is_none() {
         let error = InternalError::not_found(
-                            build_error_code(InternalErrorKind::NotFound, 5), // Error code: "03-02-01 01 05"
+            build_error_code(InternalErrorKind::NotFound, 5), // Error code: "03-02-01 01 05"
             "service::withdraw_liquidity_from_pool".to_string(),
             "Pool not found".to_string(),
             errors::error_extra! {
@@ -188,7 +263,7 @@ pub async fn withdraw_liquidity_from_pool(
 
     if pool.position_id.is_none() {
         let error = InternalError::business_logic(
-                            build_error_code(InternalErrorKind::BusinessLogic, 6), // Error code: "03-02-01 03 06"
+            build_error_code(InternalErrorKind::BusinessLogic, 6), // Error code: "03-02-01 03 06"
             "service::withdraw_liquidity_from_pool".to_string(),
             "Pool has no liquidity".to_string(),
             errors::error_extra! {
@@ -216,4 +291,49 @@ pub async fn withdraw_liquidity_from_pool(
 pub fn get_event_records(offset: u64, limit: u64) -> Result<Vec<EventRecord>, InternalError> {
     let result = event_records_repo::get_event_records(offset as usize, limit as usize);
     Ok(result)
+}
+
+// ========================== Private methods ==========================
+
+async fn swap_icp_to_base_token(
+    base_token: CanisterId,
+    icp_amount: Nat,
+) -> Result<Nat, InternalError> {
+    if base_token == *ICP_TOKEN_CANISTER_ID {
+        return Ok(icp_amount.clone());
+    }
+
+    let service_resolver = service_resolver::get_service_resolver();
+
+    let quote_response = swap_service::quote_swap_icrc2_optimal(
+        service_resolver.provider_impls(),
+        service_resolver.icrc_ledger_client(),
+        *ICP_TOKEN_CANISTER_ID,
+        base_token,
+        icp_amount.clone(),
+    ).await?;
+
+    let swap_response = swap_service::swap_icrc2(
+        service_resolver.provider_impls(),
+        service_resolver.icrc_ledger_client(),
+        *ICP_TOKEN_CANISTER_ID,
+        base_token,
+        icp_amount.clone(),
+        quote_response.provider,
+    )
+    .await
+    .map_err(|e| {
+        InternalError::business_logic(
+            build_error_code(InternalErrorKind::BusinessLogic, 7), // Error code: "03-03-01 03 07"
+            "strategy_history_service::swap_icp_to_base_token".to_string(),
+            format!("Swap failed: {:?}", e),
+            errors::error_extra! {
+                "base_token" => base_token.to_text(),
+                "icp_amount" => icp_amount,
+                "quote_response" => quote_response,
+            },
+        )
+    })?;
+
+    Ok(Nat::from(swap_response.amount_out))
 }

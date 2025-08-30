@@ -4,14 +4,17 @@
   },
   "vault": {
     "dev": "wsic7-jiaaa-aaaad-qhocq-cai",
-    "staging": "ownab-uaaaa-aaaap-qp2na-cai"
+    "staging": "ownab-uaaaa-aaaap-qp2na-cai",
+    "production": "yyqug-jaaaa-aaaag-aufza-cai"
   },
   "pool_stats": {
     "dev": "tvneh-raaaa-aaaao-a4opq-cai",
-    "staging": "oxawg-7aaaa-aaaag-aub6q-cai"
+    "staging": "oxawg-7aaaa-aaaag-aub6q-cai",
+    "production": "duz7e-rqaaa-aaaai-atlla-cai"
   },
   "strategy_history": {
     "dev": "wcqxd-aaaaa-aaaah-qqe3a-cai",
-    "staging": "cfd5a-6aaaa-aaaac-a374q-cai"
+    "staging": "cfd5a-6aaaa-aaaac-a374q-cai",
+    "production": "mb3wl-3yaaa-aaaac-a4bmq-cai"
   }
 }

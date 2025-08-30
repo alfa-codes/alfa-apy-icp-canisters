@@ -600,7 +600,7 @@ pub trait IStrategy: Send + Sync + BasicStrategy {
 
         pools_data
             .iter()
-            .filter(|x| x.pool.provider == ExchangeId::ICPSwap)
+            .filter(|x| x.pool.provider == ExchangeId::KongSwap)
             // .max_by_key(|x| x.apy) // TODO: uncomment this after testing
             .map(|x| x.pool.clone())
             .next()

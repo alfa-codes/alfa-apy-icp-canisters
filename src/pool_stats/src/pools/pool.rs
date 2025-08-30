@@ -7,6 +7,7 @@ use types::pool::PoolTrait;
 
 use crate::repository::pools_repo;
 
+// TODO: Rename
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug, PartialEq, Eq, Hash)]
 pub struct Pool {
     pub id: String,

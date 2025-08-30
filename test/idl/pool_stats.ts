@@ -5,6 +5,7 @@ import type { IDL } from '@dfinity/candid';
 export interface AddLiquidityResponse {
   'token_0_amount' : bigint,
   'token_1_amount' : bigint,
+  'token0_equivalent_total' : bigint,
   'position_id' : bigint,
 }
 export type AddLiquidityResult = { 'Ok' : AddLiquidityResponse } |
@@ -29,8 +30,10 @@ export type AddPoolResult = { 'Ok' : string } |
 export interface ApyValue { 'tokens_apy' : number, 'usd_apy' : number }
 export type DeletePoolResult = { 'Ok' : null } |
   { 'Err' : ResponseError };
-export type Environment = { 'Production' : null } |
-  { 'Test' : null };
+export type Environment = { 'Dev' : null } |
+  { 'Production' : null } |
+  { 'Test' : null } |
+  { 'Staging' : null };
 export type Event = { 'AddLiquidityToPoolFailed' : AddLiquidityToPoolFailed } |
   { 'AddLiquidityToPoolCompleted' : AddLiquidityToPoolCompleted } |
   { 'WithdrawLiquidityFromPoolStarted' : WithdrawLiquidityFromPoolStarted } |
@@ -43,6 +46,7 @@ export interface EventRecord {
   'id' : bigint,
   'user' : [] | [Principal],
   'event' : Event,
+  'strategy_id' : [] | [number],
   'timestamp' : bigint,
   'correlation_id' : string,
 }
@@ -57,12 +61,13 @@ export type GetPoolsResult = { 'Ok' : Array<Pool> } |
   { 'Err' : ResponseError };
 export interface InternalError {
   'context' : string,
-  'code' : number,
+  'code' : bigint,
   'kind' : InternalErrorKind,
   'extra' : [] | [Array<[string, string]>],
   'message' : string,
 }
 export type InternalErrorKind = { 'AccessDenied' : null } |
+  { 'Infrastructure' : null } |
   { 'NotFound' : null } |
   { 'Timeout' : null } |
   { 'Unknown' : null } |
@@ -99,13 +104,23 @@ export interface PositionData {
   'amount1' : bigint,
 }
 export interface ResponseError {
-  'code' : number,
-  'kind' : InternalErrorKind,
+  'code' : bigint,
+  'kind' : ResponseErrorKind,
   'message' : string,
   'details' : [] | [Array<[string, string]>],
 }
+export type ResponseErrorKind = { 'AccessDenied' : null } |
+  { 'Infrastructure' : null } |
+  { 'NotFound' : null } |
+  { 'Timeout' : null } |
+  { 'Unknown' : null } |
+  { 'BusinessLogic' : null } |
+  { 'ExternalService' : null } |
+  { 'Validation' : null };
 export interface RuntimeConfig { 'environment' : Environment }
 export type TestCreatePoolSnapshotResult = { 'Ok' : PoolSnapshot } |
+  { 'Err' : ResponseError };
+export type TestCreateTestSnapshotsResult = { 'Ok' : null } |
   { 'Err' : ResponseError };
 export interface WithdrawLiquidityFromPoolCompleted {
   'shares' : bigint,
@@ -138,6 +153,7 @@ export interface _SERVICE {
   >,
   'add_pool' : ActorMethod<[Principal, Principal, ExchangeId], AddPoolResult>,
   'delete_pool' : ActorMethod<[string], DeletePoolResult>,
+  'deposit_test_liquidity_to_pool' : ActorMethod<[string], AddLiquidityResult>,
   'get_event_records' : ActorMethod<[bigint, bigint], GetEventRecordsResult>,
   'get_pool_by_id' : ActorMethod<[string], GetPoolByIdResult>,
   'get_pool_metrics' : ActorMethod<
@@ -149,12 +165,15 @@ export interface _SERVICE {
     [Array<string>],
     Array<[string, Array<PoolSnapshot>]>
   >,
-  'get_runtime_config' : ActorMethod<[], RuntimeConfig>,
   'set_operator' : ActorMethod<[Principal], undefined>,
   'test_add_pool_snapshot' : ActorMethod<[PoolSnapshotArgs], undefined>,
   'test_create_pool_snapshot' : ActorMethod<
     [string],
     TestCreatePoolSnapshotResult
+  >,
+  'test_create_test_snapshots' : ActorMethod<
+    [string, bigint, number],
+    TestCreateTestSnapshotsResult
   >,
   'test_delete_all_pools_and_snapshots' : ActorMethod<[], undefined>,
   'test_delete_pool_snapshot' : ActorMethod<[string, string], undefined>,

@@ -36,9 +36,10 @@ pub async fn accept_deposit(
 ) -> Result<(), InternalError> {
     let service_resolver = get_service_resolver();
     let icrc_ledger_client = service_resolver.icrc_ledger_client();
+    let user = context.user.unwrap();
 
     let block_index = icrc_ledger_client.icrc2_transfer_from(
-        context.user.unwrap(),
+        user,
         ledger,
         amount.clone()
     ).await?;
@@ -53,7 +54,7 @@ pub async fn accept_deposit(
 
     USER_ACCOUNTS.with(|accounts| {
         let mut accounts = accounts.borrow_mut();
-        let index = accounts.iter().position(|a| a.user_id == caller());
+        let index = accounts.iter().position(|a| a.user_id == user);
         if let Some(index) = index {
             accounts[index].deposits.push(deposit);
         } else {

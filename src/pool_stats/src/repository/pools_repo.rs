@@ -21,6 +21,14 @@ pub fn save_pool(pool: Pool) {
     POOLS.with(|pools| pools.borrow_mut().insert(pool.id.clone(), pool));
 }
 
+pub fn add_pool_if_not_exists(pool: Pool) {
+    POOLS.with(|pools| {
+        if !pools.borrow().contains_key(&pool.id) {
+            pools.borrow_mut().insert(pool.id.clone(), pool);
+        }
+    });
+}
+
 pub fn delete_pool(pool_id: String) {
     POOLS.with(|pools| pools.borrow_mut().remove(&pool_id));
 }
@@ -72,6 +80,13 @@ pub fn save_pool_snapshot(snapshot: PoolSnapshot) {
 pub fn delete_pool_snapshots(pool_id: String) {
     POOLS_SNAPSHOTS.with(|snapshots| {
         snapshots.borrow_mut().remove(&pool_id);
+    });
+}
+
+// TODO: remove test method
+pub fn delete_all_snapshots() {
+    POOLS_SNAPSHOTS.with(|snapshots| {
+        snapshots.borrow_mut().clear();
     });
 }
 

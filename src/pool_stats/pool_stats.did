@@ -74,13 +74,14 @@ type GetPoolsResult = variant {
 type InternalError = record {
   context : text;
   code : nat64;
-  kind : ResponseErrorKind;
+  kind : InternalErrorKind;
   extra : opt vec record { text; text };
   message : text;
 };
 
 type InternalErrorKind = variant {
   AccessDenied;
+  Infrastructure;
   NotFound;
   Timeout;
   Unknown;
@@ -97,9 +98,7 @@ type Pool = record {
   position_id : opt nat64;
 };
 
-type PoolData = record {
-  tvl : nat;
-};
+type PoolData = record { tvl : nat };
 
 type PoolMetrics = record {
   apy : ApyValue;
@@ -154,10 +153,7 @@ type TestCreatePoolSnapshotResult = variant {
   Err : ResponseError;
 };
 
-type TestCreateTestSnapshotsResult = variant {
-  Ok;
-  Err : ResponseError;
-};
+type TestCreateTestSnapshotsResult = variant { Ok; Err : ResponseError };
 
 type WithdrawLiquidityFromPoolCompleted = record {
   shares : nat;
@@ -190,22 +186,27 @@ type WithdrawLiquidityResult = variant {
   Err : ResponseError;
 };
 
-service : (opt RuntimeConfig) -> {
+service : (RuntimeConfig) -> {
   add_liquidity_to_pool : (principal, text, nat) -> (AddLiquidityResult);
   add_pool : (principal, principal, ExchangeId) -> (AddPoolResult);
   delete_pool : (text) -> (DeletePoolResult);
+  deposit_test_liquidity_to_pool : (text) -> (AddLiquidityResult);
   get_event_records : (nat64, nat64) -> (GetEventRecordsResult);
   get_pool_by_id : (text) -> (GetPoolByIdResult);
   get_pool_metrics : (vec text) -> (vec record { text; PoolMetrics });
   get_pools : () -> (GetPoolsResult);
   get_pools_snapshots : (vec text) -> (vec record { text; vec PoolSnapshot });
+  get_runtime_config : () -> (RuntimeConfig) query;
   set_operator : (principal) -> ();
   test_add_pool_snapshot : (PoolSnapshotArgs) -> ();
   test_create_pool_snapshot : (text) -> (TestCreatePoolSnapshotResult);
-  test_create_test_snapshots : (text, nat, float64) -> (TestCreateTestSnapshotsResult);
+  test_create_test_snapshots : (text, nat, float64) -> (
+      TestCreateTestSnapshotsResult,
+    );
   test_delete_all_pools_and_snapshots : () -> ();
   test_delete_pool_snapshot : (text, text) -> ();
   test_delete_pool_snapshots : (text) -> ();
   test_update_pool_ids : () -> ();
   withdraw_liquidity_from_pool : (text) -> (WithdrawLiquidityResult);
+  test_delete_all_snapshots : () -> ();
 };

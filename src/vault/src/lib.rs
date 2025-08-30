@@ -255,11 +255,10 @@ fn get_runtime_config() -> RuntimeConfig {
 /// initializes the strategies by calling ` strategy_service::init_strategies()`.
 #[init]
 #[candid_method(init)]
-fn init(conf: Option<Conf>, runtime_config: Option<RuntimeConfig>) {
+fn init(conf: Option<Conf>, runtime_config: RuntimeConfig) {
     let conf = conf.unwrap_or_default();
     config_repo::set_config(conf);
 
-    let runtime_config = runtime_config.unwrap_or_default();
     runtime_config_repo::set_runtime_config(runtime_config);
 
     strategy_service::init_strategies();

@@ -115,15 +115,19 @@ impl LiquidityClient for KongSwapLiquidityClient {
         let quoted_token1_out_for_full_amount = optimal_quote.amount_out;
         let selected_swap_provider = optimal_quote.provider;
 
+        // Get token decimals for proper price calculation
+        let token0_decimals = self.icrc_ledger_client.icrc1_decimals(self.token0.clone()).await?;
+        let token1_decimals = self.icrc_ledger_client.icrc1_decimals(self.token1.clone()).await?;
+        
         // Calculate pool ratio and swap price for better swap proposition 
         // to make equal amount of token0 and token1 in pool
         let provider_pool_target_ratio =
-            nat_to_f64(&provider_suggested_token1_for_pool) 
-            / nat_to_f64(&provider_suggested_token0_for_pool); // TODO: Change f64 -> Nat
-
+            (nat_to_f64(&provider_suggested_token1_for_pool) / 10_f64.powi(token1_decimals as i32)) 
+            / (nat_to_f64(&provider_suggested_token0_for_pool) / 10_f64.powi(token0_decimals as i32));
+        
         let quoted_swap_price_token0_to_token1 =
-            (quoted_token1_out_for_full_amount as f64) 
-            / (nat_to_f64(&amount) as f64);
+            (quoted_token1_out_for_full_amount as f64 / 10_f64.powi(token1_decimals as i32)) 
+            / (nat_to_f64(&amount) / 10_f64.powi(token0_decimals as i32));
 
         // Calculate how much token_0 and token_1 to swap and add to pool (initial estimate)
         let initial_split = 
@@ -136,13 +140,19 @@ impl LiquidityClient for KongSwapLiquidityClient {
         let planned_token0_for_swap = initial_split.token_0_for_swap;
         let planned_token0_for_pool = initial_split.token_0_for_pool;
 
+        // Apply safety margin to avoid InsufficientFunds errors
+        // Reduce planned amounts by 5% to account for rounding and calculation precision
+        let safety_margin = 0.95; // 95% of calculated amounts
+        let safe_token0_for_swap = (planned_token0_for_swap * safety_margin).floor().max(0.0);
+        let safe_token0_for_pool = (planned_token0_for_pool * safety_margin).floor().max(0.0);
+
         // Swap token0 for token1 with the best exchange provider
         let swap_response = swap_service::swap_icrc2(
             self.provider_impls.clone(),
             self.icrc_ledger_client.clone(),
             self.token0.clone(),
             self.token1.clone(),
-            Nat::from(planned_token0_for_swap as u128),
+            Nat::from(safe_token0_for_swap as u128),
             selected_swap_provider,
         ).await?;
 
@@ -163,32 +173,9 @@ impl LiquidityClient for KongSwapLiquidityClient {
         let token0_transfer_fee_u128 = nat_to_u128(&token0_transfer_fee);
         let token1_transfer_fee_u128 = nat_to_u128(&token1_transfer_fee);
 
-        // Variables to store final amounts for pool
-        let token0_amount_for_pool_u128: u128;
-        let token1_amount_for_pool_u128: u128;
-
-        // Get the target ratio
-        let target_ratio_token1_per_token0 = nat_to_f64(&provider_suggested_token1_for_pool) 
-            / nat_to_f64(&provider_suggested_token0_for_pool);
-
-        // Calculate how much token1 we can afford with our available token0
-        let available_token0_for_pool = planned_token0_for_pool as u128;
-        let required_token1_for_pool = (available_token0_for_pool as f64 * target_ratio_token1_per_token0) as u128;
-
-        // Check if we have enough token1
-        if required_token1_for_pool > token1_received_u128 {
-            // We don't have enough token1, so recalculate both amounts maintaining the ratio
-            let final_token1_for_pool = token1_received_u128;
-            let final_token0_for_pool = (final_token1_for_pool as f64 / target_ratio_token1_per_token0) as u128;
-
-            // Subtract fees
-            token0_amount_for_pool_u128 = final_token0_for_pool.saturating_sub(token0_transfer_fee_u128);
-            token1_amount_for_pool_u128 = final_token1_for_pool.saturating_sub(token1_transfer_fee_u128);
-        } else {
-            // We have enough token1, use the planned amounts
-            token0_amount_for_pool_u128 = available_token0_for_pool.saturating_sub(token0_transfer_fee_u128);
-            token1_amount_for_pool_u128 = required_token1_for_pool.saturating_sub(token1_transfer_fee_u128);
-        }
+        // Use fixed amounts after swap, only subtract transfer fees
+        let token0_amount_for_pool_u128 = (safe_token0_for_pool as u128).saturating_sub(token0_transfer_fee_u128);
+        let token1_amount_for_pool_u128 = token1_received_u128.saturating_sub(token1_transfer_fee_u128);
 
         // Guard against zero amounts
         if token0_amount_for_pool_u128 == 0 || token1_amount_for_pool_u128 == 0 {
@@ -250,8 +237,7 @@ impl LiquidityClient for KongSwapLiquidityClient {
         let balance = user_balances_response
             .into_iter()
             .filter_map(|reply| match reply {
-                UserBalancesReply::LP(lp) => Some(lp),
-                _ => None,
+                UserBalancesReply::LP(lp) => Some(lp)
             })
             .find(|balance|
                 (
@@ -312,8 +298,7 @@ impl LiquidityClient for KongSwapLiquidityClient {
         let user_balance = user_balances_response
             .into_iter()
             .filter_map(|reply| match reply {
-                UserBalancesReply::LP(lp) => Some(lp),
-                _ => None,
+                UserBalancesReply::LP(lp) => Some(lp)
             })
             .find(|balance|
                 (balance.address_0 == self.token0.to_text() && balance.address_1 == self.token1.to_text()) ||

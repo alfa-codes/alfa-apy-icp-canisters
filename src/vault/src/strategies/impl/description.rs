@@ -13,6 +13,7 @@ use utils::constants::{
     ICS_TOKEN_CANISTER_ID,
     PANDA_TOKEN_CANISTER_ID,
     GLDT_TOKEN_CANISTER_ID,
+    CKLINK_TOKEN_CANISTER_ID,
 };
 
 #[derive(Debug, Clone)]
@@ -185,6 +186,24 @@ lazy_static! {
                 Pool::build(
                     *GLDT_TOKEN_CANISTER_ID,
                     *CKUSDT_TOKEN_CANISTER_ID,
+                    ExchangeId::ICPSwap,
+                ),
+            ],
+        });
+
+        strategy_map.insert(10, StrategyInfo {
+            name: "CKLINK-ICP Balanced Strategy".to_string(),
+            description: "A balanced strategy that maintains stable exposure to CKLINK while providing liquidity to ICP pairs across KongSwap and ICPSwap exchanges, designed for consistent returns in the LINK-backed token market.".to_string(),
+            base_token: *CKLINK_TOKEN_CANISTER_ID,
+            pools: vec![
+                Pool::build(
+                    *CKLINK_TOKEN_CANISTER_ID,
+                    *ICP_TOKEN_CANISTER_ID,
+                    ExchangeId::KongSwap,
+                ),
+                Pool::build(
+                    *CKLINK_TOKEN_CANISTER_ID,
+                    *ICP_TOKEN_CANISTER_ID,
                     ExchangeId::ICPSwap,
                 ),
             ],

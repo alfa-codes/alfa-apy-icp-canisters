@@ -131,7 +131,7 @@ type TestLiquidityData = record {
   position_id : nat64;
 };
 
-service : (opt RuntimeConfig) -> {
+service : (RuntimeConfig) -> {
   get_all_strategy_states : () -> (vec record { nat16; StrategyState }) query;
   get_runtime_config : () -> (RuntimeConfig) query;
   get_strategies_history : (GetStrategiesHistoryRequest) -> (

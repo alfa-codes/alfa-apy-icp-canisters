@@ -302,7 +302,10 @@ When adding new modules, error kinds, or error numbers — update this documenta
 - `03-02-01 01 03` - Pool not found in 'service::add_liquidity_to_pool' (NotFound) 
 - `03-02-01 03 04` - Pool already has liquidity in 'service::add_liquidity_to_pool' (BusinessLogic) 
 - `03-02-01 01 05` - Pool not found in 'service::withdraw_liquidity_from_pool' (NotFound)  
-- `03-02-01 03 06` - Pool has no liquidity in 'service::withdraw_liquidity_from_pool' (BusinessLogic) 
+- `03-02-01 03 06` - Pool has no liquidity in 'service::withdraw_liquidity_from_pool' (BusinessLogic)
+- `03-02-01 03 07` - Swap failed in 'service::swap_icp_to_base_token' (BusinessLogic)
+- `03-02-01 01 08` - Pool not found in 'service::deposit_test_liquidity_to_pool' (NotFound)
+- `03-02-01 03 09` - Pool already has liquidity in 'service::deposit_test_liquidity_to_pool' (BusinessLogic) 
 
 #### 03-02-02. Canisters – PoolStats – PoolMetrics
 

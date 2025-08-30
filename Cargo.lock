@@ -989,6 +989,7 @@ dependencies = [
  "serde_bytes",
  "serde_json",
  "service_resolver",
+ "swap",
  "types",
  "utils",
  "validation",

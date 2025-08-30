@@ -1,7 +1,7 @@
 use candid::{CandidType, Deserialize, Principal, Nat};
 use serde::Serialize;
 use std::cell::RefCell;
-use ic_cdk::{call, id, trap, update, caller};
+use ic_cdk::{call, id, trap, update, caller, query};
 use ic_cdk::api::call::CallResult;
 use candid::{candid_method, export_service};
 
@@ -19,7 +19,7 @@ use errors::internal_error::error_codes::module::areas::{
 use ic_cdk_macros::{init, post_upgrade, pre_upgrade};
 
 use crate::pool_snapshots::pool_snapshot::PoolSnapshot;
-use crate::pool_snapshots::pool_snapshot_service;
+use crate::pool_snapshots::{pool_snapshot_service, test_snapshots_service};
 use crate::pools::pool::Pool;
 use crate::repository::pools_repo;
 use crate::repository::stable_state;
@@ -45,11 +45,9 @@ pub mod pool_metrics;
 pub mod event_records;
 pub mod types;
 pub mod service;
-pub mod test_snapshots_service;
 pub mod utils;
 
-// const SNAPSHOTS_FETCHING_INTERVAL: u64 = 3600; // 1 hour
-const SNAPSHOTS_FETCHING_INTERVAL: u64 = 604_800; // 1 week
+const SNAPSHOTS_FETCHING_INTERVAL: u64 = 3600; // 1 hour
 
 // Module code: "03-02-01"
 errors::define_error_code_builder_fn!(
@@ -111,6 +109,12 @@ pub fn test_add_pool_snapshot(args: PoolSnapshotArgs) {
 #[update]
 pub fn test_delete_pool_snapshots(pool_id: String) {
     pools_repo::delete_pool_snapshots(pool_id);
+}
+
+// TODO: test method, remove after testing
+#[update]
+pub fn test_delete_all_snapshots() {
+    pools_repo::delete_all_snapshots();
 }
 
 // TODO: test method, remove after testing
@@ -185,7 +189,10 @@ pub fn test_create_test_snapshots(pool_id: String, tvl: u128, target_apy: f64) -
 // ========================== End of test method ==========================
 
 
-
+#[query]
+fn get_runtime_config() -> RuntimeConfig {
+    runtime_config_repo::get_runtime_config()
+}
 
 
 // ========================== Pools management ==========================
@@ -241,6 +248,19 @@ pub fn get_pools_snapshots(pool_ids: Vec<String>) -> GetPoolsSnapshotsResult {
 // ========================== Liquidity management ==========================
 
 #[update]
+pub async fn deposit_test_liquidity_to_pool(pool_id: String) -> AddLiquidityResult {
+    let context = generate_context();
+
+    let result = service::deposit_test_liquidity_to_pool(
+        context,
+        pool_id
+    ).await
+        .map_err(|error| ResponseError::from_internal_error(error));
+
+    AddLiquidityResult(result)
+}
+
+#[update]
 pub async fn add_liquidity_to_pool(
     ledger: CanisterId,
     pool_id: String,
@@ -289,13 +309,13 @@ pub fn get_event_records(offset: u64, limit: u64) -> GetEventRecordsResult {
 // ========================== Vault management ==========================
 #[init]
 #[candid_method(init)]
-async fn init(runtime_config: Option<RuntimeConfig>) {
-    let runtime_config = runtime_config.unwrap_or_default();
+async fn init(runtime_config: RuntimeConfig) {
     runtime_config_repo::set_runtime_config(runtime_config);
 
-    pool_service::init_pools();
+    // pool_service::init_pools();
     pool_snapshot_service::start_pool_snapshots_timer(SNAPSHOTS_FETCHING_INTERVAL);
 }
+
 
 #[pre_upgrade]
 fn pre_upgrade() {

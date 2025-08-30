@@ -294,7 +294,7 @@ type WithdrawLiquidityFromPoolStarted = record {
   pool_id : text;
 };
 
-service : (opt Conf, opt RuntimeConfig) -> {
+service : (opt Conf, RuntimeConfig) -> {
   deposit : (StrategyDepositArgs) -> (StrategyDepositResult);
   get_config : () -> (Conf) query;
   get_event_records : (ListItemsPaginationRequest) -> (GetEventRecordsResult);

@@ -33,7 +33,7 @@ use crate::types::types::{
     InitializeStrategyStatesResult,
 };
 
-const STRATEGY_HISTORY_FETCHING_INTERVAL: u64 = 1800; // 30 minutes
+const STRATEGY_HISTORY_FETCHING_INTERVAL: u64 = 3600; // 1 hour
 
 thread_local! {
     static FETCHING_TIMER_ID: RefCell<Option<TimerId>> = RefCell::new(None);
@@ -42,8 +42,7 @@ thread_local! {
 // =============== Initialization ===============
 
 #[init]
-fn init(runtime_config: Option<RuntimeConfig>) {
-    let runtime_config = runtime_config.unwrap_or_default();
+fn init(runtime_config: RuntimeConfig) {
     runtime_config_repo::set_runtime_config(runtime_config);
 
     scheduler_service::start_fetching_timer(STRATEGY_HISTORY_FETCHING_INTERVAL);

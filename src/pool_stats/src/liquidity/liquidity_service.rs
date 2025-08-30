@@ -2,15 +2,14 @@ use candid::Nat;
 
 use liquidity::liquidity_router::get_liquidity_client;
 use types::liquidity::{AddLiquidityResponse, WithdrawLiquidityResponse};
-use errors::internal_error::error::InternalError;
 use liquidity::liquidity_client::LiquidityClient;
 use types::context::Context;
+use errors::internal_error::error::InternalError;
 
 use crate::pools::pool::Pool;
 use crate::event_records::event_record_service;
 use crate::event_records::event_record::Event;
-use crate::utils::service_resolver::get_service_resolver;
-
+use crate::utils::service_resolver;
 
 pub async fn add_liquidity_to_pool(
     context: Context,
@@ -113,7 +112,7 @@ pub async fn withdraw_liquidity_from_pool(
 }
 
 async fn liquidity_client(pool: Pool) -> Box<dyn LiquidityClient> {
-    let service_resolver = get_service_resolver();
+    let service_resolver = service_resolver::get_service_resolver();
 
     get_liquidity_client(
         service_resolver.provider_impls(),

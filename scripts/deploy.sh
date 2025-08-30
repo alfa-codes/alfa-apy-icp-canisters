@@ -115,8 +115,8 @@ fi
 deploy_vault() {
     echo "Deploying vault..."
     dfx deploy vault --network $NETWORK --argument "(
-      opt record { controllers = null; },
-      opt record { environment = variant { $ENVIRONMENT } }
+        opt record { controllers = null; },
+        record { environment = variant { $ENVIRONMENT } }
     )"
     echo ""
 }
@@ -125,7 +125,7 @@ deploy_vault() {
 deploy_pool_stats() {
     echo "Deploying pool_stats..."
     dfx deploy pool_stats --network $NETWORK --argument "(
-      opt record { environment = variant { $ENVIRONMENT } }
+        record { environment = variant { $ENVIRONMENT } }
     )"
     echo ""
 }
@@ -134,7 +134,7 @@ deploy_pool_stats() {
 deploy_strategy_history() {
     echo "Deploying strategy_history..."
     dfx deploy strategy_history --network $NETWORK --argument "(
-      opt record { environment = variant { $ENVIRONMENT } }
+        record { environment = variant { $ENVIRONMENT } }
     )"
     echo ""
 }

@@ -487,15 +487,23 @@ impl LiquidityClient for ICPSwapLiquidityClient {
         ).await?;
 
         // 5. Deposit
+        // Reserve fee before deposit to avoid InsufficientFunds error
+        let available_for_deposit = if amount > token0_fee {
+            amount.clone() - token0_fee.clone()
+        } else {
+            Nat::from(0u64)
+        };
+
         let amount0_deposited = self.deposit_from(
             self.token0.clone(),
-            amount.clone(),
+            available_for_deposit,
             token0_fee.clone()
         ).await?;
 
         // Determine pool price (token1 per token0) and compute optimal split
         let token0_decimals = self.icrc_ledger_client.icrc1_decimals(self.token0.clone()).await?;
         let token1_decimals = self.icrc_ledger_client.icrc1_decimals(self.token1.clone()).await?;
+
         let pool_ratio_f64 = self.get_price(
             metadata.sqrtPriceX96.clone(),
             Nat::from(token0_decimals as u64),
@@ -508,16 +516,37 @@ impl LiquidityClient for ICPSwapLiquidityClient {
             is_zero_for_one_swap_direction,
             Nat::from(0u128)
         ).await?;
-        let swap_price_f64 = (nat_to_f64(&quote_full)) / (nat_to_f64(&amount0_deposited));
 
-        let split = LiquidityCalculator::calculate_token_amounts_for_deposit(
-            nat_to_f64(&amount0_deposited),
-            pool_ratio_f64,
-            swap_price_f64,
+        // Calculate swap price with proper decimal handling
+        let swap_price_f64 = 
+            (nat_to_f64(&quote_full) / 10_f64.powi(token1_decimals as i32)) / 
+            (nat_to_f64(&amount0_deposited) / 10_f64.powi(token0_decimals as i32));
+
+        let split =
+            LiquidityCalculator::calculate_token_amounts_for_deposit(
+                nat_to_f64(&amount0_deposited),
+                pool_ratio_f64,
+                swap_price_f64,
+            );
+
+        // panic!("DEBUG: amount0_deposited: {:?}, token0_decimals: {:?}, token1_decimals: {:?}, sqrtPriceX96: {:?}, is_zero_for_one_swap_direction: {:?}, quote_full: {:?}, pool_ratio_f64: {:?}, swap_price_f64: {:?}, split: {:?}", 
+        //     amount0_deposited, token0_decimals, token1_decimals, metadata.sqrtPriceX96, is_zero_for_one_swap_direction, quote_full, pool_ratio_f64, swap_price_f64, split);
+
+        // Reserve fees so transfers can succeed: reduce amounts to leave fee headroom
+        let token0_transfer_fee_u64 = nat_to_u64(&token0_fee);
+        
+        // Apply safety margin to avoid InsufficientFunds errors
+        // Reduce planned amounts by 5% to account for rounding and calculation precision
+        let safety_margin = 0.95; // 95% of calculated amounts
+        let safe_token0_for_swap = (split.token_0_for_swap * safety_margin).floor().max(0.0);
+        let safe_token0_for_pool = (split.token_0_for_pool * safety_margin).floor().max(0.0);
+        
+        let amount0_for_swap = Nat::from(
+            (safe_token0_for_swap as u128).saturating_sub(token0_transfer_fee_u64 as u128)
         );
-
-        let amount0_for_swap = Nat::from(split.token_0_for_swap as u128);
-        let amount0_for_pool = Nat::from(split.token_0_for_pool as u128);
+        let amount0_for_pool = Nat::from(
+            (safe_token0_for_pool as u128).saturating_sub(token0_transfer_fee_u64 as u128)
+        );
 
         // 6. Quote for planned swap amount and set slippage-protected min_out
         let quote_amount = self.quote(

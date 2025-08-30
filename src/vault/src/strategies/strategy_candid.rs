@@ -10,6 +10,7 @@ use crate::strategies::r#impl::ics_icp_strategy::IcsStrategy;
 use crate::strategies::r#impl::icp_ck_eth_strategy::IcpCkETHStrategy;
 use crate::strategies::r#impl::ck_btc_icp_strategy::CkBtcIcpStrategy;
 use crate::strategies::r#impl::gldt_ck_usdt_strategy::GldtCkUsdtStrategy;
+use crate::strategies::r#impl::ck_link_icp_strategy::CkLinkIcpStrategy;
 use crate::strategies::strategy::IStrategy;
 
 #[derive(Clone, Debug, CandidType, Serialize, Deserialize)]
@@ -30,6 +31,8 @@ pub enum StrategyCandid {
     CkBtcIcpStrategyV(CkBtcIcpStrategy),
     #[allow(non_camel_case_types)]
     GldtCkUsdtStrategyV(GldtCkUsdtStrategy),
+    #[allow(non_camel_case_types)]
+    CkLinkIcpStrategyV(CkLinkIcpStrategy),
 }
 
 pub trait Candid {
@@ -49,6 +52,7 @@ impl Candid for StrategyCandid {
             StrategyCandid::IcpCkETHStrategyV(strategy) => Box::new(strategy.clone()),
             StrategyCandid::CkBtcIcpStrategyV(strategy) => Box::new(strategy.clone()),
             StrategyCandid::GldtCkUsdtStrategyV(strategy) => Box::new(strategy.clone()),
+            StrategyCandid::CkLinkIcpStrategyV(strategy) => Box::new(strategy.clone()),
         }
     }
 }
