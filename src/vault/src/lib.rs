@@ -10,8 +10,11 @@ mod utils;
 
 use std::cell::RefCell;
 use candid::{candid_method, export_service, Nat, Principal};
-use ic_cdk::caller;
-use ic_cdk_macros::{init, post_upgrade, pre_upgrade, query, update};
+use candid::{CandidType, Deserialize};
+
+use ic_cdk::{call, id, trap, caller};
+use ic_cdk::api::call::CallResult;
+use ic_cdk_macros::{init, post_upgrade, pre_upgrade, update, query};
 
 use errors::response_error::error::ResponseError;
 use ::types::CanisterId;
@@ -28,6 +31,12 @@ use crate::strategies::stats::strategy_stats_service;
 use crate::utils::service_resolver::get_service_resolver;
 
 const STRATEGY_STATS_FETCHING_INTERVAL: u64 = 3600; // 1 hour
+
+#[derive(CandidType, Debug, Clone, Deserialize)]
+pub struct CanisterIdRequest {
+    #[serde(rename = "canister_id")]
+    pub canister_id: Principal,
+}
 
 thread_local! {
     pub static HEARTBEAT: RefCell<u64> = RefCell::new(0);
@@ -57,11 +66,25 @@ fn heartbeat() {
     });
 }
 
+// Macro for operator authorization check
+macro_rules! trap_if_not_authenticated {
+    () => {
+        let caller = ic_cdk::caller();
+        let controllers = config_repo::get_controllers();
+
+        if controllers.is_none() || !controllers.unwrap().contains(&caller) {
+            trap("Unauthorized: caller is not a controller");
+        }   
+    }
+}
+
 // =============== Test functions ===============
 
 // TODO: Test function. Remove after testing.
 #[update]
 async fn test_icpswap_withdraw(token_out: CanisterId, amount: Nat, token_fee: Nat) -> Nat {
+    trap_if_not_authenticated!();
+
     let canister_id = Principal::from_text("5fq4w-lyaaa-aaaag-qjqta-cai").unwrap();
 
     let service_resolver = get_service_resolver();
@@ -81,6 +104,8 @@ async fn test_icpswap_withdraw(token_out: CanisterId, amount: Nat, token_fee: Na
 // TODO: Test function. Remove after testing.
 #[update]
 async fn test_reset_strategy(strategy_id: u16) {
+    trap_if_not_authenticated!();
+
     let mut strategy = strategies_repo::get_strategy_by_id(strategy_id).unwrap();
     strategy.test_reset_strategy().await;
 }
@@ -88,12 +113,16 @@ async fn test_reset_strategy(strategy_id: u16) {
 // TODO: Test function. Remove after testing.
 #[update]
 async fn test_update_strategy_stats() {
+    trap_if_not_authenticated!();
+
     strategy_stats_service::update_all_strategy_liquidity().await;
 }
 
 // TODO: Test function. Remove after testing.
 #[update]
 async fn rebalance_strategy(strategy_id: u16) -> StrategyRebalanceResult {
+    trap_if_not_authenticated!();
+
     let mut strategy = strategies_repo::get_strategy_by_id(strategy_id).unwrap();
     let result = strategy.rebalance().await
         .map_err(|error| ResponseError::from_internal_error(error));
@@ -178,6 +207,8 @@ async fn user_strategies(user: Principal) -> Vec<UserStrategyResponse> {
 
 #[update]
 async fn test_set_strategy_enabled(strategy_id: u16, enabled: bool) {
+    trap_if_not_authenticated!();
+
     let mut strategy = strategies_repo::get_strategy_by_id(strategy_id).unwrap();
     strategy.set_enabled(enabled);
     strategies_repo::save_strategy(strategy);
@@ -196,6 +227,31 @@ fn get_strategies() -> Vec<StrategyResponse> {
 #[query]
 fn get_config() -> Conf {
     config_repo::get_config()
+}
+
+#[update]
+async fn set_controller(controller: Principal) {
+    let canister_controllers = get_canister_controllers().await;
+    if !canister_controllers.contains(&ic_cdk::caller()) {
+        trap("Unauthorized: caller is not a controller");
+    }
+    config_repo::add_controller(controller);
+}
+
+#[query]
+async fn get_canister_controllers() -> Vec<Principal> {
+    let res: CallResult<(ic_cdk::api::management_canister::main::CanisterStatusResponse,)> = call(
+        Principal::management_canister(),
+        "canister_status",
+        (CanisterIdRequest { canister_id: id() },),
+    ).await;
+
+    res
+        .expect(
+            "Get controllers function exited unexpectedly:\n\
+            inter-canister call to management canister for canister_status returned an empty result."
+        )
+        .0.settings.controllers
 }
 
 

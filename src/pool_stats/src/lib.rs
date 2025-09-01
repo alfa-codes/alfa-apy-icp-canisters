@@ -18,6 +18,18 @@ use errors::internal_error::error_codes::module::areas::{
 };
 use ic_cdk_macros::{init, post_upgrade, pre_upgrade};
 
+// Macro for operator authorization check
+macro_rules! trap_if_not_authenticated {
+    () => {
+        let caller = ic_cdk::caller();
+        let operator = CONFIG.with(|config| config.borrow().operator);
+
+        if operator.is_none() || operator.unwrap() != caller {
+            trap("Unauthorized: caller is not a operator");
+        }
+    }
+}
+
 use crate::pool_snapshots::pool_snapshot::PoolSnapshot;
 use crate::pool_snapshots::{pool_snapshot_service, test_snapshots_service};
 use crate::pools::pool::Pool;
@@ -94,6 +106,8 @@ pub struct PoolSnapshotArgs {
 // TODO: test method, remove after testing
 #[update]
 pub fn test_add_pool_snapshot(args: PoolSnapshotArgs) {
+    trap_if_not_authenticated!();
+
     let snapshot = PoolSnapshot::new(
         (pools_repo::get_pool_snapshots_count(args.pool_id.clone()) + 1).to_string(),
         args.pool_id,
@@ -107,24 +121,32 @@ pub fn test_add_pool_snapshot(args: PoolSnapshotArgs) {
 // TODO: test method, remove after testing
 #[update]
 pub fn test_delete_pool_snapshots(pool_id: String) {
+    trap_if_not_authenticated!();
+
     pools_repo::delete_pool_snapshots(pool_id);
 }
 
 // TODO: test method, remove after testing
 #[update]
 pub fn test_delete_all_snapshots() {
+    trap_if_not_authenticated!();
+
     pools_repo::delete_all_snapshots();
 }
 
 // TODO: test method, remove after testing
 #[update]
 pub fn test_delete_pool_snapshot(pool_id: String, snapshot_id: String) {
+    trap_if_not_authenticated!();
+
     pools_repo::delete_pool_snapshot(pool_id, snapshot_id);
 }
 
 // TODO: test method, remove after testing
 #[update]
 pub fn test_update_pool_ids() {
+    trap_if_not_authenticated!();
+
     let pools = pools_repo::get_pools();
     for mut pool in pools {
         let new_id = Pool::generate_pool_id(&pool.token0, &pool.token1, &pool.provider);
@@ -136,6 +158,8 @@ pub fn test_update_pool_ids() {
 // TODO: test method, remove after testing
 #[update]
 pub fn test_delete_all_pools_and_snapshots() {
+    trap_if_not_authenticated!();
+
     pools_repo::delete_all_pools_and_snapshots()
 }
 
@@ -145,6 +169,8 @@ pub struct TestCreatePoolSnapshotResult(pub Result<PoolSnapshot, ResponseError>)
 
 #[update]
 pub async fn test_create_pool_snapshot(pool_id: String) -> TestCreatePoolSnapshotResult {
+    trap_if_not_authenticated!();
+
     let context = Context::generate(None, None);
 
     let pool = pools_repo::get_pool_by_id(pool_id.clone());
@@ -178,12 +204,7 @@ pub struct TestCreateTestSnapshotsResult(pub Result<(), ResponseError>);
 
 #[update]
 pub fn test_create_test_snapshots(pool_id: String, tvl: u128, target_apy: f64) -> TestCreateTestSnapshotsResult {
-    let caller = ic_cdk::caller();
-    let operators = CONFIG.with(|config| config.borrow().operator);
-
-    if operators.is_none() || operators.unwrap() != caller {
-        trap("Unauthorized: caller is not a operator");
-    }
+    trap_if_not_authenticated!();
 
     let result = 
         test_snapshots_service::create_test_snapshots(pool_id, tvl, target_apy)
@@ -205,6 +226,8 @@ fn get_runtime_config() -> RuntimeConfig {
 
 #[update]
 pub fn add_pool(token0: CanisterId, token1: CanisterId, provider: ExchangeId) -> AddPoolResult {
+    trap_if_not_authenticated!();
+
     let result = service::add_pool(token0, token1, provider)
         .map_err(|error| ResponseError::from_internal_error(error));
 
@@ -213,6 +236,8 @@ pub fn add_pool(token0: CanisterId, token1: CanisterId, provider: ExchangeId) ->
 
 #[update]
 pub fn delete_pool(id: String) -> DeletePoolResult {
+    trap_if_not_authenticated!();
+
     let result = service::delete_pool(id)
         .map_err(|error| ResponseError::from_internal_error(error));
 
@@ -255,6 +280,8 @@ pub fn get_pools_snapshots(pool_ids: Vec<String>) -> GetPoolsSnapshotsResult {
 
 #[update]
 pub async fn deposit_test_liquidity_to_pool(pool_id: String) -> AddLiquidityResult {
+    trap_if_not_authenticated!();
+
     let context = generate_context();
 
     let result = service::deposit_test_liquidity_to_pool(
@@ -272,6 +299,8 @@ pub async fn add_liquidity_to_pool(
     pool_id: String,
     amount: Nat
 ) -> AddLiquidityResult {
+    trap_if_not_authenticated!();
+
     let context = generate_context();
 
     let result = service::add_liquidity_to_pool(
@@ -287,6 +316,8 @@ pub async fn add_liquidity_to_pool(
 
 #[update]
 pub async fn withdraw_liquidity_from_pool(pool_id: String) -> WithdrawLiquidityResult {
+    trap_if_not_authenticated!();
+
     let context = generate_context();
 
     let result = service::withdraw_liquidity_from_pool(

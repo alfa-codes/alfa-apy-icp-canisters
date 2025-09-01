@@ -40,6 +40,17 @@ pub fn set_controllers(controllers: Option<Vec<Principal>>) {
     });
 }
 
+pub fn add_controller(controller: Principal) {
+    let controllers = get_controllers();
+    if controllers.is_none() {
+        set_controllers(Some(vec![controller]));
+    } else {
+        let mut controllers_vec = controllers.unwrap().clone();
+        controllers_vec.push(controller);
+        set_controllers(Some(controllers_vec));
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
