@@ -8,7 +8,7 @@
 
 ### Automatically maximize returns through intelligent liquidity management, real-time APY tracking, and dynamic asset rebalancing across multiple DEX providers.
 
-## 🌟 [Live Application](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/)
+## 🌟 [Live Application](https://5ac7m-miaaa-aaaah-qqfgq-cai.icp0.io/)
 
 
 ## What is ALFA APY?
@@ -84,6 +84,6 @@ Advanced algorithm that evaluates pools using:
 
 ## Community & Support
 
-- **Website**: [https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/](https://47r3x-paaaa-aaaao-qj6ha-cai.icp0.io/)
+- **Website**: [https://5ac7m-miaaa-aaaah-qqfgq-cai.icp0.io/](https://5ac7m-miaaa-aaaah-qqfgq-cai.icp0.io/)
 - **Internet Computer**: [https://internetcomputer.org](https://internetcomputer.org)
 - **DFINITY Foundation**: [https://dfinity.org](https://dfinity.org)
