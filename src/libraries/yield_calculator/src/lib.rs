@@ -1,10 +1,11 @@
 use candid::Nat;
-use utils::util::nat_to_u128;
+use utils::util::{nat_to_f64, nat_to_u128};
 
 pub const SECONDS_PER_DAY: u64 = 86_400;      // 60 * 60 * 24
 pub const SECONDS_PER_WEEK: u64 = 604_800;    // 86_400 * 7
 pub const SECONDS_PER_MONTH: u64 = 2_592_000; // 86_400 * 30
 pub const SECONDS_PER_YEAR: u64 = 31_536_000; // 86_400 * 365
+pub const WEEKS_PER_YEAR: u64 = 52;
 
 /// Standard time periods for yield calculation
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -75,26 +76,54 @@ impl<'a, T: YieldSnapshot> SnapshotYieldCalculator<'a, T> {
         let initial_value = extract_value(first_snapshot);
         let final_value = extract_value(last_snapshot);
 
-        let period_seconds = last_snapshot.get_timestamp() - first_snapshot.get_timestamp();
-        let period_days = period_seconds as f64 / SECONDS_PER_DAY as f64;
+        // let period_seconds = last_snapshot.get_timestamp() - first_snapshot.get_timestamp();
+        // let period_days = period_seconds as f64 / SECONDS_PER_DAY as f64;
 
-        if initial_value <= Nat::from(0u64) || period_days <= 0.0 {
-            return 0.0;
-        }
+        // if initial_value <= Nat::from(0u64) || period_days <= 0.0 {
+        //     return 0.0;
+        // }
 
-        let growth_factor = nat_to_u128(&final_value) as f64 / nat_to_u128(&initial_value) as f64;
+        // let growth_factor = nat_to_u128(&final_value) as f64 / nat_to_u128(&initial_value) as f64;
 
-        if growth_factor >= 1.0 {
-            // growth -> APY
-            let apy = growth_factor.powf(365.0 / period_days) - 1.0;
+        // if growth_factor >= 1.0 {
+        //     // growth -> APY
+        //     let apy = growth_factor.powf(365.0 / period_days) - 1.0;
 
-            return apy * 100.0;
+        //     return apy * 100.0;
+        // } else {
+        //     // fall -> percent loss
+        //     let percent_loss = (growth_factor - 1.0) * 100.0;
+
+        //     return percent_loss;
+        // }
+
+
+        // Handle both positive and negative yields
+        let (yield_decimal, is_positive) = if final_value >= initial_value {
+            // Positive yield
+            let change = final_value.clone() - initial_value.clone();
+            let yield_decimal = nat_to_f64(&change) / nat_to_f64(&initial_value);
+            (yield_decimal, true)
         } else {
-            // fall -> percent loss
-            let percent_loss = (growth_factor - 1.0) * 100.0;
+            // Negative yield (loss)
+            let change = initial_value.clone() - final_value.clone();
+            let yield_decimal = nat_to_f64(&change) / nat_to_f64(&initial_value);
+            (yield_decimal, false)
+        };
 
-            return percent_loss;
-        }
+        // Calculate APY using compound interest formula
+        let apy_decimal = if is_positive {
+            // APY = (1 + weekly_yield)^weeks_per_year - 1 (compound interest)
+            (1.0 + yield_decimal).powf(WEEKS_PER_YEAR as f64) - 1.0
+        } else {
+            // For losses: APY = (1 - weekly_yield)^weeks_per_year - 1
+            (1.0 - yield_decimal).powf(WEEKS_PER_YEAR as f64) - 1.0
+        };
+
+        // Convert to percentage (multiply by 100)
+        let apy_percentage = apy_decimal * 100.0;
+
+        return apy_percentage;
     }
 }
 

@@ -184,3 +184,17 @@ pub fn delete_all_snapshots_for_strategy(strategy_id: u16) {
         strategy_snapshots.borrow_mut().remove(&strategy_id);
     });
 }
+
+pub fn remove_zero_liquidity_snapshots() {
+    STRATEGY_SNAPSHOTS.with(|strategy_snapshots| {
+        let mut strategy_snapshots = strategy_snapshots.borrow_mut();
+
+        // Iterate through each strategy's snapshots
+        for snapshots in strategy_snapshots.values_mut() {
+            // Remove snapshots where test_liquidity_amount is None
+            snapshots.retain(|snapshot| {
+                snapshot.test_liquidity_amount.is_some()
+            });
+        }
+    });
+}

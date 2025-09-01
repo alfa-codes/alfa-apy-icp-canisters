@@ -135,6 +135,11 @@ async fn test_create_snapshots(request: CreateTestSnapshotsRequest) -> CreateTes
 }
 
 #[update]
+async fn test_remove_zero_liquidity_snapshots() {
+    repository::snapshots_repo::remove_zero_liquidity_snapshots();
+}
+
+#[update]
 fn test_delete_strategy_state(strategy_id: StrategyId) {
     strategy_states_service::delete_strategy_state(strategy_id);
 }

@@ -154,4 +154,5 @@ service : (RuntimeConfig) -> {
   test_save_strategy_snapshot : (StrategySnapshot) -> (
       SaveStrategySnapshotResult,
     );
+  test_remove_zero_liquidity_snapshots : () -> ();
 };

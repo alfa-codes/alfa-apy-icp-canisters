@@ -192,7 +192,7 @@ lazy_static! {
         });
 
         strategy_map.insert(10, StrategyInfo {
-            name: "CKLINK-ICP Balanced Strategy".to_string(),
+            name: "ckLINK-ICP Balanced Strategy".to_string(),
             description: "A balanced strategy that maintains stable exposure to CKLINK while providing liquidity to ICP pairs across KongSwap and ICPSwap exchanges, designed for consistent returns in the LINK-backed token market.".to_string(),
             base_token: *CKLINK_TOKEN_CANISTER_ID,
             pools: vec![

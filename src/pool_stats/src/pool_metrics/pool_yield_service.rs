@@ -4,6 +4,8 @@ use yield_calculator::{YieldSnapshot, TimePeriod};
 use crate::pool_snapshots::pool_snapshot::PoolSnapshot;
 use crate::pool_metrics::pool_metrics::ApyValue;
 
+const DEFAULT_PERIOD: TimePeriod = TimePeriod::Week1;
+
 impl YieldSnapshot for PoolSnapshot {
     fn get_timestamp(&self) -> u64 {
         self.timestamp
@@ -14,7 +16,7 @@ pub fn calculate_pool_yield(snapshots: &[PoolSnapshot], now: u64) -> ApyValue {
     // Calculate USD APY for all time period
     let usd_apy = yield_calculator::calculate_snapshot_yield_for_period(
         snapshots,
-        TimePeriod::All,
+        DEFAULT_PERIOD,
         now,
         |snapshot: &PoolSnapshot| {
             snapshot.position_data
@@ -29,7 +31,7 @@ pub fn calculate_pool_yield(snapshots: &[PoolSnapshot], now: u64) -> ApyValue {
     let tokens_apy = if snapshots.len() >= 2 {
         let apy_token0 = yield_calculator::calculate_snapshot_yield_for_period(
             snapshots,
-            TimePeriod::All,
+            DEFAULT_PERIOD,
             now,
             |snapshot: &PoolSnapshot| {
                 snapshot.position_data.as_ref().unwrap().amount0.clone()
@@ -37,7 +39,7 @@ pub fn calculate_pool_yield(snapshots: &[PoolSnapshot], now: u64) -> ApyValue {
         );
         let apy_token1 = yield_calculator::calculate_snapshot_yield_for_period(
             snapshots,
-            TimePeriod::All,
+            DEFAULT_PERIOD,
             now,
             |snapshot: &PoolSnapshot| {
                 snapshot.position_data.as_ref().unwrap().amount1.clone()

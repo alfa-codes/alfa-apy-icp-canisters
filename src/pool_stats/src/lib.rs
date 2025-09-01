@@ -77,7 +77,6 @@ thread_local! {
 }
 
 
-
 // ========================== Test methods ==========================
 
 // TODO: test method, remove after testing
@@ -179,6 +178,13 @@ pub struct TestCreateTestSnapshotsResult(pub Result<(), ResponseError>);
 
 #[update]
 pub fn test_create_test_snapshots(pool_id: String, tvl: u128, target_apy: f64) -> TestCreateTestSnapshotsResult {
+    let caller = ic_cdk::caller();
+    let operators = CONFIG.with(|config| config.borrow().operator);
+
+    if operators.is_none() || operators.unwrap() != caller {
+        trap("Unauthorized: caller is not a operator");
+    }
+
     let result = 
         test_snapshots_service::create_test_snapshots(pool_id, tvl, target_apy)
             .map_err(|error| ResponseError::from_internal_error(error));

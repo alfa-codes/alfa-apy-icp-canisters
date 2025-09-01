@@ -1,4 +1,5 @@
 use ::types::strategies::StrategyId;
+use yield_calculator::{TimePeriod};
 use errors::internal_error::error::{InternalError, InternalErrorKind};
 use errors::internal_error::error_codes::module::areas::{
     canisters as canister_area,
@@ -6,6 +7,8 @@ use errors::internal_error::error_codes::module::areas::{
     canisters::domains::strategy_history::components as strategy_history_domain_components,
 };
 
+use crate::strategy_snapshot::strategy_snapshot::StrategySnapshot;
+use crate::services::strategy_yield_service;
 use crate::repository::{strategy_states_repo, snapshots_repo};
 use crate::vault::vault_service;
 use crate::services::{strategy_snapshots_service, strategy_states_service};
@@ -161,11 +164,65 @@ pub async fn get_strategies_history(
     let strategy_metrics = snapshots_by_strategy
         .iter()
         .map(|(strategy_id, snapshots)| {
+            let recalculated_snapshots = recalculate_strategies_snapshots(
+                snapshots.clone(),
+            );
+
             StrategyHistory {
                 strategy_id: *strategy_id,
-                snapshots: snapshots.clone(),
+                snapshots: recalculated_snapshots,
             }
         }).collect();
 
     Ok(strategy_metrics)
+}
+
+fn recalculate_strategies_snapshots(
+    strategy_snapshots: Vec<StrategySnapshot>
+) -> Vec<StrategySnapshot> {
+    let mut recalculated_snapshots = Vec::new();
+
+    // First pass: calculate raw APY for all snapshots
+    for snapshot in &strategy_snapshots {
+        let mut updated_snapshot = snapshot.clone();
+
+        let apy = strategy_yield_service::calculate_strategy_yield(
+            &strategy_snapshots, 
+            snapshot.timestamp
+        );
+
+        updated_snapshot.apy = apy;
+        recalculated_snapshots.push(updated_snapshot);
+    }
+
+    // Second pass: smooth APY values to reduce spikes for better graphs
+    let smoothed_snapshots = smooth_apy_values(&recalculated_snapshots);
+
+    smoothed_snapshots
+}
+
+// Smooth APY values using moving average to reduce extreme spikes
+fn smooth_apy_values(snapshots: &[StrategySnapshot]) -> Vec<StrategySnapshot> {
+    let mut smoothed_snapshots = Vec::new();
+    let window_size = 5; // 5-snapshot moving average for better smoothing
+
+    for (i, snapshot) in snapshots.iter().enumerate() {
+        let mut smoothed_snapshot = snapshot.clone();
+
+        // Calculate moving average for APY
+        let start_idx = if i >= window_size - 1 { i - (window_size - 1) } else { 0 };
+        let end_idx = i + 1;
+
+        let apy_values: Vec<f64> = snapshots[start_idx..end_idx]
+            .iter()
+            .map(|s| s.apy)
+            .collect();
+
+        let avg_apy = apy_values.iter().sum::<f64>() / apy_values.len() as f64;
+        smoothed_snapshot.apy = avg_apy;
+
+        smoothed_snapshots.push(smoothed_snapshot);
+    }
+
+    smoothed_snapshots
 }

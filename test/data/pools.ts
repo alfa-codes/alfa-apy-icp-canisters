@@ -116,7 +116,7 @@ export const POOLS = [
   //   token1: TOKENS.CKUSDT
   // },
 
-  // // Strategy 10: CKLINK-ICP Balanced Strategy
+  // // Strategy 10: ckLINK-ICP Balanced Strategy
   // {
   //   id: `${PROVIDERS.KongSwap}_${TOKENS.CKLINK}_${TOKENS.ICP}`, // KongSwap_g4tto-rqaaa-aaaar-qageq-cai_ryjl3-tyaaa-aaaaa-aaaba-cai
   //   provider: PROVIDERS.KongSwap,

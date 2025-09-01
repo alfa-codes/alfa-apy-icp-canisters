@@ -26,7 +26,7 @@ use crate::types::external_canister_types::{
     StrategyDepositResponse,
 };
 
-const ICP_AMOUNT_FOR_DEPOSIT: u64 = 10_000_000; // 0.1 ICP
+const ICP_AMOUNT_FOR_DEPOSIT: u64 = 100_000_000; // 1 ICP
 
 // Module code: "03-03-01"
 errors::define_error_code_builder_fn!(
@@ -67,10 +67,10 @@ pub async fn initialize_strategy_states_with_list(
             vault_strategy.id
         ).unwrap_or_default();
 
-        if strategy_state.is_initialized() {
-            skipped_already_initialized_strategy_states.push(vault_strategy.id);
-            continue;
-        }
+        // if strategy_state.is_initialized() {
+        //     skipped_already_initialized_strategy_states.push(vault_strategy.id);
+        //     continue;
+        // }
 
         let deposit_icp_amount = Nat::from(ICP_AMOUNT_FOR_DEPOSIT);
 
