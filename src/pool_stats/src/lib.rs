@@ -45,8 +45,9 @@ use crate::types::types::{
     GetPoolsResult,
     GetPoolByIdResult,
     GetPoolMetricsResult,
-    GetPoolsSnapshotsResult,
     GetEventRecordsResult,
+    GetPoolsHistoryRequest,
+    GetPoolsHistoryResult,
 };
 
 pub mod pools;
@@ -270,10 +271,14 @@ pub fn get_pool_metrics(pool_ids: Vec<String>) -> GetPoolMetricsResult {
 }
 
 #[update]
-pub fn get_pools_snapshots(pool_ids: Vec<String>) -> GetPoolsSnapshotsResult {
-    let result = service::get_pools_snapshots(pool_ids);
+pub fn get_pools_history(request: GetPoolsHistoryRequest) -> GetPoolsHistoryResult {
+    let result = service::get_pools_history(
+        request.pool_ids,
+        request.from_timestamp,
+        request.to_timestamp
+    ).map_err(|error| ResponseError::from_internal_error(error));
 
-    GetPoolsSnapshotsResult(result)
+    GetPoolsHistoryResult(result)
 }
 
 // ========================== Liquidity management ==========================

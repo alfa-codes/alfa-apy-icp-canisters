@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 use crate::pools::pool::Pool;
 use crate::pool_snapshots::pool_snapshot::PoolSnapshot;
@@ -57,6 +58,61 @@ pub fn get_pool_snapshots(pool_id: String) -> Option<Vec<PoolSnapshot>> {
 pub fn get_pool_snapshots_count(pool_id: String) -> u32 {
     POOLS_SNAPSHOTS.with(|snapshots| {
         snapshots.borrow().get(&pool_id).map(|snapshots| snapshots.len() as u32).unwrap_or(0)
+    })
+}
+
+pub fn get_all_snapshots_grouped() -> HashMap<String, Vec<PoolSnapshot>> {
+    POOLS_SNAPSHOTS.with(|snapshots| {
+        snapshots.borrow().clone()
+    })
+}
+
+pub fn get_all_pool_snapshots_in_range(
+    from_timestamp: u64,
+    to_timestamp: u64
+) -> HashMap<String, Vec<PoolSnapshot>> {
+    get_all_snapshots_grouped()
+        .into_iter()
+        .fold(HashMap::new(), |mut acc, (pool_id, snapshots)| {
+            let filtered_snapshots: Vec<PoolSnapshot> = snapshots
+                .into_iter()
+                .filter(|snapshot| {
+                    snapshot.timestamp >= from_timestamp && snapshot.timestamp <= to_timestamp
+                })
+                .collect();
+
+            if !filtered_snapshots.is_empty() {
+                acc.insert(pool_id, filtered_snapshots);
+            }
+            acc
+        })
+}
+
+pub fn get_pool_snapshots_by_pool_ids_in_range(
+    pool_ids: Vec<String>,
+    from_timestamp: u64,
+    to_timestamp: u64,
+) -> HashMap<String, Vec<PoolSnapshot>> {
+    let pool_ids_set: HashSet<String> = pool_ids.into_iter().collect();
+
+    POOLS_SNAPSHOTS.with(|snapshots| {
+        snapshots.borrow()
+            .iter()
+            .filter(|(pool_id, _)| pool_ids_set.contains(*pool_id))
+            .fold(HashMap::new(), |mut acc, (pool_id, snapshots)| {
+                let filtered_snapshots: Vec<PoolSnapshot> = snapshots
+                    .iter()
+                    .filter(|snapshot| {
+                        snapshot.timestamp >= from_timestamp && snapshot.timestamp <= to_timestamp
+                    })
+                    .cloned()
+                    .collect();
+
+                if !filtered_snapshots.is_empty() {
+                    acc.insert(pool_id.clone(), filtered_snapshots);
+                }
+                acc
+            })
     })
 }
 

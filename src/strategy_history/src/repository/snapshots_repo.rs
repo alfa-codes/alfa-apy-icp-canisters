@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 use crate::strategy_snapshot::strategy_snapshot::StrategySnapshot;
 
@@ -122,7 +123,7 @@ pub fn get_all_snapshots_grouped_in_range(
                     snapshot.timestamp >= from_timestamp && snapshot.timestamp <= to_timestamp
                 })
                 .collect();
-            
+
             if !filtered_snapshots.is_empty() {
                 acc.insert(strategy_id, filtered_snapshots);
             }
@@ -135,7 +136,7 @@ pub fn get_snapshots_grouped_by_strategy_ids_in_range(
     from_timestamp: u64,
     to_timestamp: u64,
 ) -> HashMap<u16, Vec<StrategySnapshot>> {
-    let strategy_ids_set: std::collections::HashSet<u16> = strategy_ids.into_iter().collect();
+    let strategy_ids_set: HashSet<u16> = strategy_ids.into_iter().collect();
     
     STRATEGY_SNAPSHOTS.with(|strategy_snapshots| {
         strategy_snapshots.borrow()

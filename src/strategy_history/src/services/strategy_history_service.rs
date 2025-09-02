@@ -161,7 +161,7 @@ pub async fn get_strategies_history(
             to_timestamp,
         )
     };
-    let strategy_metrics = snapshots_by_strategy
+    let strategy_histories = snapshots_by_strategy
         .iter()
         .map(|(strategy_id, snapshots)| {
             let recalculated_snapshots = recalculate_strategies_snapshots(
@@ -174,7 +174,7 @@ pub async fn get_strategies_history(
             }
         }).collect();
 
-    Ok(strategy_metrics)
+    Ok(strategy_histories)
 }
 
 fn recalculate_strategies_snapshots(

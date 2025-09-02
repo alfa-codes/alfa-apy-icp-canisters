@@ -19,13 +19,16 @@ use errors::internal_error::error_codes::module::areas::{
 use crate::pool_snapshots::pool_snapshot_service;
 use crate::pool_snapshots::pool_snapshot::PoolSnapshot;
 use crate::pools::pool::Pool;
-use crate::pool_metrics::pool_metrics::PoolMetrics;
+use crate::pool_metrics::pool_metrics::{PoolMetrics, ApyValue};
+use crate::pool_metrics::pool_yield_service;
 use crate::pool_metrics::pool_metrics_service;
 use crate::repository::pools_repo;
 use crate::liquidity::liquidity_service;
 use crate::repository::event_records_repo;
 use crate::event_records::event_record::EventRecord;
 use crate::utils::service_resolver;
+use crate::types::types::{PoolHistory};
+use crate::pool_snapshots::pool_snapshot::PoolSnapshotResponse;
 
 const ICP_AMOUNT_FOR_DEPOSIT: u64 = 10_000_000; // 0.1 ICP
 
@@ -92,13 +95,108 @@ pub fn get_pool_metrics(pool_ids: Vec<String>) -> HashMap<String, PoolMetrics> {
         .collect()
 }
 
-pub fn get_pools_snapshots(pool_ids: Vec<String>) -> HashMap<String, Vec<PoolSnapshot>> {
-    pool_ids.into_iter()
-        .filter_map(|pool_id| {
-            pools_repo::get_pool_by_id(pool_id.clone())
-                .map(|pool| (pool_id, pools_repo::get_pool_snapshots(pool.id).unwrap_or_default()))
-        })
-        .collect()
+pub fn get_pools_history(
+    pool_ids: Option<Vec<String>>,
+    from_timestamp: Option<u64>,
+    to_timestamp: Option<u64>
+) -> Result<Vec<PoolHistory>, InternalError> {
+    let pool_ids = pool_ids.unwrap_or_default();
+    let from_timestamp = from_timestamp.unwrap_or(0);
+    let to_timestamp = to_timestamp.unwrap_or(u64::MAX);
+
+    if from_timestamp > to_timestamp {
+        return Err(InternalError::business_logic(
+            build_error_code(InternalErrorKind::BusinessLogic, 10), // Error code: "03-02-01 03 10"
+            "service::get_pools_history".to_string(),
+            "from_timestamp cannot be greater than to_timestamp".to_string(),
+            errors::error_extra! {
+                "pool_ids" => pool_ids,
+                "from_timestamp" => from_timestamp,
+                "to_timestamp" => to_timestamp,
+            },
+        ));
+    }
+
+    let snapshots_by_pool = if pool_ids.is_empty() {
+        // If pool_ids is empty, get all pools
+        pools_repo::get_all_pool_snapshots_in_range(from_timestamp, to_timestamp)
+    } else {
+        // Get only specified pools
+        pools_repo::get_pool_snapshots_by_pool_ids_in_range(pool_ids, from_timestamp, to_timestamp)
+    };
+
+    let pool_histories = snapshots_by_pool
+        .iter()
+        .map(|(pool_id, snapshots)| {
+            let pool_snapshot_responses = recalculate_pools_snapshots(
+                snapshots.clone(),
+            );
+
+            PoolHistory {
+                pool_id: pool_id.clone(),
+                snapshots: pool_snapshot_responses,
+            }
+        }).collect();
+
+    Ok(pool_histories)
+}
+
+fn recalculate_pools_snapshots(
+    pool_snapshots: Vec<PoolSnapshot>
+) -> Vec<PoolSnapshotResponse> {
+    let mut pool_snapshot_responses = Vec::new();
+
+    for snapshot in &pool_snapshots {
+        let updated_snapshot = snapshot.clone();
+
+        let apy_value = pool_yield_service::calculate_pool_yield(
+            &pool_snapshots,
+            snapshot.timestamp
+        );
+
+        let pool_snapshot_response = 
+            PoolSnapshotResponse::from_snapshot_with_apy(updated_snapshot, apy_value);
+
+        pool_snapshot_responses.push(pool_snapshot_response);
+    }
+
+    // Second pass: smooth APY values to reduce spikes for better graphs
+    let smoothed_snapshots = smooth_apy_values(
+        &pool_snapshot_responses,
+    );
+
+    smoothed_snapshots
+}
+
+// Smooth APY values using moving average to reduce extreme spikes
+fn smooth_apy_values(snapshots: &[PoolSnapshotResponse]) -> Vec<PoolSnapshotResponse> {
+    let mut smoothed_snapshots = Vec::new();
+    let window_size = 5; // 5-snapshot moving average for better smoothing
+
+    for (i, snapshot) in snapshots.iter().enumerate() {
+        let mut smoothed_snapshot = snapshot.clone();
+
+        // Calculate moving average for APY
+        let start_idx = if i >= window_size - 1 { i - (window_size - 1) } else { 0 };
+        let end_idx = i + 1;
+
+        let apy_values: Vec<ApyValue> = snapshots[start_idx..end_idx]
+            .iter()
+            .map(|s| s.apy.clone())
+            .collect();
+
+        let avg_tokens_apy = apy_values.iter().map(|s| s.tokens_apy).sum::<f64>() / apy_values.len() as f64;
+        let avg_usd_apy = apy_values.iter().map(|s| s.usd_apy).sum::<f64>() / apy_values.len() as f64;
+
+        smoothed_snapshot.apy = ApyValue {
+            tokens_apy: avg_tokens_apy,
+            usd_apy: avg_usd_apy,
+        };
+
+        smoothed_snapshots.push(smoothed_snapshot);
+    }
+
+    smoothed_snapshots
 }
 
 // ========================== Liquidity management ==========================

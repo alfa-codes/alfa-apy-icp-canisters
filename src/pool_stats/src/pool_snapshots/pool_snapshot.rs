@@ -7,6 +7,7 @@ use utils::util::current_timestamp_secs;
 use crate::repository::pools_repo;
 use crate::pool_snapshots::position_data::position_data::PositionData;
 use crate::pool_snapshots::pool_data::pool_data::PoolData;
+use crate::pool_metrics::pool_metrics::ApyValue;
 
 #[derive(CandidType, Deserialize, Clone, Serialize, Debug, PartialEq, Eq, Hash)]
 pub struct PoolSnapshot {
@@ -59,5 +60,41 @@ impl PoolSnapshot {
 
     pub fn save(&self) {
         pools_repo::save_pool_snapshot(self.clone());
+    }
+}
+
+#[derive(CandidType, Deserialize, Clone, Serialize, Debug, PartialEq)]
+pub struct PoolSnapshotResponse {
+    pub id: String,
+    pub pool_id: String,
+    pub timestamp: u64,
+    pub position_data: Option<PositionData>,
+    pub pool_data: Option<PoolData>,
+    pub apy: ApyValue,
+}
+
+impl From<PoolSnapshot> for PoolSnapshotResponse {
+    fn from(snapshot: PoolSnapshot) -> Self {
+        Self {
+            id: snapshot.id,
+            pool_id: snapshot.pool_id,
+            timestamp: snapshot.timestamp,
+            position_data: snapshot.position_data,
+            pool_data: snapshot.pool_data,
+            apy: ApyValue::default(),
+        }
+    }
+}
+
+impl PoolSnapshotResponse {
+    pub fn from_snapshot_with_apy(snapshot: PoolSnapshot, apy: ApyValue) -> Self {
+        Self {
+            id: snapshot.id,
+            pool_id: snapshot.pool_id,
+            timestamp: snapshot.timestamp,
+            position_data: snapshot.position_data,
+            pool_data: snapshot.pool_data,
+            apy,
+        }
     }
 }

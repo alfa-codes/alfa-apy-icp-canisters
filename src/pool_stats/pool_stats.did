@@ -30,7 +30,10 @@ type AddLiquidityToPoolCompleted = record {
 
 type AddPoolResult = variant { Ok : text; Err : ResponseError };
 
-type ApyValue = record { tokens_apy : float64; usd_apy : float64 };
+type ApyValue = record { 
+  tokens_apy : float64; 
+  usd_apy : float64 
+};
 
 type DeletePoolResult = variant { Ok; Err : ResponseError };
 
@@ -61,13 +64,29 @@ type GetEventRecordsResult = variant {
   Err : ResponseError;
 };
 
-type GetPoolByIdResult = variant {
-  Ok : Pool;
-  Err : ResponseError;
+type GetPoolByIdResult = variant { 
+  Ok : Pool; 
+  Err : ResponseError 
 };
 
-type GetPoolsResult = variant {
-  Ok : vec Pool;
+type GetPoolsHistoryRequest = record {
+  from_timestamp : opt nat64;
+  to_timestamp : opt nat64;
+  pool_ids : opt vec text;
+};
+
+type GetPoolsHistoryResult = variant { 
+  Ok : vec PoolHistory; 
+  Err : ResponseError 
+};
+
+type GetPoolsResult = variant { 
+  Ok : vec Pool; 
+  Err : ResponseError 
+};
+
+type GetPoolMetricsResult = variant {
+  Ok : vec record { text; PoolMetrics };
   Err : ResponseError;
 };
 
@@ -100,9 +119,14 @@ type Pool = record {
 
 type PoolData = record { tvl : nat };
 
-type PoolMetrics = record {
-  apy : ApyValue;
-  tvl : nat;
+type PoolHistory = record {
+  pool_id : text;
+  snapshots : vec PoolSnapshotResponse;
+};
+
+type PoolMetrics = record { 
+  apy : ApyValue; 
+  tvl : nat 
 };
 
 type PoolSnapshot = record {
@@ -118,6 +142,15 @@ type PoolSnapshotArgs = record {
   timestamp : nat64;
   pool_id : text;
   position_data : opt PositionData;
+};
+
+type PoolSnapshotResponse = record {
+  id : text;
+  pool_data : opt PoolData;
+  timestamp : nat64;
+  pool_id : text;
+  position_data : opt PositionData;
+  apy : ApyValue;
 };
 
 type PositionData = record {
@@ -153,7 +186,10 @@ type TestCreatePoolSnapshotResult = variant {
   Err : ResponseError;
 };
 
-type TestCreateTestSnapshotsResult = variant { Ok; Err : ResponseError };
+type TestCreateTestSnapshotsResult = variant { 
+  Ok; 
+  Err : ResponseError 
+};
 
 type WithdrawLiquidityFromPoolCompleted = record {
   shares : nat;
@@ -193,20 +229,19 @@ service : (RuntimeConfig) -> {
   deposit_test_liquidity_to_pool : (text) -> (AddLiquidityResult);
   get_event_records : (nat64, nat64) -> (GetEventRecordsResult);
   get_pool_by_id : (text) -> (GetPoolByIdResult);
-  get_pool_metrics : (vec text) -> (vec record { text; PoolMetrics });
+  get_pool_metrics : (vec text) -> (GetPoolMetricsResult);
   get_pools : () -> (GetPoolsResult);
+  get_pools_history : (GetPoolsHistoryRequest) -> (GetPoolsHistoryResult);
   get_pools_snapshots : (vec text) -> (vec record { text; vec PoolSnapshot });
   get_runtime_config : () -> (RuntimeConfig) query;
   set_operator : (principal) -> ();
   test_add_pool_snapshot : (PoolSnapshotArgs) -> ();
   test_create_pool_snapshot : (text) -> (TestCreatePoolSnapshotResult);
-  test_create_test_snapshots : (text, nat, float64) -> (
-      TestCreateTestSnapshotsResult,
-    );
+  test_create_test_snapshots : (text, nat, float64) -> (TestCreateTestSnapshotsResult);
   test_delete_all_pools_and_snapshots : () -> ();
+  test_delete_all_snapshots : () -> ();
   test_delete_pool_snapshot : (text, text) -> ();
   test_delete_pool_snapshots : (text) -> ();
   test_update_pool_ids : () -> ();
   withdraw_liquidity_from_pool : (text) -> (WithdrawLiquidityResult);
-  test_delete_all_snapshots : () -> ();
 };

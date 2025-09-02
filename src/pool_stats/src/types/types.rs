@@ -7,7 +7,7 @@ use errors::response_error::error::ResponseError;
 
 use crate::pools::pool::Pool;
 use crate::pool_metrics::pool_metrics::PoolMetrics;
-use crate::pool_snapshots::pool_snapshot::PoolSnapshot;
+use crate::pool_snapshots::pool_snapshot::{PoolSnapshot, PoolSnapshotResponse};
 use crate::event_records::event_record::EventRecord;
 
 #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
@@ -32,8 +32,20 @@ pub struct GetPoolByIdResult(pub Result<Pool, ResponseError>);
 pub struct GetPoolMetricsResult(pub HashMap<String, PoolMetrics>);
 
 #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
-pub struct GetPoolsSnapshotsResult(pub HashMap<String, Vec<PoolSnapshot>>);
-
-#[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
 pub struct GetEventRecordsResult(pub Result<Vec<EventRecord>, ResponseError>);
 
+#[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
+pub struct GetPoolsHistoryRequest {
+    pub pool_ids: Option<Vec<String>>,
+    pub from_timestamp: Option<u64>,
+    pub to_timestamp: Option<u64>,
+}
+
+#[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
+pub struct PoolHistory {
+    pub pool_id: String,
+    pub snapshots: Vec<PoolSnapshotResponse>,
+}
+
+#[derive(CandidType, Deserialize, Clone, Serialize, Debug)]
+pub struct GetPoolsHistoryResult(pub Result<Vec<PoolHistory>, ResponseError>);
