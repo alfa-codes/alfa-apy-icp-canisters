@@ -9,12 +9,19 @@ mod service;
 mod utils;
 
 use std::cell::RefCell;
-use candid::{candid_method, export_service, Nat, Principal};
-use candid::{CandidType, Deserialize};
+use candid::{candid_method, export_service, Nat, Principal, CandidType, Deserialize, decode_one};
 
 use ic_cdk::{call, id, trap, caller};
 use ic_cdk::api::call::CallResult;
 use ic_cdk_macros::{init, post_upgrade, pre_upgrade, update, query};
+
+use icrc_ledger_types::icrc21::errors::{ErrorInfo, Icrc21Error};
+use icrc_ledger_types::icrc21::responses::{ConsentInfo, ConsentMessage};
+use icrc_ledger_types::icrc21::requests::{
+    ConsentMessageRequest,
+    ConsentMessageSpec,
+    ConsentMessageMetadata
+};
 
 use errors::response_error::error::ResponseError;
 use ::types::CanisterId;
@@ -273,6 +280,14 @@ fn icrc10_supported_standards() -> Vec<SupportedStandard> {
             url: "https://github.com/dfinity/wg-identity-authentication/blob/main/topics/icrc_28_trusted_origins.md".to_string(),
             name: "ICRC-28".to_string(),
         },
+        SupportedStandard { 
+            url: "https://github.com/dfinity/wg-identity-authentication/tree/main/topics/ICRC-21".into(), 
+            name: "ICRC-21".into()
+        },
+        SupportedStandard {
+            url: "https://github.com/dfinity/wg-identity-authentication/tree/main/topics/ICRC-21".into(),
+            name: "ICRC-21".into()
+        },
     ]
 }
 
@@ -291,6 +306,65 @@ fn icrc28_trusted_origins() -> Icrc28TrustedOriginsResponse {
 
     Icrc28TrustedOriginsResponse { trusted_origins }
 }
+
+#[query(name = "icrc21_canister_call_consent_message")]
+fn icrc21_canister_call_consent_message(
+    req: ConsentMessageRequest,
+) -> Result<ConsentInfo, Icrc21Error> {
+    let method = req.method.as_str();
+
+    let ok = |text: String| -> Result<ConsentInfo, Icrc21Error> {
+        Ok(ConsentInfo {
+            consent_message: ConsentMessage::GenericDisplayMessage(text),
+            metadata: ConsentMessageMetadata {
+                language: "en".to_string(),
+                utc_offset_minutes: None,
+            },
+        })
+    };
+
+    match method {
+        "deposit" => {
+            let (args,): (StrategyDepositArgs,) = decode_one(&req.arg)
+                .map_err(|e| Icrc21Error::ConsentMessageUnavailable(ErrorInfo {
+                    description: format!("Can't decode deposit args: {e}"),
+                }))?;
+
+            ok(format!(
+                "Confirm deposit
+                    • Strategy #{strategy_id}\n 
+                    • Amount {amount}\n
+                    • Ledger {ledger}",
+                strategy_id = args.strategy_id,
+                amount = args.amount,
+                ledger = args.ledger
+            ))
+        }
+        "withdraw" => {
+            let (args,): (StrategyWithdrawArgs,) = decode_one(&req.arg)
+                .map_err(|e| Icrc21Error::ConsentMessageUnavailable(ErrorInfo {
+                    description: format!("Can't decode withdraw args: {e}"),
+                }))?;
+
+            ok(format!(
+                "Confirm withdraw\n 
+                    • Strategy #{strategy_id}\n 
+                    • Percentage {percentage}‰\n
+                    • Ledger {ledger}",
+                strategy_id = args.strategy_id,
+                percentage = args.percentage,
+                ledger = args.ledger
+            ))
+        }
+
+        unknown => Err(Icrc21Error::UnsupportedCanisterCall(ErrorInfo {
+            description: format!("Unsupported method for consent message: {unknown}"),
+        })),
+    }
+}
+
+
+
 
 // =============== Vault management ===============
 
